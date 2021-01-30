@@ -1,0 +1,55 @@
+#root {
+    display: flex;
+    justify-content: center;
+    /* margin: 20px; */
+}
+
+/* GRID */
+
+#grid .grid-rect {
+    stroke: rgb(229, 229, 229);
+    fill: rgb(255, 255, 255);
+}
+
+#grid .grid-hline,
+#grid .grid-vline {
+    stroke: rgb(247,248,248)
+}
+
+#grid .grid-hline-alternate,
+#grid .grid-vline-alternate {
+    stroke: rgb(229,229,229)
+}
+
+/* BLOCK: HEADER / FOOTER */
+
+.block-header .grid-rect,
+.block-footer .grid-rect {
+    stroke: rgb(174,138,180);
+    fill: rgb(188,26,105);
+}
+
+.block-header .grid-hline,
+.block-footer .grid-hline {
+    stroke: rgb(221,140,180);
+}
+
+.block-header .grid-vline,
+.block-footer .grid-vline {
+    stroke: rgb(174,138,180);
+}
+
+/* BLOCK: BODY */
+
+.block-body .grid-rect {
+    stroke: rgb(101,197,219);
+    fill: rgb(25,156,194);
+}
+
+.block-body .grid-hline {
+    stroke: rgb(37,166,201);
+}
+
+.block-body .grid-vline {
+    stroke: rgb(37,166,201);
+}

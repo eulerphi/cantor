@@ -1,4 +1,4 @@
-module Grid exposing (Data, centeredParams, emptyParams, getOffset, view)
+module Grid exposing (Data, calculateUnit, centeredParams, emptyParams, view)
 
 import Html exposing (..)
 import List
@@ -11,8 +11,8 @@ type alias Data =
     , y : Int
     , width : Int
     , height : Int
-    , offset : Int
-    , alternateCount : Int
+    , unit : Int
+    , isAlternateLine : Int -> Bool
     }
 
 
@@ -22,13 +22,13 @@ emptyParams =
     , y = 0
     , width = 0
     , height = 0
-    , offset = 0
-    , alternateCount = 0
+    , unit = 0
+    , isAlternateLine = \_ -> False
     }
 
 
 centeredParams : ( Int, Int ) -> Int -> Data
-centeredParams wh offset =
+centeredParams wh unit =
     let
         svgWidth =
             Tuple.first wh
@@ -37,10 +37,10 @@ centeredParams wh offset =
             Tuple.second wh
 
         gridWidth =
-            (svgWidth // offset) * offset
+            (svgWidth // unit) * unit
 
         gridHeight =
-            (svgHeight // offset) * offset
+            (svgHeight // unit) * unit
 
         x =
             (svgWidth - gridWidth) // 2
@@ -52,44 +52,54 @@ centeredParams wh offset =
     , y = y
     , width = gridWidth
     , height = gridHeight
-    , offset = offset
-    , alternateCount = 0
+    , unit = unit
+    , isAlternateLine = \_ -> False
     }
 
 
-getOffset : ( Int, Int ) -> Int -> Int
-getOffset wh minUnits =
+calculateUnit : ( Int, Int ) -> Int -> Int
+calculateUnit wh minUnits =
     min (Tuple.first wh) (Tuple.second wh) // minUnits
 
 
-view : Data -> List (Html msg)
+view : Data -> List (Svg.Svg msg)
 view params =
     let
+        rect =
+            Svg.rect
+                [ SvgAttrs.x <| String.fromInt <| params.x
+                , SvgAttrs.y <| String.fromInt <| params.y
+                , SvgAttrs.width <| String.fromInt <| params.width
+                , SvgAttrs.height <| String.fromInt <| params.height
+                , SvgAttrs.class "grid-rect"
+                ]
+                []
+
         horizontalLines =
-            List.range 0 (params.height // params.offset)
+            List.range 1 (params.height // params.unit - 1)
                 |> List.map (hline params)
 
         verticalLines =
-            List.range 0 (params.width // params.offset)
+            List.range 1 (params.width // params.unit - 1)
                 |> List.map (vline params)
     in
-    horizontalLines ++ verticalLines
+    rect :: horizontalLines ++ verticalLines
 
 
-lineClass : Int -> Int -> String -> String
-lineClass index alternateCount baseClass =
-    if index /= 0 && modBy alternateCount index == 0 then
+lineClass : Bool -> String -> String
+lineClass isAlternateLine baseClass =
+    if isAlternateLine then
         baseClass ++ "-alternate"
 
     else
         baseClass
 
 
-vline : Data -> Int -> Html msg
+vline : Data -> Int -> Svg.Svg msg
 vline p index =
     let
         offset =
-            index * p.offset
+            index * p.unit
 
         p1 =
             ( p.x + offset, p.y )
@@ -98,16 +108,16 @@ vline p index =
             ( p.x + offset, p.y + p.height )
 
         class =
-            lineClass index p.alternateCount "vline"
+            lineClass (p.isAlternateLine index) "grid-vline"
     in
     line p1 p2 class
 
 
-hline : Data -> Int -> Html msg
+hline : Data -> Int -> Svg.Svg msg
 hline p index =
     let
         offset =
-            index * p.offset
+            index * p.unit
 
         p1 =
             ( p.x, p.y + offset )
@@ -116,12 +126,12 @@ hline p index =
             ( p.x + p.width, p.y + offset )
 
         class =
-            lineClass index p.alternateCount "hline"
+            lineClass (p.isAlternateLine index) "grid-hline"
     in
     line p1 p2 class
 
 
-line : ( Int, Int ) -> ( Int, Int ) -> String -> Html msg
+line : ( Int, Int ) -> ( Int, Int ) -> String -> Svg.Svg msg
 line p1 p2 class =
     Svg.line
         [ SvgAttrs.x1 <| String.fromInt <| Tuple.first p1
@@ -129,6 +139,5 @@ line p1 p2 class =
         , SvgAttrs.x2 <| String.fromInt <| Tuple.first p2
         , SvgAttrs.y2 <| String.fromInt <| Tuple.second p2
         , SvgAttrs.class class
-        , SvgAttrs.stroke "black"
         ]
         []

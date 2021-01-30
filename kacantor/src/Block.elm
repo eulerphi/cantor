@@ -1,5 +1,7 @@
 module Block exposing (Data, data, view, viewAll, withPos)
 
+import Drag
+import Draggable
 import Grid
 import Html exposing (..)
 import List
@@ -10,6 +12,7 @@ import Tuple exposing (..)
 
 type alias Data =
     { id : String
+    , drag : Drag.State
     , x : Int
     , y : Int
     , quantity : Int
@@ -21,11 +24,12 @@ type alias Data =
 data : String -> Int -> Data
 data id quantity =
     { id = id
+    , drag = Drag.None
     , x = 0
     , y = 0
     , quantity = quantity
-    , headerOffset = 2
-    , width = 10
+    , headerOffset = 0
+    , width = min quantity 10
     }
 
 
@@ -34,21 +38,22 @@ withPos pos bd =
     { bd | x = Tuple.first pos, y = Tuple.second pos }
 
 
-view : Grid.Data -> Data -> Svg.Svg msg
-view gd bd =
+view : List (Svg.Attribute msg) -> Grid.Data -> Data -> Svg.Svg msg
+view attrs gd bd =
     let
         parts =
             toLogicalViewData bd
                 |> List.map (toPhysicalViewData gd)
-                |> List.map rect
-                |> List.concat
+                |> List.map (rect gd)
     in
-    Svg.g [ SvgAttrs.class "block" ] parts
+    Svg.g
+        (SvgAttrs.class "block" :: attrs)
+        parts
 
 
-viewAll : Grid.Data -> List Data -> List (Svg.Svg msg)
-viewAll gd bds =
-    bds |> List.map (view gd)
+viewAll : List (Svg.Attribute msg) -> Grid.Data -> List Data -> List (Svg.Svg msg)
+viewAll attrs gd bds =
+    bds |> List.map (view attrs gd)
 
 
 
@@ -60,6 +65,7 @@ type alias ViewData =
     , y : Int
     , width : Int
     , height : Int
+    , drag : Drag.State
     , class : String
     }
 
@@ -79,6 +85,7 @@ toLogicalViewData bd =
             , y = bd.y
             , width = headerWidth
             , height = 1
+            , drag = bd.drag
             , class = "block-header"
             }
 
@@ -87,6 +94,7 @@ toLogicalViewData bd =
             , y = bd.y + header.height
             , width = bd.width
             , height = (bd.quantity - header.width) // bd.width
+            , drag = bd.drag
             , class = "block-body"
             }
 
@@ -98,6 +106,7 @@ toLogicalViewData bd =
             , y = bd.y + header.height + body.height
             , width = remainder
             , height = 1
+            , drag = bd.drag
             , class = "block-footer"
             }
     in
@@ -107,10 +116,20 @@ toLogicalViewData bd =
 
 toPhysicalViewData : Grid.Data -> ViewData -> ViewData
 toPhysicalViewData gd vd =
-    { x = gd.x + (gd.offset * vd.x)
-    , y = gd.y + (vd.y * gd.offset)
-    , width = vd.width * gd.offset
-    , height = vd.height * gd.offset
+    let
+        dragDelta =
+            case vd.drag of
+                Drag.None ->
+                    ( 0, 0 )
+
+                Drag.Dragging delta ->
+                    delta
+    in
+    { x = gd.x + (gd.unit * vd.x + Tuple.first dragDelta)
+    , y = gd.y + (vd.y * gd.unit + Tuple.second dragDelta)
+    , width = vd.width * gd.unit
+    , height = vd.height * gd.unit
+    , drag = Drag.None
     , class = vd.class
     }
 
@@ -119,15 +138,16 @@ toPhysicalViewData gd vd =
 -- RECT
 
 
-rect : ViewData -> List (Svg.Svg msg)
-rect vd =
-    [ Svg.rect
-        [ SvgAttrs.x <| String.fromInt <| vd.x
-        , SvgAttrs.y <| String.fromInt <| vd.y
-        , SvgAttrs.width <| String.fromInt <| vd.width
-        , SvgAttrs.height <| String.fromInt <| vd.height
-        , SvgAttrs.class vd.class
-        , SvgAttrs.fill "black"
-        ]
-        []
-    ]
+rect : Grid.Data -> ViewData -> Svg.Svg msg
+rect gd vd =
+    Svg.g
+        [ SvgAttrs.class vd.class ]
+        (Grid.view
+            { x = vd.x
+            , y = vd.y
+            , width = vd.width
+            , height = vd.height
+            , unit = gd.unit
+            , isAlternateLine = \_ -> False
+            }
+        )
