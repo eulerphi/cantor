@@ -10601,7 +10601,6 @@ var $author$project$Main$changeSizeTask = function (m) {
 		},
 		$elm$browser$Browser$Dom$getElement('root'));
 };
-var $author$project$Drag$None = {$: 'None'};
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
@@ -10609,7 +10608,7 @@ var $elm$core$Basics$min = F2(
 var $author$project$Block$data = F2(
 	function (id, quantity) {
 		return {
-			drag: $author$project$Drag$None,
+			drag: $elm$core$Maybe$Nothing,
 			headerOffset: 0,
 			id: id,
 			quantity: quantity,
@@ -10914,13 +10913,6 @@ var $author$project$Main$subscriptions = function (m) {
 				A2($zaboco$elm_draggable$Draggable$subscriptions, $author$project$Main$DragMsg, m.drag)
 			]));
 };
-var $author$project$Drag$Dragging = function (a) {
-	return {$: 'Dragging', a: a};
-};
-var $author$project$Pair$add = F2(
-	function (p1, p2) {
-		return _Utils_Tuple2(p1.a + p2.a, p1.b + p2.b);
-	});
 var $author$project$Grid$calculateUnit = F2(
 	function (wh, minUnits) {
 		return (A2($elm$core$Basics$min, wh.a, wh.b) / minUnits) | 0;
@@ -11000,10 +10992,17 @@ var $zaboco$elm_draggable$Draggable$Events$onDragStart = F2(
 var $author$project$Main$dragConfig = $zaboco$elm_draggable$Draggable$customConfig(
 	_List_fromArray(
 		[
-			$zaboco$elm_draggable$Draggable$Events$onDragBy($author$project$Main$Drag),
+			$zaboco$elm_draggable$Draggable$Events$onDragBy(
+			function (delta) {
+				return $author$project$Main$Drag(
+					A2($author$project$Pair$map, $elm$core$Basics$round, delta));
+			}),
 			$zaboco$elm_draggable$Draggable$Events$onDragStart($author$project$Main$StartDragging),
 			$zaboco$elm_draggable$Draggable$Events$onDragEnd($author$project$Main$EndDragging)
 		]));
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
 var $elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -11013,7 +11012,111 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$Extra$roundBy = F2(
+	function (unit, value) {
+		var q = (value / unit) | 0;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			value,
+			A2(
+				$elm$core$Maybe$map,
+				$elm$core$Tuple$first,
+				$elm$core$List$head(
+					A2(
+						$elm$core$List$sortBy,
+						$elm$core$Tuple$second,
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return _Utils_Tuple2(
+									x,
+									$elm$core$Basics$abs(x - value));
+							},
+							A2(
+								$elm$core$List$map,
+								function (x) {
+									return x * unit;
+								},
+								_List_fromArray(
+									[q - 1, q, q + 1])))))));
+	});
+var $author$project$Block$endDrag = F2(
+	function (gd, bd) {
+		var _v0 = A2(
+			$author$project$Pair$map,
+			function (v) {
+				return (v / gd.unit) | 0;
+			},
+			A2(
+				$author$project$Pair$map,
+				$author$project$Extra$roundBy(gd.unit),
+				A2(
+					$elm$core$Maybe$withDefault,
+					_Utils_Tuple2(0, 0),
+					bd.drag)));
+		var dx = _v0.a;
+		var dy = _v0.b;
+		return _Utils_update(
+			bd,
+			{drag: $elm$core$Maybe$Nothing, x: bd.x + dx, y: bd.y + dy});
+	});
+var $author$project$Block$Group$endDragging = F2(
+	function (gd, group) {
+		var drag = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function (bd) {
+					return _List_fromArray(
+						[bd]);
+				},
+				A2(
+					$elm$core$Maybe$map,
+					$author$project$Block$endDrag(gd),
+					group.drag)));
+		return {
+			drag: $elm$core$Maybe$Nothing,
+			idle: _Utils_ap(group.idle, drag)
+		};
+	});
 var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$Pair$add = F2(
+	function (p1, p2) {
+		return _Utils_Tuple2(p1.a + p2.a, p1.b + p2.b);
+	});
+var $author$project$Block$onDrag = F2(
+	function (delta, bd) {
+		var drag = A2(
+			$elm$core$Maybe$map,
+			$author$project$Pair$add(delta),
+			bd.drag);
+		return _Utils_update(
+			bd,
+			{drag: drag});
+	});
+var $author$project$Block$Group$onDrag = F2(
+	function (delta, group) {
+		return _Utils_update(
+			group,
+			{
+				drag: A2(
+					$elm$core$Maybe$map,
+					$author$project$Block$onDrag(delta),
+					group.drag)
+			});
+	});
 var $elm$core$List$partition = F2(
 	function (pred, list) {
 		var step = F2(
@@ -11032,15 +11135,29 @@ var $elm$core$List$partition = F2(
 			_Utils_Tuple2(_List_Nil, _List_Nil),
 			list);
 	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
+var $author$project$Block$startDrag = function (bd) {
+	return _Utils_update(
+		bd,
+		{
+			drag: $elm$core$Maybe$Just(
+				_Utils_Tuple2(0, 0))
+		});
+};
+var $author$project$Block$Group$startDragging = F2(
+	function (id, group) {
+		var _v0 = A2(
+			$elm$core$List$partition,
+			function (bd) {
+				return _Utils_eq(bd.id, id);
+			},
+			group.idle);
+		var drags = _v0.a;
+		var idles = _v0.b;
+		var drag = A2(
+			$elm$core$Maybe$map,
+			$author$project$Block$startDrag,
+			$elm$core$List$head(drags));
+		return {drag: drag, idle: idles};
 	});
 var $zaboco$elm_draggable$Cmd$Extra$message = function (x) {
 	return A2(
@@ -11151,82 +11268,29 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(m, $elm$core$Platform$Cmd$none);
 			case 'Drag':
 				var delta = msg.a;
-				var _v1 = A2($author$project$Pair$map, $elm$core$Basics$round, delta);
-				var dx = _v1.a;
-				var dy = _v1.b;
-				var drag = function () {
-					var _v2 = m.blocks.drag;
-					if (_v2.$ === 'Nothing') {
-						return $elm$core$Maybe$Nothing;
-					} else {
-						var bd = _v2.a;
-						var _v3 = bd.drag;
-						if (_v3.$ === 'None') {
-							return $elm$core$Maybe$Just(
-								_Utils_update(
-									bd,
-									{
-										drag: $author$project$Drag$Dragging(
-											_Utils_Tuple2(dx, dy))
-									}));
-						} else {
-							var oldDelta = _v3.a;
-							return $elm$core$Maybe$Just(
-								_Utils_update(
-									bd,
-									{
-										drag: $author$project$Drag$Dragging(
-											A2(
-												$author$project$Pair$add,
-												oldDelta,
-												_Utils_Tuple2(dx, dy)))
-									}));
-						}
-					}
-				}();
 				return _Utils_Tuple2(
 					_Utils_update(
 						m,
 						{
-							blocks: {drag: drag, idle: m.blocks.idle}
+							blocks: A2($author$project$Block$Group$onDrag, delta, m.blocks)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'EndDragging':
-				var drag = function () {
-					var _v4 = m.blocks.drag;
-					if (_v4.$ === 'Nothing') {
-						return _List_Nil;
-					} else {
-						var bd = _v4.a;
-						return _List_fromArray(
-							[bd]);
-					}
-				}();
-				var bs = {
-					drag: $elm$core$Maybe$Nothing,
-					idle: _Utils_ap(m.blocks.idle, drag)
-				};
 				return _Utils_Tuple2(
 					_Utils_update(
 						m,
-						{blocks: bs}),
+						{
+							blocks: A2($author$project$Block$Group$endDragging, m.grid, m.blocks)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'StartDragging':
 				var id = msg.a;
-				var _v5 = A2(
-					$elm$core$List$partition,
-					function (bd) {
-						return _Utils_eq(bd.id, id);
-					},
-					m.blocks.idle);
-				var drags = _v5.a;
-				var idles = _v5.b;
-				var drag = $elm$core$List$head(drags);
-				var bs = {drag: drag, idle: idles};
 				return _Utils_Tuple2(
 					_Utils_update(
 						m,
-						{blocks: bs}),
+						{
+							blocks: A2($author$project$Block$Group$startDragging, id, m.blocks)
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'DragMsg':
 				var dragMsg = msg.a;
@@ -11596,16 +11660,13 @@ var $author$project$Block$toLogicalViewData = function (bd) {
 };
 var $author$project$Block$toPhysicalViewData = F2(
 	function (gd, vd) {
-		var dragDelta = function () {
-			var _v0 = vd.drag;
-			if (_v0.$ === 'None') {
-				return _Utils_Tuple2(0, 0);
-			} else {
-				var delta = _v0.a;
-				return delta;
-			}
-		}();
-		return {_class: vd._class, drag: $author$project$Drag$None, height: vd.height * gd.unit, width: vd.width * gd.unit, x: gd.x + ((gd.unit * vd.x) + dragDelta.a), y: gd.y + ((vd.y * gd.unit) + dragDelta.b)};
+		var _v0 = A2(
+			$elm$core$Maybe$withDefault,
+			_Utils_Tuple2(0, 0),
+			vd.drag);
+		var dx = _v0.a;
+		var dy = _v0.b;
+		return {_class: vd._class, drag: $elm$core$Maybe$Nothing, height: vd.height * gd.unit, width: vd.width * gd.unit, x: gd.x + ((gd.unit * vd.x) + dx), y: gd.y + ((vd.y * gd.unit) + dy)};
 	});
 var $author$project$Block$view = F3(
 	function (attrs, gd, bd) {
@@ -11692,4 +11753,4 @@ var $author$project$Main$view = function (m) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Draggable.Delta":{"args":[],"type":"( Basics.Float, Basics.Float )"},"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Drag":["Draggable.Delta"],"DragMsg":["Draggable.Msg String.String"],"EndDragging":[],"StartDragging":["String.String"],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Drag":["( Basics.Int, Basics.Int )"],"DragMsg":["Draggable.Msg String.String"],"EndDragging":[],"StartDragging":["String.String"],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));

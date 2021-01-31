@@ -1,10 +1,10 @@
-module Block exposing (Data, data, view, viewAll, withPos)
+module Block exposing (Data, Group, data, endDrag, onDrag, startDrag, view, viewAll, withPos)
 
-import Drag
-import Draggable
+import Extra
 import Grid
 import Html exposing (..)
 import List
+import Pair
 import Svg
 import Svg.Attributes as SvgAttrs
 import Tuple exposing (..)
@@ -12,7 +12,7 @@ import Tuple exposing (..)
 
 type alias Data =
     { id : String
-    , drag : Drag.State
+    , drag : Maybe ( Int, Int )
     , x : Int
     , y : Int
     , quantity : Int
@@ -21,16 +21,48 @@ type alias Data =
     }
 
 
+type alias Group =
+    { idle : List Data
+    , drag : Maybe Data
+    }
+
+
 data : String -> Int -> Data
 data id quantity =
     { id = id
-    , drag = Drag.None
+    , drag = Nothing
     , x = 0
     , y = 0
     , quantity = quantity
     , headerOffset = 0
     , width = min quantity 10
     }
+
+
+endDrag : Grid.Data -> Data -> Data
+endDrag gd bd =
+    let
+        ( dx, dy ) =
+            bd.drag
+                |> Maybe.withDefault ( 0, 0 )
+                |> Pair.map (Extra.roundBy gd.unit)
+                |> Pair.map (\v -> v // gd.unit)
+    in
+    { bd | x = bd.x + dx, y = bd.y + dy, drag = Nothing }
+
+
+startDrag : Data -> Data
+startDrag bd =
+    { bd | drag = Just ( 0, 0 ) }
+
+
+onDrag : ( Int, Int ) -> Data -> Data
+onDrag delta bd =
+    let
+        drag =
+            bd.drag |> Maybe.map (Pair.add delta)
+    in
+    { bd | drag = drag }
 
 
 withPos : ( Int, Int ) -> Data -> Data
@@ -65,7 +97,7 @@ type alias ViewData =
     , y : Int
     , width : Int
     , height : Int
-    , drag : Drag.State
+    , drag : Maybe ( Int, Int )
     , class : String
     }
 
@@ -117,19 +149,14 @@ toLogicalViewData bd =
 toPhysicalViewData : Grid.Data -> ViewData -> ViewData
 toPhysicalViewData gd vd =
     let
-        dragDelta =
-            case vd.drag of
-                Drag.None ->
-                    ( 0, 0 )
-
-                Drag.Dragging delta ->
-                    delta
+        ( dx, dy ) =
+            Maybe.withDefault ( 0, 0 ) vd.drag
     in
-    { x = gd.x + (gd.unit * vd.x + Tuple.first dragDelta)
-    , y = gd.y + (vd.y * gd.unit + Tuple.second dragDelta)
+    { x = gd.x + (gd.unit * vd.x + dx)
+    , y = gd.y + (vd.y * gd.unit + dy)
     , width = vd.width * gd.unit
     , height = vd.height * gd.unit
-    , drag = Drag.None
+    , drag = Nothing
     , class = vd.class
     }
 

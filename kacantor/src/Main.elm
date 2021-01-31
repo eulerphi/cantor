@@ -1,10 +1,10 @@
 module Main exposing (..)
 
 import Block
+import Block.Group
 import Browser
 import Browser.Dom
 import Browser.Events
-import Drag
 import Draggable
 import Draggable.Events
 import Grid
@@ -22,7 +22,7 @@ import Tuple
 
 
 type alias Model =
-    { blocks : BlockGroup
+    { blocks : Block.Group
     , drag : Draggable.State String
     , grid : Grid.Data
     , margin : Int
@@ -30,15 +30,9 @@ type alias Model =
     }
 
 
-type alias BlockGroup =
-    { idle : List Block.Data
-    , drag : Maybe Block.Data
-    }
-
-
 type Msg
     = NoOp
-    | Drag Draggable.Delta
+    | Drag ( Int, Int )
     | DragMsg (Draggable.Msg String)
     | EndDragging
     | StartDragging String
@@ -157,7 +151,7 @@ changeSizeTask m =
 dragConfig : Draggable.Config String Msg
 dragConfig =
     Draggable.customConfig
-        [ Draggable.Events.onDragBy Drag
+        [ Draggable.Events.onDragBy (\delta -> Drag (Pair.map round delta))
         , Draggable.Events.onDragStart StartDragging
         , Draggable.Events.onDragEnd EndDragging
         ]
@@ -170,56 +164,13 @@ update msg m =
             ( m, Cmd.none )
 
         Drag delta ->
-            let
-                ( dx, dy ) =
-                    Pair.map round delta
-
-                drag =
-                    case m.blocks.drag of
-                        Nothing ->
-                            Nothing
-
-                        Just bd ->
-                            case bd.drag of
-                                Drag.None ->
-                                    Just { bd | drag = Drag.Dragging ( dx, dy ) }
-
-                                Drag.Dragging oldDelta ->
-                                    Just { bd | drag = Drag.Dragging (Pair.add oldDelta ( dx, dy )) }
-            in
-            ( { m | blocks = { idle = m.blocks.idle, drag = drag } }, Cmd.none )
+            ( { m | blocks = Block.Group.onDrag delta m.blocks }, Cmd.none )
 
         EndDragging ->
-            let
-                drag =
-                    case m.blocks.drag of
-                        Nothing ->
-                            []
-
-                        Just bd ->
-                            [ bd ]
-
-                bs =
-                    { idle = m.blocks.idle ++ drag
-                    , drag = Nothing
-                    }
-            in
-            ( { m | blocks = bs }, Cmd.none )
+            ( { m | blocks = Block.Group.endDragging m.grid m.blocks }, Cmd.none )
 
         StartDragging id ->
-            let
-                ( drags, idles ) =
-                    List.partition (\bd -> bd.id == id) m.blocks.idle
-
-                drag =
-                    List.head drags
-
-                bs =
-                    { idle = idles
-                    , drag = drag
-                    }
-            in
-            ( { m | blocks = bs }, Cmd.none )
+            ( { m | blocks = Block.Group.startDragging id m.blocks }, Cmd.none )
 
         DragMsg dragMsg ->
             Draggable.update dragConfig dragMsg m
@@ -236,17 +187,6 @@ update msg m =
 
         WindowResized ->
             ( m, changeSizeTask m )
-
-
-
--- dragConfig : Draggable.Config String Msg
--- dragConfig =
---     Draggable.customConfig
---         [ onDragBy (\( dx, dy ) -> Vector2.vec2 dx dy |> OnDragBy)
---         , onDragStart StartDragging
---         , onClick ToggleBoxClicked
---         ]
--- MAIN
 
 
 main : Program () Model Msg
