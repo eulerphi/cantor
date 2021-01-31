@@ -1,6 +1,7 @@
-module Block exposing (Data, Group, Msg, data, endDrag, onDrag, startDrag, view, viewAll, withPos)
+module Block exposing (Config, Data, DragState, Group, Msg(..), data, emptyData, endDrag, initDragState, onDrag, startDrag, subscriptions, update, view, view2, viewAll, withPos)
 
 import Draggable
+import Draggable.Events exposing (onDragEnd)
 import Extra
 import Grid
 import Html exposing (..)
@@ -22,9 +23,22 @@ type alias Data =
     }
 
 
+emptyData : Data
+emptyData =
+    { id = ""
+    , drag = Nothing
+    , x = 0
+    , y = 0
+    , quantity = 0
+    , headerOffset = 0
+    , width = 0
+    }
+
+
 type alias Group =
     { idle : List Data
     , drag : Maybe Data
+    , dragState : DragState
     }
 
 
@@ -35,24 +49,90 @@ type State
 
 
 type Msg
-    = Drag ( Int, Int )
-    | DragMsg (Draggable.Msg String)
-    | EndDragging
-    | StartDragging String
+    = DragMsg (Draggable.Msg Id)
+    | StartDrag Id
+    | DragMove ( Int, Int )
+    | EndDrag
 
 
 type alias Config msg =
-    { envelopFn : Msg -> msg
+    { grid : Grid.Data
+    , envelopFn : Msg -> msg
     }
+
+
+subscriptions : (Msg -> msg) -> DragState -> Sub msg
+subscriptions envelopFn state =
+    Draggable.subscriptions (\subMsg -> envelopFn (DragMsg subMsg)) state.drag
+
+
+type Type
+    = Block
+
+
+type alias Id =
+    ( String, Type )
+
+
+
+-- | WidthControl String
+-- | HeaderOffsetControl String
+-- | AddOrSubtractControl String
+
+
+type alias DragState =
+    { drag : Draggable.State Id
+    , dragId : Maybe Id
+    , delta : ( Int, Int )
+    }
+
+
+initDragState : DragState
+initDragState =
+    { drag = Draggable.init
+    , dragId = Nothing
+    , delta = ( 0, 0 )
+    }
+
+
+draggableConfig : (Msg -> msg) -> Draggable.Config Id msg
+draggableConfig envelop =
+    Draggable.customConfig
+        [ Draggable.Events.onDragBy <| envelop << DragMove << Pair.map round
+        , Draggable.Events.onDragStart <| envelop << StartDrag
+        , Draggable.Events.onDragEnd <| envelop EndDrag
+        ]
 
 
 update :
     Config msg
     -> Msg
-    -> Data
-    -> ( Data, Cmd msg )
-update envelopFn msg model =
-    ( model, Cmd.none )
+    -> DragState
+    -> Maybe Data
+    -> ( Maybe Data, DragState, Cmd msg )
+update config msg dragState model =
+    case msg of
+        DragMsg subMsg ->
+            let
+                ( dragState_, cmd_ ) =
+                    Draggable.update (draggableConfig config.envelopFn) subMsg dragState
+            in
+            ( model, dragState_, cmd_ )
+
+        StartDrag id ->
+            ( model |> Maybe.map startDrag, dragState, Cmd.none )
+
+        DragMove delta ->
+            ( model |> Maybe.map (onDrag delta)
+            , { dragState | delta = Pair.add dragState.delta delta }
+            , Cmd.none
+            )
+
+        EndDrag ->
+            ( model |> Maybe.map (endDrag config.grid)
+            , { dragState | delta = ( 0, 0 ), dragId = Nothing }
+            , Cmd.none
+            )
 
 
 data : String -> Int -> Data
@@ -98,6 +178,12 @@ withPos pos bd =
     { bd | x = Tuple.first pos, y = Tuple.second pos }
 
 
+eventAttrs : (Msg -> msg) -> Id -> List (Svg.Attribute msg)
+eventAttrs envelop id =
+    Draggable.mouseTrigger id (envelop << DragMsg)
+        :: Draggable.touchTriggers id (envelop << DragMsg)
+
+
 view : List (Svg.Attribute msg) -> Grid.Data -> Data -> Svg.Svg msg
 view attrs gd bd =
     let
@@ -111,7 +197,27 @@ view attrs gd bd =
             [ viewWidthControl gd bd ]
     in
     Svg.g
-        (SvgAttrs.class "block" :: attrs)
+        [ SvgAttrs.class "block" ]
+        (rects ++ controls)
+
+
+view2 : (Msg -> msg) -> Grid.Data -> Data -> Svg.Svg msg
+view2 enevelop gd bd =
+    let
+        rectData =
+            toLogicalViewData bd |> List.map (toPhysicalViewData gd)
+
+        rects =
+            rectData |> List.map (rect gd bd)
+
+        controls =
+            [ viewWidthControl gd bd ]
+
+        blockEventAttrs_ =
+            eventAttrs enevelop ( bd.id, Block )
+    in
+    Svg.g
+        (SvgAttrs.class "block" :: blockEventAttrs_)
         (rects ++ controls)
 
 

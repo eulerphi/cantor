@@ -6,7 +6,6 @@ import Browser
 import Browser.Dom
 import Browser.Events
 import Draggable
-import Draggable.Events
 import Grid
 import Html exposing (div)
 import Html.Attributes as HtmlAttrs
@@ -32,10 +31,10 @@ type alias Model =
 
 type Msg
     = NoOp
-    | Drag ( Int, Int )
-    | DragMsg (Draggable.Msg String)
-    | EndDragging
-    | StartDragging String
+      -- | Drag ( Int, Int )
+      -- | DragMsg (Draggable.Msg String)
+      -- | EndDragging
+      -- | StartDragging String
     | SizeChanged ( Int, Int )
     | WindowResized
     | BlockMsg Block.Msg
@@ -51,6 +50,7 @@ init _ =
                     , Block.data "3" 36 |> Block.withPos ( 15, 15 )
                     ]
                 , drag = Nothing
+                , dragState = Block.initDragState
                 }
             , drag = Draggable.init
             , grid = Grid.emptyParams
@@ -69,7 +69,7 @@ subscriptions : Model -> Sub Msg
 subscriptions m =
     Sub.batch
         [ Browser.Events.onResize (\_ _ -> WindowResized)
-        , Draggable.subscriptions DragMsg m.drag
+        , Block.subscriptions BlockMsg m.blocks.dragState
         ]
 
 
@@ -79,12 +79,7 @@ subscriptions m =
 
 viewBlock : Grid.Data -> Block.Data -> Svg.Svg Msg
 viewBlock gd bd =
-    Block.view
-        (Draggable.mouseTrigger bd.id DragMsg
-            :: Draggable.touchTriggers bd.id DragMsg
-        )
-        gd
-        bd
+    Block.view2 BlockMsg gd bd
 
 
 view : Model -> Html.Html Msg
@@ -149,13 +144,14 @@ changeSizeTask m =
         (Browser.Dom.getElement "root")
 
 
-dragConfig : Draggable.Config String Msg
-dragConfig =
-    Draggable.customConfig
-        [ Draggable.Events.onDragBy (\delta -> Drag (Pair.map round delta))
-        , Draggable.Events.onDragStart StartDragging
-        , Draggable.Events.onDragEnd EndDragging
-        ]
+
+-- dragConfig : Draggable.Config String Msg
+-- dragConfig =
+--     Draggable.customConfig
+--         [ Draggable.Events.onDragBy (\delta -> Drag (Pair.map round delta))
+--         , Draggable.Events.onDragStart StartDragging
+--         , Draggable.Events.onDragEnd EndDragging
+--         ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -164,18 +160,14 @@ update msg m =
         NoOp ->
             ( m, Cmd.none )
 
-        Drag delta ->
-            ( { m | blocks = Block.Group.onDrag delta m.blocks }, Cmd.none )
-
-        EndDragging ->
-            ( { m | blocks = Block.Group.endDragging m.grid m.blocks }, Cmd.none )
-
-        StartDragging id ->
-            ( { m | blocks = Block.Group.startDragging id m.blocks }, Cmd.none )
-
-        DragMsg dragMsg ->
-            Draggable.update dragConfig dragMsg m
-
+        -- Drag delta ->
+        --     ( { m | blocks = Block.Group.onDrag delta m.blocks }, Cmd.none )
+        -- EndDragging ->
+        --     ( { m | blocks = Block.Group.endDragging m.grid m.blocks }, Cmd.none )
+        -- StartDragging id ->
+        --     ( { m | blocks = Block.Group.startDragging id m.blocks }, Cmd.none )
+        -- DragMsg dragMsg ->
+        --     Draggable.update dragConfig dragMsg m
         SizeChanged wh ->
             let
                 g =
@@ -189,8 +181,17 @@ update msg m =
         WindowResized ->
             ( m, changeSizeTask m )
 
-        BlockMsg blockMsg ->
-            ( m, Cmd.none )
+        BlockMsg subMsg ->
+            let
+                config =
+                    { envelopFn = BlockMsg
+                    , grid = m.grid
+                    }
+
+                ( blocks_, cmd_ ) =
+                    Block.Group.update config subMsg m.blocks
+            in
+            ( { m | blocks = blocks_ }, cmd_ )
 
 
 main : Program () Model Msg

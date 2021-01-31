@@ -10632,6 +10632,11 @@ var $zaboco$elm_draggable$Draggable$State = function (a) {
 	return {$: 'State', a: a};
 };
 var $zaboco$elm_draggable$Draggable$init = $zaboco$elm_draggable$Draggable$State($zaboco$elm_draggable$Internal$NotDragging);
+var $author$project$Block$initDragState = {
+	delta: _Utils_Tuple2(0, 0),
+	drag: $zaboco$elm_draggable$Draggable$init,
+	dragId: $elm$core$Maybe$Nothing
+};
 var $author$project$Block$withPos = F2(
 	function (pos, bd) {
 		return _Utils_update(
@@ -10642,6 +10647,7 @@ var $author$project$Main$init = function (_v0) {
 	var m = {
 		blocks: {
 			drag: $elm$core$Maybe$Nothing,
+			dragState: $author$project$Block$initDragState,
 			idle: _List_fromArray(
 				[
 					A2(
@@ -10663,8 +10669,8 @@ var $author$project$Main$init = function (_v0) {
 		m,
 		$author$project$Main$changeSizeTask(m));
 };
-var $author$project$Main$DragMsg = function (a) {
-	return {$: 'DragMsg', a: a};
+var $author$project$Main$BlockMsg = function (a) {
+	return {$: 'BlockMsg', a: a};
 };
 var $author$project$Main$WindowResized = {$: 'WindowResized'};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -10855,6 +10861,9 @@ var $elm$browser$Browser$Events$onResize = function (func) {
 				A2($elm$json$Json$Decode$field, 'innerWidth', $elm$json$Json$Decode$int),
 				A2($elm$json$Json$Decode$field, 'innerHeight', $elm$json$Json$Decode$int))));
 };
+var $author$project$Block$DragMsg = function (a) {
+	return {$: 'DragMsg', a: a};
+};
 var $zaboco$elm_draggable$Internal$DragAt = function (a) {
 	return {$: 'DragAt', a: a};
 };
@@ -10901,6 +10910,16 @@ var $zaboco$elm_draggable$Draggable$subscriptions = F2(
 						])));
 		}
 	});
+var $author$project$Block$subscriptions = F2(
+	function (envelopFn, state) {
+		return A2(
+			$zaboco$elm_draggable$Draggable$subscriptions,
+			function (subMsg) {
+				return envelopFn(
+					$author$project$Block$DragMsg(subMsg));
+			},
+			state.drag);
+	});
 var $author$project$Main$subscriptions = function (m) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
@@ -10910,7 +10929,7 @@ var $author$project$Main$subscriptions = function (m) {
 					function (_v0, _v1) {
 						return $author$project$Main$WindowResized;
 					})),
-				A2($zaboco$elm_draggable$Draggable$subscriptions, $author$project$Main$DragMsg, m.drag)
+				A2($author$project$Block$subscriptions, $author$project$Main$BlockMsg, m.blocks.dragState)
 			]));
 };
 var $author$project$Grid$calculateUnit = F2(
@@ -10936,12 +10955,58 @@ var $author$project$Grid$centeredParams = F2(
 			y: y
 		};
 	});
-var $author$project$Main$Drag = function (a) {
-	return {$: 'Drag', a: a};
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
 };
-var $author$project$Main$EndDragging = {$: 'EndDragging'};
-var $author$project$Main$StartDragging = function (a) {
-	return {$: 'StartDragging', a: a};
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _v0) {
+				var trues = _v0.a;
+				var falses = _v0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2($elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2($elm$core$List$cons, x, falses));
+			});
+		return A3(
+			$elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
+var $elm$core$List$singleton = function (value) {
+	return _List_fromArray(
+		[value]);
+};
+var $author$project$Pair$add = F2(
+	function (p1, p2) {
+		return _Utils_Tuple2(p1.a + p2.a, p1.b + p2.b);
+	});
+var $author$project$Block$DragMove = function (a) {
+	return {$: 'DragMove', a: a};
+};
+var $author$project$Block$EndDrag = {$: 'EndDrag'};
+var $author$project$Block$StartDrag = function (a) {
+	return {$: 'StartDrag', a: a};
 };
 var $zaboco$elm_draggable$Draggable$Config = function (a) {
 	return {$: 'Config', a: a};
@@ -10989,39 +11054,24 @@ var $zaboco$elm_draggable$Draggable$Events$onDragStart = F2(
 				onDragStart: A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, toMsg)
 			});
 	});
-var $author$project$Main$dragConfig = $zaboco$elm_draggable$Draggable$customConfig(
-	_List_fromArray(
-		[
-			$zaboco$elm_draggable$Draggable$Events$onDragBy(
-			function (delta) {
-				return $author$project$Main$Drag(
-					A2($author$project$Pair$map, $elm$core$Basics$round, delta));
-			}),
-			$zaboco$elm_draggable$Draggable$Events$onDragStart($author$project$Main$StartDragging),
-			$zaboco$elm_draggable$Draggable$Events$onDragEnd($author$project$Main$EndDragging)
-		]));
+var $author$project$Block$draggableConfig = function (envelop) {
+	return $zaboco$elm_draggable$Draggable$customConfig(
+		_List_fromArray(
+			[
+				$zaboco$elm_draggable$Draggable$Events$onDragBy(
+				A2(
+					$elm$core$Basics$composeL,
+					A2($elm$core$Basics$composeL, envelop, $author$project$Block$DragMove),
+					$author$project$Pair$map($elm$core$Basics$round))),
+				$zaboco$elm_draggable$Draggable$Events$onDragStart(
+				A2($elm$core$Basics$composeL, envelop, $author$project$Block$StartDrag)),
+				$zaboco$elm_draggable$Draggable$Events$onDragEnd(
+				envelop($author$project$Block$EndDrag))
+			]));
+};
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$Extra$roundNear = F2(
 	function (unit, value) {
@@ -11073,31 +11123,6 @@ var $author$project$Block$endDrag = F2(
 			bd,
 			{drag: $elm$core$Maybe$Nothing, x: bd.x + dx, y: bd.y + dy});
 	});
-var $author$project$Block$Group$endDragging = F2(
-	function (gd, group) {
-		var drag = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function (bd) {
-					return _List_fromArray(
-						[bd]);
-				},
-				A2(
-					$elm$core$Maybe$map,
-					$author$project$Block$endDrag(gd),
-					group.drag)));
-		return {
-			drag: $elm$core$Maybe$Nothing,
-			idle: _Utils_ap(group.idle, drag)
-		};
-	});
-var $elm$core$Basics$modBy = _Basics_modBy;
-var $author$project$Pair$add = F2(
-	function (p1, p2) {
-		return _Utils_Tuple2(p1.a + p2.a, p1.b + p2.b);
-	});
 var $author$project$Block$onDrag = F2(
 	function (delta, bd) {
 		var drag = A2(
@@ -11108,35 +11133,6 @@ var $author$project$Block$onDrag = F2(
 			bd,
 			{drag: drag});
 	});
-var $author$project$Block$Group$onDrag = F2(
-	function (delta, group) {
-		return _Utils_update(
-			group,
-			{
-				drag: A2(
-					$elm$core$Maybe$map,
-					$author$project$Block$onDrag(delta),
-					group.drag)
-			});
-	});
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
 var $author$project$Block$startDrag = function (bd) {
 	return _Utils_update(
 		bd,
@@ -11145,22 +11141,6 @@ var $author$project$Block$startDrag = function (bd) {
 				_Utils_Tuple2(0, 0))
 		});
 };
-var $author$project$Block$Group$startDragging = F2(
-	function (id, group) {
-		var _v0 = A2(
-			$elm$core$List$partition,
-			function (bd) {
-				return _Utils_eq(bd.id, id);
-			},
-			group.idle);
-		var drags = _v0.a;
-		var idles = _v0.b;
-		var drag = A2(
-			$elm$core$Maybe$map,
-			$author$project$Block$startDrag,
-			$elm$core$List$head(drags));
-		return {drag: drag, idle: idles};
-	});
 var $zaboco$elm_draggable$Cmd$Extra$message = function (x) {
 	return A2(
 		$elm$core$Task$perform,
@@ -11263,40 +11243,109 @@ var $zaboco$elm_draggable$Draggable$update = F3(
 				{drag: dragState}),
 			dragCmd);
 	});
+var $author$project$Block$update = F4(
+	function (config, msg, dragState, model) {
+		switch (msg.$) {
+			case 'DragMsg':
+				var subMsg = msg.a;
+				var _v1 = A3(
+					$zaboco$elm_draggable$Draggable$update,
+					$author$project$Block$draggableConfig(config.envelopFn),
+					subMsg,
+					dragState);
+				var dragState_ = _v1.a;
+				var cmd_ = _v1.b;
+				return _Utils_Tuple3(model, dragState_, cmd_);
+			case 'StartDrag':
+				var id = msg.a;
+				return _Utils_Tuple3(
+					A2($elm$core$Maybe$map, $author$project$Block$startDrag, model),
+					dragState,
+					$elm$core$Platform$Cmd$none);
+			case 'DragMove':
+				var delta = msg.a;
+				return _Utils_Tuple3(
+					A2(
+						$elm$core$Maybe$map,
+						$author$project$Block$onDrag(delta),
+						model),
+					_Utils_update(
+						dragState,
+						{
+							delta: A2($author$project$Pair$add, dragState.delta, delta)
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple3(
+					A2(
+						$elm$core$Maybe$map,
+						$author$project$Block$endDrag(config.grid),
+						model),
+					_Utils_update(
+						dragState,
+						{
+							delta: _Utils_Tuple2(0, 0),
+							dragId: $elm$core$Maybe$Nothing
+						}),
+					$elm$core$Platform$Cmd$none);
+		}
+	});
+var $author$project$Block$Group$update = F3(
+	function (config, msg, model) {
+		switch (msg.$) {
+			case 'StartDrag':
+				var id = msg.a;
+				var _v1 = A2(
+					$elm$core$List$partition,
+					function (bd) {
+						return _Utils_eq(bd.id, id.a);
+					},
+					model.idle);
+				var matches = _v1.a;
+				var rest = _v1.b;
+				var active = $elm$core$List$head(matches);
+				var _v2 = A4($author$project$Block$update, config, msg, model.dragState, active);
+				var active_ = _v2.a;
+				var dragState_ = _v2.b;
+				var cmd_ = _v2.c;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{drag: active_, dragState: dragState_, idle: rest}),
+					cmd_);
+			case 'EndDrag':
+				var _v3 = A4($author$project$Block$update, config, msg, model.dragState, model.drag);
+				var active_ = _v3.a;
+				var dragState_ = _v3.b;
+				var cmd_ = _v3.c;
+				var rest_ = _Utils_ap(
+					model.idle,
+					A2(
+						$elm$core$Maybe$withDefault,
+						_List_Nil,
+						A2($elm$core$Maybe$map, $elm$core$List$singleton, active_)));
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{drag: $elm$core$Maybe$Nothing, dragState: dragState_, idle: rest_}),
+					cmd_);
+			default:
+				var _v4 = A4($author$project$Block$update, config, msg, model.dragState, model.drag);
+				var active_ = _v4.a;
+				var dragState_ = _v4.b;
+				var cmd_ = _v4.c;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{drag: active_, dragState: dragState_}),
+					cmd_);
+		}
+	});
 var $author$project$Main$update = F2(
 	function (msg, m) {
 		switch (msg.$) {
 			case 'NoOp':
 				return _Utils_Tuple2(m, $elm$core$Platform$Cmd$none);
-			case 'Drag':
-				var delta = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						m,
-						{
-							blocks: A2($author$project$Block$Group$onDrag, delta, m.blocks)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'EndDragging':
-				return _Utils_Tuple2(
-					_Utils_update(
-						m,
-						{
-							blocks: A2($author$project$Block$Group$endDragging, m.grid, m.blocks)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'StartDragging':
-				var id = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						m,
-						{
-							blocks: A2($author$project$Block$Group$startDragging, id, m.blocks)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'DragMsg':
-				var dragMsg = msg.a;
-				return A3($zaboco$elm_draggable$Draggable$update, $author$project$Main$dragConfig, dragMsg, m);
 			case 'SizeChanged':
 				var wh = msg.a;
 				var g = A2(
@@ -11320,8 +11369,16 @@ var $author$project$Main$update = F2(
 					m,
 					$author$project$Main$changeSizeTask(m));
 			default:
-				var blockMsg = msg.a;
-				return _Utils_Tuple2(m, $elm$core$Platform$Cmd$none);
+				var subMsg = msg.a;
+				var config = {envelopFn: $author$project$Main$BlockMsg, grid: m.grid};
+				var _v1 = A3($author$project$Block$Group$update, config, subMsg, m.blocks);
+				var blocks_ = _v1.a;
+				var cmd_ = _v1.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						m,
+						{blocks: blocks_}),
+					cmd_);
 		}
 	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
@@ -11412,6 +11469,7 @@ var $author$project$Grid$view = function (params) {
 		rect,
 		_Utils_ap(horizontalLines, verticalLines));
 };
+var $author$project$Block$Block = {$: 'Block'};
 var $zaboco$elm_draggable$Draggable$alwaysPreventDefaultAndStopPropagation = function (msg) {
 	return {message: msg, preventDefault: true, stopPropagation: true};
 };
@@ -11618,6 +11676,19 @@ var $zaboco$elm_draggable$Draggable$touchTriggers = F2(
 					}))
 			]);
 	});
+var $author$project$Block$eventAttrs = F2(
+	function (envelop, id) {
+		return A2(
+			$elm$core$List$cons,
+			A2(
+				$zaboco$elm_draggable$Draggable$mouseTrigger,
+				id,
+				A2($elm$core$Basics$composeL, envelop, $author$project$Block$DragMsg)),
+			A2(
+				$zaboco$elm_draggable$Draggable$touchTriggers,
+				id,
+				A2($elm$core$Basics$composeL, envelop, $author$project$Block$DragMsg)));
+	});
 var $author$project$Block$rect = F3(
 	function (gd, bd, vd) {
 		var _v0 = A2(
@@ -11729,8 +11800,8 @@ var $author$project$Block$viewWidthControl = F2(
 					_List_Nil)
 				]));
 	});
-var $author$project$Block$view = F3(
-	function (attrs, gd, bd) {
+var $author$project$Block$view2 = F3(
+	function (enevelop, gd, bd) {
 		var rectData = A2(
 			$elm$core$List$map,
 			$author$project$Block$toPhysicalViewData(gd),
@@ -11743,24 +11814,21 @@ var $author$project$Block$view = F3(
 			[
 				A2($author$project$Block$viewWidthControl, gd, bd)
 			]);
+		var blockEventAttrs_ = A2(
+			$author$project$Block$eventAttrs,
+			enevelop,
+			_Utils_Tuple2(bd.id, $author$project$Block$Block));
 		return A2(
 			$elm$svg$Svg$g,
 			A2(
 				$elm$core$List$cons,
 				$elm$svg$Svg$Attributes$class('block'),
-				attrs),
+				blockEventAttrs_),
 			_Utils_ap(rects, controls));
 	});
 var $author$project$Main$viewBlock = F2(
 	function (gd, bd) {
-		return A3(
-			$author$project$Block$view,
-			A2(
-				$elm$core$List$cons,
-				A2($zaboco$elm_draggable$Draggable$mouseTrigger, bd.id, $author$project$Main$DragMsg),
-				A2($zaboco$elm_draggable$Draggable$touchTriggers, bd.id, $author$project$Main$DragMsg)),
-			gd,
-			bd);
+		return A3($author$project$Block$view2, $author$project$Main$BlockMsg, gd, bd);
 	});
 var $author$project$Main$view = function (m) {
 	var idleBlocks = A2(
@@ -11819,4 +11887,4 @@ var $author$project$Main$view = function (m) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Drag":["( Basics.Int, Basics.Int )"],"DragMsg":["Draggable.Msg String.String"],"EndDragging":[],"StartDragging":["String.String"],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[],"BlockMsg":["Block.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Block.Msg":{"args":[],"tags":{"Drag":["( Basics.Int, Basics.Int )"],"DragMsg":["Draggable.Msg String.String"],"EndDragging":[],"StartDragging":["String.String"]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Block.Id":{"args":[],"type":"( String.String, Block.Type )"},"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[],"BlockMsg":["Block.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Block.Msg":{"args":[],"tags":{"DragMsg":["Draggable.Msg Block.Id"],"StartDrag":["Block.Id"],"DragMove":["( Basics.Int, Basics.Int )"],"EndDrag":[]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"String.String":{"args":[],"tags":{"String":[]}},"Block.Type":{"args":[],"tags":{"Block":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));
