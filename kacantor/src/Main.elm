@@ -38,6 +38,7 @@ type Msg
     | StartDragging String
     | SizeChanged ( Int, Int )
     | WindowResized
+    | BlockMsg Block.Msg
 
 
 init : () -> ( Model, Cmd Msg )
@@ -187,6 +188,9 @@ update msg m =
 
         WindowResized ->
             ( m, changeSizeTask m )
+
+        BlockMsg blockMsg ->
+            ( m, Cmd.none )
 
 
 main : Program () Model Msg

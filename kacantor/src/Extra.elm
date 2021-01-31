@@ -1,15 +1,10 @@
 module Extra exposing (..)
 
-import Pair
 
-
-roundBy : Int -> Int -> Int
-roundBy unit value =
-    let
-        q =
-            value // unit
-    in
-    [ q - 1, q, q + 1 ]
+roundNear : Int -> Int -> Int
+roundNear unit value =
+    [ -1, 0, 1 ]
+        |> List.map ((+) (value // unit))
         |> List.map (\x -> x * unit)
         |> List.map (\x -> ( x, abs <| x - value ))
         |> List.sortBy Tuple.second

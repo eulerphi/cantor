@@ -1,5 +1,6 @@
-module Block exposing (Data, Group, data, endDrag, onDrag, startDrag, view, viewAll, withPos)
+module Block exposing (Data, Group, Msg, data, endDrag, onDrag, startDrag, view, viewAll, withPos)
 
+import Draggable
 import Extra
 import Grid
 import Html exposing (..)
@@ -27,6 +28,33 @@ type alias Group =
     }
 
 
+type State
+    = Idle
+    | Selected
+    | Dragging
+
+
+type Msg
+    = Drag ( Int, Int )
+    | DragMsg (Draggable.Msg String)
+    | EndDragging
+    | StartDragging String
+
+
+type alias Config msg =
+    { envelopFn : Msg -> msg
+    }
+
+
+update :
+    Config msg
+    -> Msg
+    -> Data
+    -> ( Data, Cmd msg )
+update envelopFn msg model =
+    ( model, Cmd.none )
+
+
 data : String -> Int -> Data
 data id quantity =
     { id = id
@@ -45,7 +73,7 @@ endDrag gd bd =
         ( dx, dy ) =
             bd.drag
                 |> Maybe.withDefault ( 0, 0 )
-                |> Pair.map (Extra.roundBy gd.unit)
+                |> Pair.map (Extra.roundNear gd.unit)
                 |> Pair.map (\v -> v // gd.unit)
     in
     { bd | x = bd.x + dx, y = bd.y + dy, drag = Nothing }
@@ -73,19 +101,54 @@ withPos pos bd =
 view : List (Svg.Attribute msg) -> Grid.Data -> Data -> Svg.Svg msg
 view attrs gd bd =
     let
-        parts =
-            toLogicalViewData bd
-                |> List.map (toPhysicalViewData gd)
-                |> List.map (rect gd)
+        rectData =
+            toLogicalViewData bd |> List.map (toPhysicalViewData gd)
+
+        rects =
+            rectData |> List.map (rect gd bd)
+
+        controls =
+            [ viewWidthControl gd bd ]
     in
     Svg.g
         (SvgAttrs.class "block" :: attrs)
-        parts
+        (rects ++ controls)
 
 
 viewAll : List (Svg.Attribute msg) -> Grid.Data -> List Data -> List (Svg.Svg msg)
 viewAll attrs gd bds =
     bds |> List.map (view attrs gd)
+
+
+viewWidthControl : Grid.Data -> Data -> Svg.Svg msg
+viewWidthControl gd bd =
+    let
+        ( x, y ) =
+            ( bd.x, bd.y )
+                |> Pair.map ((*) gd.unit)
+                |> Tuple.mapBoth ((+) gd.x) ((+) gd.y)
+                |> Tuple.mapBoth ((+) (gd.unit * bd.width)) ((+) (gd.unit // -2))
+
+        ( dx, dy ) =
+            dragDelta bd
+    in
+    Svg.g
+        []
+        [ Svg.circle
+            [ SvgAttrs.cx <| String.fromInt <| x + dx
+            , SvgAttrs.cy <| String.fromInt <| y + dy
+            , SvgAttrs.r <| String.fromInt <| gd.unit // 3
+            , SvgAttrs.fill "rgb(85,209,229)"
+            , SvgAttrs.stroke "rgb(85,209,229)"
+            , SvgAttrs.cursor "w-resize"
+            ]
+            []
+        ]
+
+
+dragDelta : Data -> ( Int, Int )
+dragDelta bd =
+    Maybe.withDefault ( 0, 0 ) bd.drag
 
 
 
@@ -97,7 +160,6 @@ type alias ViewData =
     , y : Int
     , width : Int
     , height : Int
-    , drag : Maybe ( Int, Int )
     , class : String
     }
 
@@ -105,19 +167,18 @@ type alias ViewData =
 toLogicalViewData : Data -> List ViewData
 toLogicalViewData bd =
     let
-        headerWidth =
+        ( headerWidth, headerHeight ) =
             if bd.headerOffset > 0 && bd.width > bd.headerOffset then
-                bd.width - bd.headerOffset
+                ( bd.width - bd.headerOffset, 1 )
 
             else
-                0
+                ( 0, 0 )
 
         header =
             { x = bd.x + bd.headerOffset
             , y = bd.y
             , width = headerWidth
-            , height = 1
-            , drag = bd.drag
+            , height = headerHeight
             , class = "block-header"
             }
 
@@ -126,7 +187,6 @@ toLogicalViewData bd =
             , y = bd.y + header.height
             , width = bd.width
             , height = (bd.quantity - header.width) // bd.width
-            , drag = bd.drag
             , class = "block-body"
             }
 
@@ -138,7 +198,6 @@ toLogicalViewData bd =
             , y = bd.y + header.height + body.height
             , width = remainder
             , height = 1
-            , drag = bd.drag
             , class = "block-footer"
             }
     in
@@ -148,15 +207,10 @@ toLogicalViewData bd =
 
 toPhysicalViewData : Grid.Data -> ViewData -> ViewData
 toPhysicalViewData gd vd =
-    let
-        ( dx, dy ) =
-            Maybe.withDefault ( 0, 0 ) vd.drag
-    in
-    { x = gd.x + (gd.unit * vd.x + dx)
-    , y = gd.y + (vd.y * gd.unit + dy)
-    , width = vd.width * gd.unit
-    , height = vd.height * gd.unit
-    , drag = Nothing
+    { x = gd.unit * vd.x + gd.x
+    , y = gd.unit * vd.y + gd.y
+    , width = gd.unit * vd.width
+    , height = gd.unit * vd.height
     , class = vd.class
     }
 
@@ -165,13 +219,17 @@ toPhysicalViewData gd vd =
 -- RECT
 
 
-rect : Grid.Data -> ViewData -> Svg.Svg msg
-rect gd vd =
+rect : Grid.Data -> Data -> ViewData -> Svg.Svg msg
+rect gd bd vd =
+    let
+        ( dx, dy ) =
+            Maybe.withDefault ( 0, 0 ) bd.drag
+    in
     Svg.g
         [ SvgAttrs.class vd.class ]
         (Grid.view
-            { x = vd.x
-            , y = vd.y
+            { x = vd.x + dx
+            , y = vd.y + dy
             , width = vd.width
             , height = vd.height
             , unit = gd.unit

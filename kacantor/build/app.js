@@ -11023,9 +11023,8 @@ var $elm$core$Maybe$map = F2(
 		}
 	});
 var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Extra$roundBy = F2(
+var $author$project$Extra$roundNear = F2(
 	function (unit, value) {
-		var q = (value / unit) | 0;
 		return A2(
 			$elm$core$Maybe$withDefault,
 			value,
@@ -11048,8 +11047,11 @@ var $author$project$Extra$roundBy = F2(
 								function (x) {
 									return x * unit;
 								},
-								_List_fromArray(
-									[q - 1, q, q + 1])))))));
+								A2(
+									$elm$core$List$map,
+									$elm$core$Basics$add((value / unit) | 0),
+									_List_fromArray(
+										[-1, 0, 1]))))))));
 	});
 var $author$project$Block$endDrag = F2(
 	function (gd, bd) {
@@ -11060,7 +11062,7 @@ var $author$project$Block$endDrag = F2(
 			},
 			A2(
 				$author$project$Pair$map,
-				$author$project$Extra$roundBy(gd.unit),
+				$author$project$Extra$roundNear(gd.unit),
 				A2(
 					$elm$core$Maybe$withDefault,
 					_Utils_Tuple2(0, 0),
@@ -11313,10 +11315,13 @@ var $author$project$Main$update = F2(
 						m,
 						{grid: g_, size: wh}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'WindowResized':
 				return _Utils_Tuple2(
 					m,
 					$author$project$Main$changeSizeTask(m));
+			default:
+				var blockMsg = msg.a;
+				return _Utils_Tuple2(m, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
@@ -11613,8 +11618,14 @@ var $zaboco$elm_draggable$Draggable$touchTriggers = F2(
 					}))
 			]);
 	});
-var $author$project$Block$rect = F2(
-	function (gd, vd) {
+var $author$project$Block$rect = F3(
+	function (gd, bd, vd) {
+		var _v0 = A2(
+			$elm$core$Maybe$withDefault,
+			_Utils_Tuple2(0, 0),
+			bd.drag);
+		var dx = _v0.a;
+		var dy = _v0.b;
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
@@ -11624,13 +11635,13 @@ var $author$project$Block$rect = F2(
 			$author$project$Grid$view(
 				{
 					height: vd.height,
-					isAlternateLine: function (_v0) {
+					isAlternateLine: function (_v1) {
 						return false;
 					},
 					unit: gd.unit,
 					width: vd.width,
-					x: vd.x,
-					y: vd.y
+					x: vd.x + dx,
+					y: vd.y + dy
 				}));
 	});
 var $elm$core$List$filter = F2(
@@ -11645,11 +11656,13 @@ var $elm$core$List$filter = F2(
 			list);
 	});
 var $author$project$Block$toLogicalViewData = function (bd) {
-	var headerWidth = ((bd.headerOffset > 0) && (_Utils_cmp(bd.width, bd.headerOffset) > 0)) ? (bd.width - bd.headerOffset) : 0;
-	var header = {_class: 'block-header', drag: bd.drag, height: 1, width: headerWidth, x: bd.x + bd.headerOffset, y: bd.y};
-	var body = {_class: 'block-body', drag: bd.drag, height: ((bd.quantity - header.width) / bd.width) | 0, width: bd.width, x: bd.x, y: bd.y + header.height};
+	var _v0 = ((bd.headerOffset > 0) && (_Utils_cmp(bd.width, bd.headerOffset) > 0)) ? _Utils_Tuple2(bd.width - bd.headerOffset, 1) : _Utils_Tuple2(0, 0);
+	var headerWidth = _v0.a;
+	var headerHeight = _v0.b;
+	var header = {_class: 'block-header', height: headerHeight, width: headerWidth, x: bd.x + bd.headerOffset, y: bd.y};
+	var body = {_class: 'block-body', height: ((bd.quantity - header.width) / bd.width) | 0, width: bd.width, x: bd.x, y: bd.y + header.height};
 	var remainder = (bd.quantity - header.width) - (body.width * body.height);
-	var footer = {_class: 'block-footer', drag: bd.drag, height: 1, width: remainder, x: bd.x, y: (bd.y + header.height) + body.height};
+	var footer = {_class: 'block-footer', height: 1, width: remainder, x: bd.x, y: (bd.y + header.height) + body.height};
 	return A2(
 		$elm$core$List$filter,
 		function (vd) {
@@ -11660,30 +11673,83 @@ var $author$project$Block$toLogicalViewData = function (bd) {
 };
 var $author$project$Block$toPhysicalViewData = F2(
 	function (gd, vd) {
-		var _v0 = A2(
-			$elm$core$Maybe$withDefault,
-			_Utils_Tuple2(0, 0),
-			vd.drag);
-		var dx = _v0.a;
-		var dy = _v0.b;
-		return {_class: vd._class, drag: $elm$core$Maybe$Nothing, height: vd.height * gd.unit, width: vd.width * gd.unit, x: gd.x + ((gd.unit * vd.x) + dx), y: gd.y + ((vd.y * gd.unit) + dy)};
+		return {_class: vd._class, height: gd.unit * vd.height, width: gd.unit * vd.width, x: (gd.unit * vd.x) + gd.x, y: (gd.unit * vd.y) + gd.y};
+	});
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $author$project$Block$dragDelta = function (bd) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		_Utils_Tuple2(0, 0),
+		bd.drag);
+};
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $author$project$Block$viewWidthControl = F2(
+	function (gd, bd) {
+		var _v0 = A3(
+			$elm$core$Tuple$mapBoth,
+			$elm$core$Basics$add(gd.unit * bd.width),
+			$elm$core$Basics$add((gd.unit / (-2)) | 0),
+			A3(
+				$elm$core$Tuple$mapBoth,
+				$elm$core$Basics$add(gd.x),
+				$elm$core$Basics$add(gd.y),
+				A2(
+					$author$project$Pair$map,
+					$elm$core$Basics$mul(gd.unit),
+					_Utils_Tuple2(bd.x, bd.y))));
+		var x = _v0.a;
+		var y = _v0.b;
+		var _v1 = $author$project$Block$dragDelta(bd);
+		var dx = _v1.a;
+		var dy = _v1.b;
+		return A2(
+			$elm$svg$Svg$g,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx(
+							$elm$core$String$fromInt(x + dx)),
+							$elm$svg$Svg$Attributes$cy(
+							$elm$core$String$fromInt(y + dy)),
+							$elm$svg$Svg$Attributes$r(
+							$elm$core$String$fromInt((gd.unit / 3) | 0)),
+							$elm$svg$Svg$Attributes$fill('rgb(85,209,229)'),
+							$elm$svg$Svg$Attributes$stroke('rgb(85,209,229)'),
+							$elm$svg$Svg$Attributes$cursor('w-resize')
+						]),
+					_List_Nil)
+				]));
 	});
 var $author$project$Block$view = F3(
 	function (attrs, gd, bd) {
-		var parts = A2(
+		var rectData = A2(
 			$elm$core$List$map,
-			$author$project$Block$rect(gd),
-			A2(
-				$elm$core$List$map,
-				$author$project$Block$toPhysicalViewData(gd),
-				$author$project$Block$toLogicalViewData(bd)));
+			$author$project$Block$toPhysicalViewData(gd),
+			$author$project$Block$toLogicalViewData(bd));
+		var rects = A2(
+			$elm$core$List$map,
+			A2($author$project$Block$rect, gd, bd),
+			rectData);
+		var controls = _List_fromArray(
+			[
+				A2($author$project$Block$viewWidthControl, gd, bd)
+			]);
 		return A2(
 			$elm$svg$Svg$g,
 			A2(
 				$elm$core$List$cons,
 				$elm$svg$Svg$Attributes$class('block'),
 				attrs),
-			parts);
+			_Utils_ap(rects, controls));
 	});
 var $author$project$Main$viewBlock = F2(
 	function (gd, bd) {
@@ -11753,4 +11819,4 @@ var $author$project$Main$view = function (m) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Drag":["( Basics.Int, Basics.Int )"],"DragMsg":["Draggable.Msg String.String"],"EndDragging":[],"StartDragging":["String.String"],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"Drag":["( Basics.Int, Basics.Int )"],"DragMsg":["Draggable.Msg String.String"],"EndDragging":[],"StartDragging":["String.String"],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[],"BlockMsg":["Block.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Block.Msg":{"args":[],"tags":{"Drag":["( Basics.Int, Basics.Int )"],"DragMsg":["Draggable.Msg String.String"],"EndDragging":[],"StartDragging":["String.String"]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));
