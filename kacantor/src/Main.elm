@@ -2,10 +2,10 @@ module Main exposing (..)
 
 import Block
 import Block.Group
+import Block.Model
 import Browser
 import Browser.Dom
 import Browser.Events
-import Draggable
 import Grid
 import Html exposing (div)
 import Html.Attributes as HtmlAttrs
@@ -21,8 +21,7 @@ import Tuple
 
 
 type alias Model =
-    { blocks : Block.Group
-    , drag : Draggable.State String
+    { blocks : Block.Model.Group Msg
     , grid : Grid.Data
     , margin : Int
     , size : ( Int, Int )
@@ -31,13 +30,9 @@ type alias Model =
 
 type Msg
     = NoOp
-      -- | Drag ( Int, Int )
-      -- | DragMsg (Draggable.Msg String)
-      -- | EndDragging
-      -- | StartDragging String
     | SizeChanged ( Int, Int )
     | WindowResized
-    | BlockMsg Block.Msg
+    | BlockMsg Block.Model.Msg
 
 
 init : () -> ( Model, Cmd Msg )
@@ -45,14 +40,11 @@ init _ =
     let
         m =
             { blocks =
-                { idle =
-                    [ Block.data "1" 43 |> Block.withPos ( 5, 5 )
-                    , Block.data "3" 36 |> Block.withPos ( 15, 15 )
+                Block.initGroup
+                    BlockMsg
+                    [ Block.init { key = "1", xy = ( 5, 5 ), quantity = 43, width = 10 }
+                    , Block.init { key = "3", xy = ( 15, 15 ), quantity = 36, width = 10 }
                     ]
-                , drag = Nothing
-                , dragState = Block.initDragState
-                }
-            , drag = Draggable.init
             , grid = Grid.emptyParams
             , margin = 20
             , size = ( 0, 0 )
@@ -69,7 +61,7 @@ subscriptions : Model -> Sub Msg
 subscriptions m =
     Sub.batch
         [ Browser.Events.onResize (\_ _ -> WindowResized)
-        , Block.subscriptions BlockMsg m.blocks.dragState
+        , Block.subscriptions m.blocks.context
         ]
 
 
@@ -77,32 +69,19 @@ subscriptions m =
 -- VIEW
 
 
-viewBlock : Grid.Data -> Block.Data -> Svg.Svg Msg
-viewBlock gd bd =
-    Block.view2 BlockMsg gd bd
-
-
 view : Model -> Html.Html Msg
 view m =
     let
-        idleBlocks =
-            m.blocks.idle |> List.map (viewBlock m.grid)
-
-        dragBlock =
-            case m.blocks.drag of
-                Nothing ->
-                    []
-
-                Just bd ->
-                    [ viewBlock m.grid bd ]
-
         parts =
             [ Svg.g
                 [ SvgAttrs.id "grid" ]
                 (Grid.view m.grid)
             , Svg.g
                 [ SvgAttrs.id "blocks" ]
-                (idleBlocks ++ dragBlock)
+                (Block.Group.view
+                    { dx = m.grid.x, dy = m.grid.y, unit = m.grid.unit }
+                    m.blocks
+                )
             ]
     in
     div
@@ -116,7 +95,7 @@ view m =
 
 
 
---Update
+-- UPDATE
 
 
 changeSize : Model -> Browser.Dom.Element -> Msg
@@ -144,14 +123,9 @@ changeSizeTask m =
         (Browser.Dom.getElement "root")
 
 
-
--- dragConfig : Draggable.Config String Msg
--- dragConfig =
---     Draggable.customConfig
---         [ Draggable.Events.onDragBy (\delta -> Drag (Pair.map round delta))
---         , Draggable.Events.onDragStart StartDragging
---         , Draggable.Events.onDragEnd EndDragging
---         ]
+isAlternateLine : Int -> Bool
+isAlternateLine idx =
+    idx == 2 || modBy 5 (idx - 2) == 0
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -160,38 +134,28 @@ update msg m =
         NoOp ->
             ( m, Cmd.none )
 
-        -- Drag delta ->
-        --     ( { m | blocks = Block.Group.onDrag delta m.blocks }, Cmd.none )
-        -- EndDragging ->
-        --     ( { m | blocks = Block.Group.endDragging m.grid m.blocks }, Cmd.none )
-        -- StartDragging id ->
-        --     ( { m | blocks = Block.Group.startDragging id m.blocks }, Cmd.none )
-        -- DragMsg dragMsg ->
-        --     Draggable.update dragConfig dragMsg m
         SizeChanged wh ->
             let
                 g =
                     Grid.centeredParams wh (Grid.calculateUnit wh 25)
-
-                g_ =
-                    { g | isAlternateLine = \idx -> idx == 2 || modBy 5 (idx - 2) == 0 }
             in
-            ( { m | grid = g_, size = wh }, Cmd.none )
+            ( { m | grid = { g | isAlternateLine = isAlternateLine }, size = wh }
+            , Cmd.none
+            )
 
         WindowResized ->
             ( m, changeSizeTask m )
 
         BlockMsg subMsg ->
             let
-                config =
-                    { envelopFn = BlockMsg
-                    , grid = m.grid
-                    }
-
                 ( blocks_, cmd_ ) =
-                    Block.Group.update config subMsg m.blocks
+                    Block.Group.update m.grid subMsg m.blocks
             in
             ( { m | blocks = blocks_ }, cmd_ )
+
+
+
+-- MAIN
 
 
 main : Program () Model Msg

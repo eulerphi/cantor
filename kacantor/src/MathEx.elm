@@ -1,4 +1,4 @@
-module Extra exposing (..)
+module MathEx exposing (..)
 
 
 roundNear : Int -> Int -> Int
