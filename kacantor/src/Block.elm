@@ -1,8 +1,11 @@
 module Block exposing (init, initGroup, subscriptions, update, view)
 
+import Block.Internal.Body as Body
 import Block.Internal.Update exposing (..)
 import Block.Internal.View exposing (..)
+import Block.Internal.WidthControl as WidthControl
 import Block.Model exposing (..)
+import Cmd.Extra
 import Draggable
 import Draggable.Events
 import Grid
@@ -87,7 +90,7 @@ update context gd msg model =
             )
 
         DragMove delta ->
-            ( model |> Maybe.map (onDrag delta)
+            ( model |> Maybe.map (handleDragMove delta)
             , context
             , Cmd.none
             )
@@ -97,6 +100,39 @@ update context gd msg model =
             , context
             , Cmd.none
             )
+
+        DragWidthControl delta ->
+            ( model
+            , context
+            , Cmd.none
+            )
+
+        UpdateWidth ->
+            ( model |> Maybe.map (endDrag gd)
+            , context
+            , Cmd.none
+            )
+
+
+handleDragMove : ( Int, Int ) -> Data -> Data
+handleDragMove newDelta bd =
+    let
+        ( state_, cmd_ ) =
+            case bd.state of
+                Dragging Body oldDelta ->
+                    ( Dragging Body (Body.updateDragMoveDelta oldDelta newDelta)
+                    , Cmd.none
+                    )
+
+                Dragging WidthControl oldDelta ->
+                    ( Dragging WidthControl (WidthControl.updateDragMoveDelta oldDelta newDelta)
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( bd.state, Cmd.none )
+    in
+    { bd | state = state_ }
 
 
 dragConfig : (Msg -> msg) -> Draggable.Config Id msg
@@ -136,7 +172,7 @@ view context scale bd =
                     (viewOffsetControl (eventsFn OffsetControl) (scaleFn OffsetControl))
             , List.head rectData
                 |> MaybeEx.toMappedList
-                    (viewWidthControl (eventsFn WidthControl) (scaleFn WidthControl))
+                    (WidthControl.view (eventsFn WidthControl) (scaleFn WidthControl) bd)
             ]
                 |> List.concat
     in

@@ -53,3 +53,9 @@
 .block-body .grid-vline {
     stroke: rgb(37,166,201);
 }
+
+.block .width-control {
+    cursor: w-resize;
+    fill: rgb(85,209,229);
+    stroke: rgb(85,209,229);
+}

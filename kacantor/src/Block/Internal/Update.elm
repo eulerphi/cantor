@@ -30,8 +30,8 @@ endDrag gd bd =
     { bd | x = bd.x + dx, y = bd.y + dy, state = Selected }
 
 
-onDrag : ( Int, Int ) -> Data -> Data
-onDrag newDelta bd =
+dragMove : ( Int, Int ) -> Data -> Data
+dragMove newDelta bd =
     let
         state_ =
             case bd.state of

@@ -11119,29 +11119,65 @@ var $author$project$Block$Internal$Update$endDrag = F2(
 			bd,
 			{state: $author$project$Block$Model$Selected, x: bd.x + dx, y: bd.y + dy});
 	});
+var $author$project$Block$Model$Body = {$: 'Body'};
 var $author$project$Block$Model$Dragging = F2(
 	function (a, b) {
 		return {$: 'Dragging', a: a, b: b};
 	});
+var $author$project$Block$Model$WidthControl = {$: 'WidthControl'};
 var $author$project$Pair$add = F2(
 	function (p1, p2) {
 		return _Utils_Tuple2(p1.a + p2.a, p1.b + p2.b);
 	});
-var $author$project$Block$Internal$Update$onDrag = F2(
+var $author$project$Block$Internal$Body$updateDragMoveDelta = F2(
+	function (oldDelta, newDelta) {
+		return A2($author$project$Pair$add, oldDelta, newDelta);
+	});
+var $author$project$Pair$addFirst = F2(
+	function (p1, p2) {
+		return _Utils_Tuple2(p1.a + p2.a, p1.b);
+	});
+var $author$project$Block$Internal$WidthControl$updateDragMoveDelta = F2(
+	function (oldDelta, newDelta) {
+		return A2($author$project$Pair$addFirst, oldDelta, newDelta);
+	});
+var $author$project$Block$handleDragMove = F2(
 	function (newDelta, bd) {
-		var state_ = function () {
-			var _v0 = bd.state;
-			if (_v0.$ === 'Dragging') {
-				var part = _v0.a;
-				var oldDelta = _v0.b;
-				return A2(
-					$author$project$Block$Model$Dragging,
-					part,
-					A2($author$project$Pair$add, oldDelta, newDelta));
-			} else {
-				return bd.state;
+		var _v0 = function () {
+			var _v1 = bd.state;
+			_v1$2:
+			while (true) {
+				if (_v1.$ === 'Dragging') {
+					switch (_v1.a.$) {
+						case 'Body':
+							var _v2 = _v1.a;
+							var oldDelta = _v1.b;
+							return _Utils_Tuple2(
+								A2(
+									$author$project$Block$Model$Dragging,
+									$author$project$Block$Model$Body,
+									A2($author$project$Block$Internal$Body$updateDragMoveDelta, oldDelta, newDelta)),
+								$elm$core$Platform$Cmd$none);
+						case 'WidthControl':
+							var _v3 = _v1.a;
+							var oldDelta = _v1.b;
+							return _Utils_Tuple2(
+								A2(
+									$author$project$Block$Model$Dragging,
+									$author$project$Block$Model$WidthControl,
+									A2($author$project$Block$Internal$WidthControl$updateDragMoveDelta, oldDelta, newDelta)),
+								$elm$core$Platform$Cmd$none);
+						default:
+							break _v1$2;
+					}
+				} else {
+					break _v1$2;
+				}
 			}
+			return _Utils_Tuple2(bd.state, $elm$core$Platform$Cmd$none);
 		}();
+		var state_ = _v0.a;
+		var cmd_ = _v0.b;
 		return _Utils_update(
 			bd,
 			{state: state_});
@@ -11286,10 +11322,21 @@ var $author$project$Block$update = F4(
 				return _Utils_Tuple3(
 					A2(
 						$elm$core$Maybe$map,
-						$author$project$Block$Internal$Update$onDrag(delta),
+						$author$project$Block$handleDragMove(delta),
 						model),
 					context,
 					$elm$core$Platform$Cmd$none);
+			case 'EndDrag':
+				return _Utils_Tuple3(
+					A2(
+						$elm$core$Maybe$map,
+						$author$project$Block$Internal$Update$endDrag(gd),
+						model),
+					context,
+					$elm$core$Platform$Cmd$none);
+			case 'DragWidthControl':
+				var delta = msg.a;
+				return _Utils_Tuple3(model, context, $elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple3(
 					A2(
@@ -11403,9 +11450,7 @@ var $author$project$MaybeEx$toList = function (maybe) {
 	}
 };
 var $author$project$Block$Model$AddControl = {$: 'AddControl'};
-var $author$project$Block$Model$Body = {$: 'Body'};
 var $author$project$Block$Model$OffsetControl = {$: 'OffsetControl'};
-var $author$project$Block$Model$WidthControl = {$: 'WidthControl'};
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var $author$project$Block$Model$Id = F2(
 	function (key, part) {
@@ -11704,11 +11749,91 @@ var $author$project$Block$Internal$View$toRectData = function (bd) {
 			[header, body, footer]));
 };
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
+var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var $author$project$Block$Internal$WidthControl$view = F4(
+	function (attrs, scale, bd, rd) {
+		var radius = function () {
+			var _v1 = bd.state;
+			if ((_v1.$ === 'Dragging') && (_v1.a.$ === 'WidthControl')) {
+				var _v2 = _v1.a;
+				return scale.unit;
+			} else {
+				return $elm$core$Basics$round(scale.unit / 1.5);
+			}
+		}();
+		var lineWidth = 5;
+		var _v0 = A2(
+			$elm$core$Tuple$mapFirst,
+			$elm$core$Basics$add(lineWidth),
+			A2(
+				$elm$core$Tuple$mapFirst,
+				$elm$core$Basics$add(scale.unit * rd.width),
+				A3(
+					$elm$core$Tuple$mapBoth,
+					$elm$core$Basics$add(scale.dx),
+					$elm$core$Basics$add(scale.dy),
+					A2(
+						$author$project$Pair$map,
+						$elm$core$Basics$mul(scale.unit),
+						_Utils_Tuple2(rd.x, rd.y)))));
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$elm$svg$Svg$g,
+			A2(
+				$elm$core$List$cons,
+				$elm$svg$Svg$Attributes$class('width-control'),
+				attrs),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$elm$core$String$fromInt(x)),
+							$elm$svg$Svg$Attributes$y1(
+							$elm$core$String$fromInt(y)),
+							$elm$svg$Svg$Attributes$x2(
+							$elm$core$String$fromInt(x)),
+							$elm$svg$Svg$Attributes$y2(
+							$elm$core$String$fromInt(y + 100)),
+							$elm$svg$Svg$Attributes$strokeWidth(
+							$elm$core$String$fromInt(lineWidth))
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx(
+							$elm$core$String$fromInt(x)),
+							$elm$svg$Svg$Attributes$cy(
+							$elm$core$String$fromInt(y)),
+							$elm$svg$Svg$Attributes$r(
+							$elm$core$String$fromInt(radius))
+						]),
+					_List_Nil)
+				]));
+	});
+var $elm$svg$Svg$Attributes$cursor = _VirtualDom_attribute('cursor');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $author$project$Block$Internal$View$viewAddControl = F3(
 	function (attrs, scale, rd) {
@@ -11792,11 +11917,6 @@ var $author$project$Block$Internal$View$viewOffsetControl = F3(
 					_List_Nil)
 				]));
 	});
-var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
-var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
-var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
-var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
-var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
 var $author$project$Grid$line = F3(
 	function (p1, p2, _class) {
 		return A2(
@@ -11894,47 +12014,6 @@ var $author$project$Block$Internal$View$viewRect = F2(
 					y: (scale.unit * rd.y) + scale.dy
 				}));
 	});
-var $author$project$Block$Internal$View$viewWidthControl = F3(
-	function (attrs, scale, rd) {
-		var _v0 = A3(
-			$elm$core$Tuple$mapBoth,
-			$elm$core$Basics$add(scale.unit * rd.width),
-			$elm$core$Basics$add((scale.unit / (-2)) | 0),
-			A3(
-				$elm$core$Tuple$mapBoth,
-				$elm$core$Basics$add(scale.dx),
-				$elm$core$Basics$add(scale.dy),
-				A2(
-					$author$project$Pair$map,
-					$elm$core$Basics$mul(scale.unit),
-					_Utils_Tuple2(rd.x, rd.y))));
-		var x = _v0.a;
-		var y = _v0.b;
-		var _v1 = _Utils_Tuple2(0, 0);
-		var dx = _v1.a;
-		var dy = _v1.b;
-		return A2(
-			$elm$svg$Svg$g,
-			attrs,
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$circle,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$cx(
-							$elm$core$String$fromInt(x + dx)),
-							$elm$svg$Svg$Attributes$cy(
-							$elm$core$String$fromInt(y + dy)),
-							$elm$svg$Svg$Attributes$r(
-							$elm$core$String$fromInt((scale.unit / 3) | 0)),
-							$elm$svg$Svg$Attributes$fill('rgb(85,209,229)'),
-							$elm$svg$Svg$Attributes$stroke('rgb(85,209,229)'),
-							$elm$svg$Svg$Attributes$cursor('w-resize')
-						]),
-					_List_Nil)
-				]));
-	});
 var $author$project$Block$view = F3(
 	function (context, scale, bd) {
 		var scaleFn = A2($author$project$Block$scaleForPart, scale, bd);
@@ -11964,10 +12043,11 @@ var $author$project$Block$view = F3(
 					$elm$core$List$head(rectData)),
 					A2(
 					$author$project$MaybeEx$toMappedList,
-					A2(
-						$author$project$Block$Internal$View$viewWidthControl,
+					A3(
+						$author$project$Block$Internal$WidthControl$view,
 						eventsFn($author$project$Block$Model$WidthControl),
-						scaleFn($author$project$Block$Model$WidthControl)),
+						scaleFn($author$project$Block$Model$WidthControl),
+						bd),
 					$elm$core$List$head(rectData))
 				]));
 		return A2(
@@ -12037,4 +12117,4 @@ var $author$project$Main$view = function (m) {
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
 _Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Block.Model.Id":{"args":[],"type":"{ key : String.String, part : Block.Model.Part }"},"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[],"BlockMsg":["Block.Model.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Block.Model.Msg":{"args":[],"tags":{"DragMsg":["Draggable.Msg Block.Model.Id"],"StartDrag":["Block.Model.Id"],"DragMove":["( Basics.Int, Basics.Int )"],"EndDrag":[]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"Block.Model.Part":{"args":[],"tags":{"Body":[],"AddControl":[],"OffsetControl":[],"WidthControl":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Block.Model.Id":{"args":[],"type":"{ key : String.String, part : Block.Model.Part }"},"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[],"BlockMsg":["Block.Model.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Block.Model.Msg":{"args":[],"tags":{"DragMsg":["Draggable.Msg Block.Model.Id"],"StartDrag":["Block.Model.Id"],"DragMove":["( Basics.Int, Basics.Int )"],"DragWidthControl":["( Basics.Int, Basics.Int )"],"EndDrag":[],"UpdateWidth":[]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"Block.Model.Part":{"args":[],"tags":{"Body":[],"AddControl":[],"OffsetControl":[],"WidthControl":[]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));

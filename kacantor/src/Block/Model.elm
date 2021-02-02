@@ -1,6 +1,7 @@
 module Block.Model exposing (..)
 
 import Draggable
+import Pos
 
 
 type alias Data =
@@ -11,6 +12,30 @@ type alias Data =
     , quantity : Int
     , headerOffset : Int
     , width : Int
+    }
+
+
+type alias Data2 =
+    { key : String
+    , state : State
+    , quantity : Int
+    , offset : Int
+    , width : Int
+    }
+
+
+type alias Bound =
+    { pos : Pos.Pos
+    , width : Float
+    , height : Float
+    }
+
+
+type alias ViewData =
+    { pos : Pos.Pos
+    , header : Maybe Bound
+    , body : Bound
+    , footer : Maybe Bound
     }
 
 
@@ -45,7 +70,9 @@ type Msg
     = DragMsg (Draggable.Msg Id)
     | StartDrag Id
     | DragMove ( Int, Int )
+    | DragWidthControl ( Int, Int )
     | EndDrag
+    | UpdateWidth
 
 
 type alias Context msg =
@@ -57,4 +84,10 @@ type alias Context msg =
 type alias Id =
     { key : String
     , part : Part
+    }
+
+
+type alias Delta =
+    { dx : Int
+    , dy : Int
     }
