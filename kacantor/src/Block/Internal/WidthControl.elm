@@ -3,7 +3,9 @@ module Block.Internal.WidthControl exposing (..)
 import Block.Internal.Body
 import Block.Internal.ViewModel as ViewModel exposing (ViewModel)
 import Block.Model exposing (..)
+import Delta exposing (Delta)
 import Grid
+import MathEx
 import Pair
 import Pos
 import Svg
@@ -24,6 +26,35 @@ updateWidth gd bd =
     case bd.state of
         Dragging WidthControl delta ->
             bd
+
+        _ ->
+            bd
+
+
+dragMove2 : Delta -> Grid.Data -> Data -> Data
+dragMove2 newDelta gd bd =
+    case bd.state of
+        DraggingWidthControl oldDelta ->
+            let
+                { dx, dy } =
+                    Delta.addX oldDelta newDelta
+
+                expectedWidthDelta =
+                    round dx // gd.unit
+
+                width_ =
+                    MathEx.minmax 1 bd.quantity (bd.width + expectedWidthDelta)
+
+                actualWidthDelta =
+                    width_ - bd.width
+
+                dx_ =
+                    toFloat <| round dx - (actualWidthDelta * gd.unit)
+            in
+            { bd
+                | state = DraggingWidthControl (Delta dx_ dy)
+                , width = width_
+            }
 
         _ ->
             bd

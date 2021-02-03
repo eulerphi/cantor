@@ -1,6 +1,11 @@
 module MathEx exposing (..)
 
 
+minmax : number -> number -> number -> number
+minmax minVal maxVal val =
+    max minVal (min val maxVal)
+
+
 roundNear : Int -> Int -> Int
 roundNear unit value =
     [ -1, 0, 1 ]

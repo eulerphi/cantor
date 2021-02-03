@@ -63,3 +63,13 @@ scale unit size =
 scaleByInt : Int -> Size -> Size
 scaleByInt unit size =
     scale (toFloat unit) size
+
+
+toWidthString : Size -> String
+toWidthString size =
+    String.fromFloat size.width
+
+
+toHeightString : Size -> String
+toHeightString size =
+    String.fromFloat size.height

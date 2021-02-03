@@ -1,6 +1,7 @@
 module Block.Internal.View exposing (..)
 
 import Block.Internal.Body as Body exposing (Body, updateDragMoveDelta)
+import Block.Internal.QuantityControl as QuantityControl
 import Block.Internal.ViewModel exposing (ViewModel)
 import Block.Internal.WidthControl as WidthControl
 import Block.Model as Model exposing (Part(..))
@@ -26,7 +27,9 @@ view eventAttrsFn vm =
             viewBody (eventAttrsFn Model.Body) vm
 
         controls =
-            [ WidthControl.view (eventAttrsFn Model.WidthControl) vm ]
+            [ WidthControl.view (eventAttrsFn Model.WidthControl) vm
+            , QuantityControl.view (eventAttrsFn Model.AddControl) vm
+            ]
     in
     body :: controls
 

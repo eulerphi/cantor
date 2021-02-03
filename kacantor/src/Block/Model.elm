@@ -1,5 +1,6 @@
 module Block.Model exposing (..)
 
+import Delta exposing (Delta)
 import Draggable
 import Pos
 
@@ -13,6 +14,10 @@ type alias Data =
     , headerOffset : Int
     , width : Int
     }
+
+
+type alias BlockWidth =
+    Int
 
 
 type alias Scale =
@@ -33,6 +38,7 @@ type State
     = Idle
     | Dragging Part ( Int, Int )
     | Selected
+    | DraggingWidthControl Delta
 
 
 type alias Group msg =
@@ -61,10 +67,4 @@ type alias Context msg =
 type alias Id =
     { key : String
     , part : Part
-    }
-
-
-type alias Delta =
-    { dx : Int
-    , dy : Int
     }

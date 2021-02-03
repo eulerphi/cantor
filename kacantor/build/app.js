@@ -11106,6 +11106,35 @@ var $author$project$Pair$add = F2(
 	function (p1, p2) {
 		return _Utils_Tuple2(p1.a + p2.a, p1.b + p2.b);
 	});
+var $author$project$Block$Model$AddControl = {$: 'AddControl'};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $author$project$Block$Internal$QuantityControl$dragMove = F3(
+	function (_v0, gd, bd) {
+		var dx = _v0.a;
+		var dy = _v0.b;
+		var remainder = A2($elm$core$Basics$modBy, bd.width, bd.quantity);
+		var quantityDeltaY = (dy / gd.unit) | 0;
+		var quantityDeltaX = (dx / gd.unit) | 0;
+		var qdy = (!(!quantityDeltaY)) ? (bd.width * quantityDeltaY) : 0;
+		var quantityDelta = (_Utils_cmp(
+			$elm$core$Basics$abs(quantityDeltaX),
+			$elm$core$Basics$abs(qdy)) > 0) ? quantityDeltaX : qdy;
+		var quantity_ = A2($elm$core$Basics$max, 0, bd.quantity + quantityDelta);
+		var qdx = A2($elm$core$Basics$max, remainder, (dx / gd.unit) | 0);
+		var dy_ = dy - (quantityDeltaY * gd.unit);
+		var dx_ = dx - (quantityDeltaX * gd.unit);
+		return _Utils_update(
+			bd,
+			{
+				quantity: quantity_,
+				state: A2(
+					$author$project$Block$Model$Dragging,
+					$author$project$Block$Model$AddControl,
+					_Utils_Tuple2(dx_, dy_))
+			});
+	});
 var $author$project$Block$Model$WidthControl = {$: 'WidthControl'};
 var $author$project$Block$Internal$WidthControl$dragMove = F3(
 	function (_v0, gd, bd) {
@@ -11131,12 +11160,20 @@ var $author$project$Block$Internal$Update$dragMove = F3(
 	function (newDelta, gd, bd) {
 		var block_ = function () {
 			var _v0 = bd.state;
-			_v0$2:
+			_v0$3:
 			while (true) {
 				if (_v0.$ === 'Dragging') {
 					switch (_v0.a.$) {
-						case 'Body':
+						case 'AddControl':
 							var _v1 = _v0.a;
+							var oldDelta = _v0.b;
+							return A3(
+								$author$project$Block$Internal$QuantityControl$dragMove,
+								A2($author$project$Pair$add, oldDelta, newDelta),
+								gd,
+								bd);
+						case 'Body':
+							var _v2 = _v0.a;
 							var oldDelta = _v0.b;
 							return _Utils_update(
 								bd,
@@ -11147,7 +11184,7 @@ var $author$project$Block$Internal$Update$dragMove = F3(
 										A2($author$project$Pair$add, oldDelta, newDelta))
 								});
 						case 'WidthControl':
-							var _v2 = _v0.a;
+							var _v3 = _v0.a;
 							var oldDelta = _v0.b;
 							return A3(
 								$author$project$Block$Internal$WidthControl$dragMove,
@@ -11155,19 +11192,16 @@ var $author$project$Block$Internal$Update$dragMove = F3(
 								gd,
 								bd);
 						default:
-							break _v0$2;
+							break _v0$3;
 					}
 				} else {
-					break _v0$2;
+					break _v0$3;
 				}
 			}
 			return bd;
 		}();
 		return block_;
 	});
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -11926,6 +11960,10 @@ var $author$project$Block$Internal$ViewModel$forBlock = F2(
 			}
 		};
 	});
+var $author$project$Pos$add = F2(
+	function (p1, p2) {
+		return {x: p1.x + p2.x, y: p1.y + p2.y};
+	});
 var $author$project$Pos$add4 = F4(
 	function (p1, p2, p3, p4) {
 		return {x: ((p1.x + p2.x) + p3.x) + p4.x, y: ((p1.y + p2.y) + p3.y) + p4.y};
@@ -11946,17 +11984,146 @@ var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $author$project$Pos$origin = $author$project$Pos$init(
 	_Utils_Tuple2(0, 0));
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $author$project$Size$toHeightString = function (size) {
+	return $elm$core$String$fromFloat(size.height);
+};
+var $author$project$Size$toWidthString = function (size) {
+	return $elm$core$String$fromFloat(size.width);
+};
 var $author$project$Pos$toXString = function (pos) {
 	return $elm$core$String$fromFloat(pos.x);
 };
 var $author$project$Pos$toYString = function (pos) {
 	return $elm$core$String$fromFloat(pos.y);
 };
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
 var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var $author$project$Block$Internal$QuantityControl$viewControl = F2(
+	function (attrs, vm) {
+		var unit = vm.grid.unit;
+		var root = A2($elm$core$Maybe$withDefault, vm.body.mid, vm.body.bot);
+		var rectSize = $author$project$Size$fromInt(
+			_Utils_Tuple2(vm.grid.unit, vm.grid.unit));
+		var lineWidth = 1.5;
+		var halfUnit = unit / 2;
+		var _v0 = function () {
+			var _v1 = vm.block.state;
+			if ((_v1.$ === 'Dragging') && (_v1.a.$ === 'AddControl')) {
+				var _v2 = _v1.a;
+				var _v3 = _v1.b;
+				var dx = _v3.a;
+				var dy = _v3.b;
+				return _Utils_Tuple2(
+					$elm$core$Basics$round(vm.grid.unit / 1.2),
+					$author$project$Pos$fromInt(
+						_Utils_Tuple2(dx, dy)));
+			} else {
+				return _Utils_Tuple2(
+					$elm$core$Basics$round(vm.grid.unit / 1.5),
+					$author$project$Pos$origin);
+			}
+		}();
+		var radius = _v0.a;
+		var delta = _v0.b;
+		var rectPos = function () {
+			var offset = (_Utils_cmp(root.size.width, vm.block.size.width) < 0) ? $author$project$Pos$init(
+				_Utils_Tuple2(root.size.width, 0.0)) : $author$project$Pos$init(
+				_Utils_Tuple2(0.0, root.size.height));
+			return A4($author$project$Pos$add4, root.pos, vm.block.pos, offset, delta);
+		}();
+		var lineP1 = A2(
+			$author$project$Pos$add,
+			rectPos,
+			$author$project$Pos$init(
+				_Utils_Tuple2(halfUnit, halfUnit)));
+		var lineP2 = A2(
+			$author$project$Pos$addY,
+			lineP1,
+			$author$project$Pos$init(
+				_Utils_Tuple2(0, 1.5 * unit)));
+		var circlePos = lineP2;
+		return A2(
+			$elm$svg$Svg$g,
+			A2(
+				$elm$core$List$cons,
+				$elm$svg$Svg$Attributes$class('quantity-control'),
+				attrs),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$rect,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x(
+							$author$project$Pos$toXString(rectPos)),
+							$elm$svg$Svg$Attributes$y(
+							$author$project$Pos$toYString(rectPos)),
+							$elm$svg$Svg$Attributes$width(
+							$author$project$Size$toWidthString(rectSize)),
+							$elm$svg$Svg$Attributes$height(
+							$author$project$Size$toHeightString(rectSize))
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$author$project$Pos$toXString(lineP1)),
+							$elm$svg$Svg$Attributes$y1(
+							$author$project$Pos$toYString(lineP1)),
+							$elm$svg$Svg$Attributes$x2(
+							$author$project$Pos$toXString(lineP2)),
+							$elm$svg$Svg$Attributes$y2(
+							$author$project$Pos$toYString(lineP2)),
+							$elm$svg$Svg$Attributes$strokeWidth(
+							$elm$core$String$fromFloat(lineWidth)),
+							$elm$svg$Svg$Attributes$stroke('black')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx(
+							$author$project$Pos$toXString(circlePos)),
+							$elm$svg$Svg$Attributes$cy(
+							$author$project$Pos$toYString(circlePos)),
+							$elm$svg$Svg$Attributes$r(
+							$elm$core$String$fromInt(radius))
+						]),
+					_List_Nil)
+				]));
+	});
+var $author$project$Block$Internal$QuantityControl$view = F2(
+	function (attrs, vm) {
+		var _v0 = vm.block.state;
+		_v0$2:
+		while (true) {
+			switch (_v0.$) {
+				case 'Dragging':
+					if (_v0.a.$ === 'AddControl') {
+						var _v1 = _v0.a;
+						return A2($author$project$Block$Internal$QuantityControl$viewControl, attrs, vm);
+					} else {
+						break _v0$2;
+					}
+				case 'Selected':
+					return A2($author$project$Block$Internal$QuantityControl$viewControl, attrs, vm);
+				default:
+					break _v0$2;
+			}
+		}
+		return A2($elm$svg$Svg$g, _List_Nil, _List_Nil);
+	});
 var $author$project$Block$Internal$WidthControl$viewControl = F2(
 	function (attrs, vm) {
 		var root = A2($elm$core$Maybe$withDefault, vm.body.mid, vm.body.top);
@@ -12063,10 +12230,6 @@ var $author$project$MaybeEx$toMappedList = F2(
 				]);
 		}
 	});
-var $author$project$Pos$add = F2(
-	function (p1, p2) {
-		return {x: p1.x + p2.x, y: p1.y + p2.y};
-	});
 var $author$project$ViewData$addPos = F2(
 	function (val, vd) {
 		return _Utils_update(
@@ -12121,7 +12284,6 @@ var $author$project$Grid$hline = F2(
 			'grid-hline');
 		return A3($author$project$Grid$line, p1, p2, _class);
 	});
-var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
 var $author$project$Grid$vline = F2(
 	function (p, index) {
 		var offset = index * p.unit;
@@ -12133,9 +12295,6 @@ var $author$project$Grid$vline = F2(
 			'grid-vline');
 		return A3($author$project$Grid$line, p1, p2, _class);
 	});
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $author$project$Grid$view = function (params) {
 	var verticalLines = A2(
 		$elm$core$List$map,
@@ -12210,6 +12369,10 @@ var $author$project$Block$Internal$View$view = F2(
 				A2(
 				$author$project$Block$Internal$WidthControl$view,
 				eventAttrsFn($author$project$Block$Model$WidthControl),
+				vm),
+				A2(
+				$author$project$Block$Internal$QuantityControl$view,
+				eventAttrsFn($author$project$Block$Model$AddControl),
 				vm)
 			]);
 		var body = A2(

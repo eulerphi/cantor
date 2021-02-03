@@ -1,5 +1,6 @@
 module Block.Internal.Update exposing (..)
 
+import Block.Internal.QuantityControl as QuantityControl
 import Block.Internal.WidthControl as WidthControl
 import Block.Model exposing (..)
 import Grid
@@ -36,6 +37,12 @@ dragMove newDelta gd bd =
     let
         block_ =
             case bd.state of
+                Dragging AddControl oldDelta ->
+                    QuantityControl.dragMove
+                        (Pair.add oldDelta newDelta)
+                        gd
+                        bd
+
                 Dragging Body oldDelta ->
                     { bd | state = Dragging Body (Pair.add oldDelta newDelta) }
 
