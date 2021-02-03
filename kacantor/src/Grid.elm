@@ -1,9 +1,12 @@
-module Grid exposing (Data, calculateUnit, centeredParams, emptyParams, view)
+module Grid exposing (Data, calculateUnit, centeredParams, emptyParams, forViewData, view)
 
 import Html exposing (..)
 import List
+import Pos exposing (Pos)
+import Size exposing (Size)
 import Svg
 import Svg.Attributes as SvgAttrs
+import ViewData exposing (ViewData)
 
 
 type alias Data =
@@ -13,6 +16,17 @@ type alias Data =
     , height : Int
     , unit : Int
     , isAlternateLine : Int -> Bool
+    }
+
+
+forViewData : Int -> ViewData -> Data
+forViewData unit vd =
+    { x = round vd.pos.x
+    , y = round vd.pos.y
+    , width = round vd.size.width
+    , height = round vd.size.height
+    , unit = unit
+    , isAlternateLine = \_ -> False
     }
 
 

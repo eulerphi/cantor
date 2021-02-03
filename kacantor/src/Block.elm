@@ -2,7 +2,8 @@ module Block exposing (init, initGroup, subscriptions, update, view)
 
 import Block.Internal.Body as Body
 import Block.Internal.Update exposing (..)
-import Block.Internal.View exposing (..)
+import Block.Internal.View as View
+import Block.Internal.ViewModel as ViewModel
 import Block.Internal.WidthControl as WidthControl
 import Block.Model exposing (..)
 import Cmd.Extra
@@ -90,7 +91,7 @@ update context gd msg model =
             )
 
         DragMove delta ->
-            ( model |> Maybe.map (handleDragMove delta)
+            ( model |> Maybe.map (dragMove delta gd)
             , context
             , Cmd.none
             )
@@ -109,6 +110,12 @@ update context gd msg model =
 
         UpdateWidth ->
             ( model |> Maybe.map (endDrag gd)
+            , context
+            , Cmd.none
+            )
+
+        Select id ->
+            ( model |> Maybe.map (\m -> { m | state = Selected })
             , context
             , Cmd.none
             )
@@ -141,6 +148,7 @@ dragConfig envelop =
         [ Draggable.Events.onDragStart <| envelop << StartDrag
         , Draggable.Events.onDragBy <| envelop << DragMove << Pair.map round
         , Draggable.Events.onDragEnd <| envelop EndDrag
+        , Draggable.Events.onClick <| envelop << Select
         ]
 
 
@@ -148,39 +156,32 @@ dragConfig envelop =
 -- VIEW
 
 
-view : Context msg -> Scale -> Data -> Svg.Svg msg
-view context scale bd =
+view : Context msg -> Grid.Data -> Data -> Svg.Svg msg
+view context gd bd =
     let
-        scaleFn =
-            scaleForPart scale bd
-
-        eventsFn =
+        eventAttrsFn =
             eventAttrs context.envelop bd.key
 
-        rectData =
-            toRectData bd
+        vm =
+            ViewModel.forBlock gd bd
 
-        rects =
-            rectData |> List.map (viewRect <| scaleFn Body)
+        elements =
+            View.view eventAttrsFn vm
 
-        controls =
-            [ ListEx.last rectData
-                |> MaybeEx.toMappedList
-                    (viewAddControl (eventsFn AddControl) (scaleFn AddControl))
-            , List.head rectData
-                |> MaybeEx.toMappedList
-                    (viewOffsetControl (eventsFn OffsetControl) (scaleFn OffsetControl))
-            , List.head rectData
-                |> MaybeEx.toMappedList
-                    (WidthControl.view (eventsFn WidthControl) (scaleFn WidthControl) bd)
-            ]
-                |> List.concat
+        -- controls =
+        --     [ ListEx.last rectData
+        --         |> MaybeEx.toMappedList
+        --             (viewAddControl (eventsFn AddControl) (scaleFn AddControl))
+        --     , List.head rectData
+        --         |> MaybeEx.toMappedList
+        --             (viewOffsetControl (eventsFn OffsetControl) (scaleFn OffsetControl))
+        --     , List.head rectData
+        --         |> MaybeEx.toMappedList
+        --             (WidthControl.view (eventsFn WidthControl) (scaleFn WidthControl) bd)
+        --     ]
+        --         |> List.concat
     in
-    Svg.g
-        [ SvgAttrs.class "block" ]
-        [ Svg.g (eventsFn Body) rects
-        , Svg.g [] controls
-        ]
+    Svg.g [ SvgAttrs.class "block" ] elements
 
 
 eventAttrs : (Msg -> msg) -> String -> Part -> List (Svg.Attribute msg)

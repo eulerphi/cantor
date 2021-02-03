@@ -78,10 +78,7 @@ view m =
                 (Grid.view m.grid)
             , Svg.g
                 [ SvgAttrs.id "blocks" ]
-                (Block.Group.view
-                    { dx = m.grid.x, dy = m.grid.y, unit = m.grid.unit }
-                    m.blocks
-                )
+                (Block.Group.view m.grid m.blocks)
             ]
     in
     div

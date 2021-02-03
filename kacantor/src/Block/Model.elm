@@ -15,30 +15,6 @@ type alias Data =
     }
 
 
-type alias Data2 =
-    { key : String
-    , state : State
-    , quantity : Int
-    , offset : Int
-    , width : Int
-    }
-
-
-type alias Bound =
-    { pos : Pos.Pos
-    , width : Float
-    , height : Float
-    }
-
-
-type alias ViewData =
-    { pos : Pos.Pos
-    , header : Maybe Bound
-    , body : Bound
-    , footer : Maybe Bound
-    }
-
-
 type alias Scale =
     { dx : Int
     , dy : Int
@@ -72,6 +48,7 @@ type Msg
     | DragMove ( Int, Int )
     | DragWidthControl ( Int, Int )
     | EndDrag
+    | Select Id
     | UpdateWidth
 
 

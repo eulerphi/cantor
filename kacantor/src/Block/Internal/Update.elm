@@ -1,5 +1,6 @@
 module Block.Internal.Update exposing (..)
 
+import Block.Internal.WidthControl as WidthControl
 import Block.Model exposing (..)
 import Grid
 import MathEx
@@ -16,7 +17,7 @@ endDrag gd bd =
     let
         dragDelta =
             case bd.state of
-                Dragging part delta ->
+                Dragging Body delta ->
                     delta
 
                 _ ->
@@ -30,15 +31,21 @@ endDrag gd bd =
     { bd | x = bd.x + dx, y = bd.y + dy, state = Selected }
 
 
-dragMove : ( Int, Int ) -> Data -> Data
-dragMove newDelta bd =
+dragMove : ( Int, Int ) -> Grid.Data -> Data -> Data
+dragMove newDelta gd bd =
     let
-        state_ =
+        block_ =
             case bd.state of
-                Dragging part oldDelta ->
-                    Dragging part (Pair.add oldDelta newDelta)
+                Dragging Body oldDelta ->
+                    { bd | state = Dragging Body (Pair.add oldDelta newDelta) }
+
+                Dragging WidthControl oldDelta ->
+                    WidthControl.dragMove
+                        (Pair.add oldDelta newDelta)
+                        gd
+                        bd
 
                 _ ->
-                    bd.state
+                    bd
     in
-    { bd | state = state_ }
+    block_

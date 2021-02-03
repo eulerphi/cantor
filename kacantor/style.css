@@ -23,34 +23,34 @@
 
 /* BLOCK: HEADER / FOOTER */
 
-.block-header .grid-rect,
-.block-footer .grid-rect {
+.block .body-top .grid-rect,
+.block .body-bot .grid-rect {
     stroke: rgb(174,138,180);
     fill: rgb(188,26,105);
 }
 
-.block-header .grid-hline,
-.block-footer .grid-hline {
+.block .body-top .grid-hline,
+.block .body-bot .grid-hline {
     stroke: rgb(221,140,180);
 }
 
-.block-header .grid-vline,
-.block-footer .grid-vline {
+.block .body-top .grid-vline,
+.block .body-bot .grid-vline {
     stroke: rgb(174,138,180);
 }
 
 /* BLOCK: BODY */
 
-.block-body .grid-rect {
+.block .body-mid .grid-rect {
     stroke: rgb(101,197,219);
     fill: rgb(25,156,194);
 }
 
-.block-body .grid-hline {
+.block .body-mid .grid-hline {
     stroke: rgb(37,166,201);
 }
 
-.block-body .grid-vline {
+.block .body-mid .grid-vline {
     stroke: rgb(37,166,201);
 }
 
