@@ -1,8 +1,9 @@
 module Block.Model exposing (..)
 
 import Delta exposing (Delta)
+import DragState exposing (DragState)
 import Draggable
-import Pos
+import Pos exposing (Pos)
 
 
 type alias Data =
@@ -16,10 +17,6 @@ type alias Data =
     }
 
 
-type alias BlockWidth =
-    Int
-
-
 type alias Scale =
     { dx : Int
     , dy : Int
@@ -29,16 +26,15 @@ type alias Scale =
 
 type Part
     = Body
-    | AddControl
+    | QuantityControl
     | OffsetControl
     | WidthControl
 
 
 type State
     = Idle
-    | Dragging Part ( Int, Int )
+    | Dragging Part DragState
     | Selected
-    | DraggingWidthControl Delta
 
 
 type alias Group msg =
@@ -51,11 +47,9 @@ type alias Group msg =
 type Msg
     = DragMsg (Draggable.Msg Id)
     | StartDrag Id
-    | DragMove ( Int, Int )
-    | DragWidthControl ( Int, Int )
+    | DragMove Delta
     | EndDrag
     | Select Id
-    | UpdateWidth
 
 
 type alias Context msg =

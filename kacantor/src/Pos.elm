@@ -59,8 +59,8 @@ addY p1 p2 =
     }
 
 
-addDelta : Pos -> Delta -> Pos
-addDelta p1 delta =
+addDelta : Delta -> Pos -> Pos
+addDelta delta p1 =
     { x = p1.x + delta.dx
     , y = p1.y + delta.dy
     }

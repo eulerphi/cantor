@@ -2,7 +2,6 @@ module Main exposing (..)
 
 import Block
 import Block.Group
-import Block.Model
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -21,7 +20,7 @@ import Tuple
 
 
 type alias Model =
-    { blocks : Block.Model.Group Msg
+    { blocks : Block.Group Msg
     , grid : Grid.Data
     , margin : Int
     , size : ( Int, Int )
@@ -32,7 +31,7 @@ type Msg
     = NoOp
     | SizeChanged ( Int, Int )
     | WindowResized
-    | BlockMsg Block.Model.Msg
+    | BlockMsg Block.Msg
 
 
 init : () -> ( Model, Cmd Msg )
@@ -42,8 +41,8 @@ init _ =
             { blocks =
                 Block.initGroup
                     BlockMsg
-                    [ Block.init { key = "1", xy = ( 5, 5 ), quantity = 43, width = 10 }
-                    , Block.init { key = "3", xy = ( 15, 15 ), quantity = 36, width = 10 }
+                    [ Block.initBlock { key = "1", xy = ( 5, 5 ), quantity = 43, width = 10 }
+                    , Block.initBlock { key = "3", xy = ( 15, 15 ), quantity = 36, width = 10 }
                     ]
             , grid = Grid.emptyParams
             , margin = 20

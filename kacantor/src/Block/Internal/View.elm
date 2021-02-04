@@ -1,11 +1,15 @@
-module Block.Internal.View exposing (..)
+module Block.Internal.View exposing (view)
 
-import Block.Internal.Body as Body exposing (Body, updateDragMoveDelta)
-import Block.Internal.QuantityControl as QuantityControl
-import Block.Internal.ViewModel exposing (ViewModel)
-import Block.Internal.WidthControl as WidthControl
-import Block.Model as Model exposing (Part(..))
+import Block.Internal.Controls.Body as BodyControl
+import Block.Internal.Controls.Quantity as QuantityControl
+import Block.Internal.Controls.Width as WidthControl
+import Block.Internal.ViewModel as ViewModel exposing (ViewModel)
+import Block.Internal.ViewModel.Body as Body exposing (BodyViewModel, updateDragMoveDelta)
+import Block.Model as Model exposing (..)
+import Draggable
+import Draggable.Events
 import Grid
+import Maybe.Extra
 import MaybeEx
 import Pair
 import Svg exposing (Attribute, Svg)
@@ -17,25 +21,51 @@ import ViewData exposing (ViewData)
 -- RECT
 
 
-view :
+view : Context msg -> Grid.Data -> Data -> Svg.Svg msg
+view context gd bd =
+    let
+        eventAttrsFn =
+            eventAttrs context.envelop bd.key
+
+        vm =
+            ViewModel.forBlock gd bd
+
+        elements =
+            viewInternal eventAttrsFn vm
+    in
+    Svg.g [ SvgAttrs.class "block" ] elements
+
+
+viewInternal :
     (Model.Part -> List (Attribute msg))
     -> ViewModel
     -> List (Svg msg)
-view eventAttrsFn vm =
+viewInternal eventAttrsFn vm =
     let
         body =
-            viewBody (eventAttrsFn Model.Body) vm
+            BodyControl.view (eventAttrsFn Model.Body) vm
 
         controls =
             [ WidthControl.view (eventAttrsFn Model.WidthControl) vm
-            , QuantityControl.view (eventAttrsFn Model.AddControl) vm
+            , QuantityControl.view (eventAttrsFn Model.QuantityControl) vm
             ]
+                |> Maybe.Extra.values
     in
     body :: controls
 
 
+eventAttrs : (Msg -> msg) -> String -> Part -> List (Svg.Attribute msg)
+eventAttrs envelop key part =
+    let
+        id =
+            Id key part
+    in
+    Draggable.mouseTrigger id (envelop << DragMsg)
+        :: Draggable.touchTriggers id (envelop << DragMsg)
+
+
 viewBody : List (Attribute msg) -> ViewModel -> Svg msg
-viewBody eventAttrs vm =
+viewBody attrs vm =
     let
         viewFn =
             \mvd -> mvd |> MaybeEx.toMappedList (viewRect vm)
@@ -49,7 +79,7 @@ viewBody eventAttrs vm =
             viewRect vm vm.body.mid :: optional
     in
     Svg.g
-        (SvgAttrs.class "block-body" :: eventAttrs)
+        (SvgAttrs.class "block-body" :: attrs)
         elements
 
 

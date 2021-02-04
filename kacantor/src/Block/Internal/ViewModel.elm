@@ -1,14 +1,17 @@
 module Block.Internal.ViewModel exposing (..)
 
-import Block.Internal.Body as Body exposing (Body)
+import Block.Internal.ViewModel.Body as BodyViewModel exposing (BodyViewModel)
 import Block.Model as Model
+import Delta
+import DragState exposing (DragState)
 import Grid
 import Pos exposing (Pos)
 import Size exposing (Size)
+import ViewData exposing (ViewData)
 
 
 type alias ViewModel =
-    { body : Body
+    { body : BodyViewModel
     , block :
         { pos : Pos
         , size : Size
@@ -28,24 +31,25 @@ forBlock gd bd =
     let
         delta =
             case bd.state of
-                Model.Dragging Model.Body ( dx, dy ) ->
-                    ( dx, dy )
+                Model.Dragging Model.Body dragState ->
+                    dragState.total
 
                 _ ->
-                    ( 0, 0 )
+                    Delta.none
 
         pos =
             Pos.fromInt ( bd.x, bd.y )
                 |> Pos.scaleByInt gd.unit
-                |> Pos.add3 (Pos.fromInt ( gd.x, gd.y )) (Pos.fromInt delta)
+                |> Pos.add (Pos.fromInt ( gd.x, gd.y ))
+                |> Pos.addDelta delta
 
         body =
-            Body.toBody gd bd
+            BodyViewModel.forBlock gd bd
     in
     { body = body
     , block =
         { pos = pos
-        , size = Body.size body
+        , size = BodyViewModel.size body
         , state = bd.state
         , width = bd.width
         }

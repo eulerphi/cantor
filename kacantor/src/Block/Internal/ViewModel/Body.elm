@@ -1,6 +1,7 @@
-module Block.Internal.Body exposing (..)
+module Block.Internal.ViewModel.Body exposing (..)
 
 import Block.Model exposing (..)
+import Delta
 import Grid
 import MaybeEx
 import Pair
@@ -11,14 +12,14 @@ import Svg.Attributes as SvgAttrs
 import ViewData exposing (ViewData)
 
 
-type alias Body =
+type alias BodyViewModel =
     { top : Maybe ViewData
     , mid : ViewData
     , bot : Maybe ViewData
     }
 
 
-size : Body -> Size
+size : BodyViewModel -> Size
 size body =
     let
         getSizeOrNone =
@@ -33,8 +34,8 @@ size body =
         (getSizeOrNone body.bot)
 
 
-toBody : Grid.Data -> Block.Model.Data -> Body
-toBody gd bd =
+forBlock : Grid.Data -> Block.Model.Data -> BodyViewModel
+forBlock gd bd =
     let
         ( topWidth, topHeight ) =
             if bd.headerOffset > 0 && bd.width > bd.headerOffset then
@@ -76,7 +77,7 @@ toBody gd bd =
         |> filterEmpty
 
 
-filterEmpty : Body -> Body
+filterEmpty : BodyViewModel -> BodyViewModel
 filterEmpty body =
     { top = body.top |> MaybeEx.filter ViewData.hasSize
     , mid = body.mid
@@ -84,7 +85,7 @@ filterEmpty body =
     }
 
 
-scale : Grid.Data -> Body -> Body
+scale : Grid.Data -> BodyViewModel -> BodyViewModel
 scale gd body =
     let
         scaleFn =
