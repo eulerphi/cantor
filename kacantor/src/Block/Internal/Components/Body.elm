@@ -1,7 +1,8 @@
-module Block.Internal.Controls.Body exposing (..)
+module Block.Internal.Components.Body exposing (..)
 
-import Block.Internal.ViewModel exposing (ViewModel)
-import Block.Model exposing (..)
+import Block.Internal.Component as Component exposing (Component)
+import Block.Internal.Types exposing (..)
+import Block.Internal.View.Model exposing (ViewModel)
 import Grid
 import List
 import Maybe.Extra
@@ -10,10 +11,10 @@ import Svg.Attributes as SvgAttrs
 import ViewData exposing (ViewData)
 
 
-dragMove : Grid.Data -> Data -> Data
+dragMove : Grid.Data -> Block -> Block
 dragMove gd bd =
     case bd.state of
-        Dragging Body dragState ->
+        Dragging Component.Body dragState ->
             bd
 
         _ ->

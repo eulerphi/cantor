@@ -1,8 +1,9 @@
-module Block.Internal.Controls.Quantity exposing (..)
+module Block.Internal.Components.Quantity exposing (..)
 
-import Block.Internal.ViewModel as ViewModel exposing (ViewModel)
-import Block.Internal.ViewModel.Body
-import Block.Model exposing (..)
+import Block.Internal.Component as Component exposing (Component)
+import Block.Internal.Types exposing (..)
+import Block.Internal.View.BodyModel
+import Block.Internal.View.Model as ViewModel exposing (ViewModel)
 import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Grid
@@ -14,10 +15,10 @@ import Svg
 import Svg.Attributes as SvgAttrs
 
 
-dragMove : Grid.Data -> Data -> Data
+dragMove : Grid.Data -> Block -> Block
 dragMove gd bd =
     case bd.state of
-        Dragging QuantityControl dragState ->
+        Dragging Component.Quantity dragState ->
             bd
 
         _ ->
@@ -61,7 +62,7 @@ dragMove gd bd =
 view : List (Svg.Attribute msg) -> ViewModel -> Maybe (Svg.Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging QuantityControl _ ->
+        Dragging Component.Quantity _ ->
             viewControl attrs vm
 
         Selected ->

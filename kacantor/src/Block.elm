@@ -1,28 +1,26 @@
-module Block exposing (Block(..), Context(..), Group, Msg(..), initBlock, initContext, initGroup, subscriptions, update, view)
+module Block exposing (Block(..), Context(..), Msg(..), context, init, subscriptions, update, view)
 
+import Block.Internal.Types as Model
 import Block.Internal.Update as Update
 import Block.Internal.View as View
-import Block.Model as Model
 import Draggable
 import Grid
 import Html exposing (..)
+import Pos
 import Svg
 import Tuple
 
 
+
+-- TYPES
+
+
 type Block
-    = Block Model.Data
+    = Block Model.Block
 
 
 type Context msg
     = Context (Model.Context msg)
-
-
-type alias Group msg =
-    { active : Maybe Block
-    , context : Context msg
-    , rest : List Block
-    }
 
 
 type Msg
@@ -33,39 +31,32 @@ type Msg
 -- INIT
 
 
-initBlock :
+init :
     { key : String
     , xy : ( Int, Int )
     , quantity : Int
     , width : Int
     }
     -> Block
-initBlock input =
+init input =
     Block
         { key = input.key
         , state = Model.Idle
         , x = Tuple.first input.xy
         , y = Tuple.second input.xy
+        , pos = Pos.fromInt input.xy
         , quantity = input.quantity
         , headerOffset = 0
         , width = input.width
         }
 
 
-initContext : (Msg -> msg) -> Context msg
-initContext envelope =
+context : (Msg -> msg) -> Context msg
+context envelope =
     Context
         { drag = Draggable.init
         , envelop = \submsg -> envelope (Msg submsg)
         }
-
-
-initGroup : (Msg -> msg) -> List Block -> Group msg
-initGroup envelope blocks =
-    { active = Nothing
-    , context = initContext envelope
-    , rest = blocks
-    }
 
 
 
@@ -98,7 +89,7 @@ update (Context ctx) gd (Msg msg) block =
         block_ =
             bd_ |> Maybe.map (\b -> Block b)
     in
-    ( block_, Context ctx, cmd_ )
+    ( block_, Context ctx_, cmd_ )
 
 
 

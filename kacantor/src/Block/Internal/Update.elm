@@ -1,9 +1,10 @@
 module Block.Internal.Update exposing (update)
 
-import Block.Internal.Controls.Quantity as QuantityControl
-import Block.Internal.Controls.Width as WidthControl
-import Block.Internal.ViewModel as ViewModel exposing (ViewModel)
-import Block.Model exposing (..)
+import Block.Internal.Component as Component exposing (Component)
+import Block.Internal.Components.Quantity as QuantityControl
+import Block.Internal.Components.Width as WidthControl
+import Block.Internal.Types exposing (..)
+import Block.Internal.View.Model as ViewModel exposing (ViewModel)
 import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Draggable
@@ -18,8 +19,8 @@ update :
     Context msg
     -> Grid.Data
     -> Msg
-    -> Maybe Data
-    -> ( Maybe Data, Context msg, Cmd msg )
+    -> Maybe Block
+    -> ( Maybe Block, Context msg, Cmd msg )
 update context gd msg model =
     case msg of
         DragMsg subMsg ->
@@ -71,7 +72,7 @@ dragConfig envelop =
         ]
 
 
-startDrag : Id -> Grid.Data -> Data -> Data
+startDrag : Id -> Grid.Data -> Block -> Block
 startDrag id gd bd =
     bd
 
@@ -96,12 +97,12 @@ startDrag id gd bd =
 --     }
 
 
-endDrag : Grid.Data -> Data -> Data
+endDrag : Grid.Data -> Block -> Block
 endDrag gd bd =
     let
         dragDelta =
             case bd.state of
-                Dragging Body dragState ->
+                Dragging Component.Body dragState ->
                     dragState.total
 
                 _ ->
@@ -115,7 +116,7 @@ endDrag gd bd =
     { bd | x = bd.x + dx, y = bd.y + dy, state = Selected }
 
 
-dragMove : ( Int, Int ) -> Grid.Data -> Data -> Data
+dragMove : ( Int, Int ) -> Grid.Data -> Block -> Block
 dragMove newDelta gd bd =
     bd
 

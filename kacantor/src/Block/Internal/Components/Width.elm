@@ -1,8 +1,9 @@
-module Block.Internal.Controls.Width exposing (..)
+module Block.Internal.Components.Width exposing (..)
 
-import Block.Internal.ViewModel as ViewModel exposing (ViewModel)
-import Block.Internal.ViewModel.Body
-import Block.Model exposing (..)
+import Block.Internal.Component as Component exposing (Component)
+import Block.Internal.Types exposing (..)
+import Block.Internal.View.BodyModel
+import Block.Internal.View.Model as ViewModel exposing (ViewModel)
 import Delta exposing (Delta)
 import Grid
 import MathEx
@@ -21,10 +22,10 @@ updateDragMoveDelta oldDelta newDelta =
     Pair.add oldDelta newDelta
 
 
-updateWidth : Grid.Data -> Data -> Data
+updateWidth : Grid.Data -> Block -> Block
 updateWidth gd bd =
     case bd.state of
-        Dragging WidthControl delta ->
+        Dragging Component.Width delta ->
             bd
 
         _ ->
@@ -56,7 +57,7 @@ updateWidth gd bd =
 --             bd
 
 
-dragMove : ( Int, Int ) -> Grid.Data -> Data -> Data
+dragMove : ( Int, Int ) -> Grid.Data -> Block -> Block
 dragMove ( dx, dy ) gd bd =
     bd
 
@@ -83,7 +84,7 @@ dragMove ( dx, dy ) gd bd =
 view : List (Svg.Attribute msg) -> ViewModel -> Maybe (Svg.Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging WidthControl _ ->
+        Dragging Component.Width _ ->
             Just (viewControl attrs vm)
 
         Selected ->

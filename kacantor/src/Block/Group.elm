@@ -1,85 +1,97 @@
-module Block.Group exposing (..)
+module Block.Group exposing (Group, init, subscriptions, update, view)
 
-import Block
-import Block.Model exposing (..)
-import Draggable
+import Block exposing (Block(..), Context, Msg(..))
+import Block.Internal.Types as Types
 import Grid
-import MaybeEx
+import Maybe.Extra as MaybeEx
 import Svg
 
 
+type alias Group msg =
+    { active : Maybe Block
+    , context : Context msg
+    , rest : List Block
+    }
+
+
+init : (Msg -> msg) -> List Block -> Group msg
+init envelope blocks =
+    { active = Nothing
+    , context = Block.context envelope
+    , rest = blocks
+    }
+
+
+subscriptions : Group msg -> Sub msg
+subscriptions group =
+    Block.subscriptions group.context
+
+
+update : Grid.Data -> Msg -> Group msg -> ( Group msg, Cmd msg )
+update gd msg model =
+    case msg of
+        Msg (Types.StartDrag id) ->
+            let
+                ( active_, rest_ ) =
+                    partition id ( model.active, model.rest )
+
+                ( active__, context_, cmd_ ) =
+                    Block.update model.context gd msg active_
+            in
+            ( { model | active = active__, context = context_, rest = rest_ }, cmd_ )
+
+        Msg (Types.Select id) ->
+            let
+                ( active_, rest_ ) =
+                    partition id ( model.active, model.rest )
+
+                ( active__, context_, cmd_ ) =
+                    Block.update model.context gd msg active_
+            in
+            ( { model | active = active__, context = context_, rest = rest_ }, cmd_ )
+
+        _ ->
+            let
+                ( active_, context_, cmd_ ) =
+                    Block.update model.context gd msg model.active
+            in
+            ( { model | active = active_, context = context_ }, cmd_ )
+
+
+view : Grid.Data -> Group msg -> List (Svg.Svg msg)
+view gd group =
+    let
+        viewBlock =
+            Block.view group.context gd
+
+        idleBlocks =
+            group.rest |> List.map viewBlock
+
+        activeBlock =
+            group.active |> Maybe.map viewBlock |> MaybeEx.toList
+    in
+    idleBlocks ++ activeBlock
+
+
 partition :
-    Id
-    -> ( Maybe Data, List Data )
-    -> ( Maybe Data, List Data )
+    Types.Id
+    -> ( Maybe Block, List Block )
+    -> ( Maybe Block, List Block )
 partition id ( active, rest ) =
     case active of
-        Just data ->
-            if data.key == id.key then
+        Just (Block bd) ->
+            if bd.key == id.key then
                 ( active, rest )
 
             else
-                partition id ( Nothing, rest ++ [ { data | state = Idle } ] )
+                partition id ( Nothing, rest ++ [ Block { bd | state = Types.Idle } ] )
 
         Nothing ->
             let
                 ( matches, rest_ ) =
-                    List.partition (\bd -> bd.key == id.key) rest
+                    List.partition (\(Block bd) -> bd.key == id.key) rest
 
                 match =
                     List.head matches
             in
             ( match, rest_ )
-
-
-subscriptions : Block.Group msg -> Sub msg
-subscriptions group =
-    Block.subscriptions group.context
-
-
-update : Grid.Data -> Block.Msg -> Block.Group msg -> ( Block.Group msg, Cmd msg )
-update gd msg model =
-    ( model, Cmd.none )
-
-
-
--- case msg of
---     StartDrag id ->
---         let
---             ( active_, rest_ ) =
---                 partition id ( model.active, model.rest )
---             ( active__, context_, cmd_ ) =
---                 Block.update model.context gd msg active_
---         in
---         ( { model | active = active__, context = context_, rest = rest_ }, cmd_ )
---     Select id ->
---         let
---             ( active_, rest_ ) =
---                 partition id ( model.active, model.rest )
---             ( active__, context_, cmd_ ) =
---                 Block.update model.context gd msg active_
---         in
---         ( { model | active = active__, context = context_, rest = rest_ }, cmd_ )
---     _ ->
---         let
---             ( active_, context_, cmd_ ) =
---                 Block.update model.context gd msg model.active
---         in
---         ( { model | active = active_, context = context_ }, cmd_ )
-
-
-view : Grid.Data -> Block.Group msg -> List (Svg.Svg msg)
-view gd group =
-    []
-
-
-
--- let
---     viewBlock =
---         Block.view group.context gd
---     idleBlocks =
---         group.rest |> List.map viewBlock
---     activeBlock =
---         group.active |> Maybe.map viewBlock |> MaybeEx.toList
--- in
--- idleBlocks ++ activeBlock

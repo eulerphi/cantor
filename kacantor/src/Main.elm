@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Block
-import Block.Group
+import Block.Group as Group exposing (Group)
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -20,7 +20,7 @@ import Tuple
 
 
 type alias Model =
-    { blocks : Block.Group Msg
+    { blocks : Group Msg
     , grid : Grid.Data
     , margin : Int
     , size : ( Int, Int )
@@ -39,10 +39,10 @@ init _ =
     let
         m =
             { blocks =
-                Block.initGroup
+                Group.init
                     BlockMsg
-                    [ Block.initBlock { key = "1", xy = ( 5, 5 ), quantity = 43, width = 10 }
-                    , Block.initBlock { key = "3", xy = ( 15, 15 ), quantity = 36, width = 10 }
+                    [ Block.init { key = "1", xy = ( 5, 5 ), quantity = 43, width = 10 }
+                    , Block.init { key = "3", xy = ( 15, 15 ), quantity = 36, width = 10 }
                     ]
             , grid = Grid.emptyParams
             , margin = 20
@@ -77,7 +77,7 @@ view m =
                 (Grid.view m.grid)
             , Svg.g
                 [ SvgAttrs.id "blocks" ]
-                (Block.Group.view m.grid m.blocks)
+                (Group.view m.grid m.blocks)
             ]
     in
     div
@@ -145,7 +145,7 @@ update msg m =
         BlockMsg subMsg ->
             let
                 ( blocks_, cmd_ ) =
-                    Block.Group.update m.grid subMsg m.blocks
+                    Group.update m.grid subMsg m.blocks
             in
             ( { m | blocks = blocks_ }, cmd_ )
 
