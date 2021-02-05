@@ -4,12 +4,12 @@ import Delta exposing (Delta)
 import Pos exposing (Pos)
 
 
-type alias DragState =
-    { start : Pos
-    , unit : Float
-    , addFn : AddFunction
-    , currentUnits : Delta
-    , total : Delta
+type alias DragState a =
+    { addFn : AddFunction
+    , data : a
+    , delta : DragDelta
+    , pos : DragPos
+    , start : Pos
     }
 
 
@@ -17,28 +17,56 @@ type alias AddFunction =
     Delta -> Delta -> Delta
 
 
-init : Pos -> Float -> AddFunction -> DragState
-init start unit addFn =
-    { start = start
-    , unit = unit
-    , addFn = addFn
-    , currentUnits = Delta.none
-    , total = Delta.none
+type alias DragPos =
+    { current : Pos
+    , total : Pos
     }
 
 
-add : Delta -> DragState -> DragState
+type alias DragDelta =
+    { current : Delta
+    , total : Delta
+    }
+
+
+init :
+    { start : Pos
+    , data : a
+    , addFn : AddFunction
+    }
+    -> DragState a
+init input =
+    { addFn = input.addFn
+    , data = input.data
+    , delta =
+        { current = Delta.none
+        , total = Delta.none
+        }
+    , pos =
+        { current = input.start
+        , total = input.start
+        }
+    , start = input.start
+    }
+
+
+add : Delta -> DragState a -> DragState a
 add delta state =
     let
         total_ =
-            state.addFn state.total delta
+            Delta.add state.delta.total delta
 
-        currentUnits_ =
-            total_
-                |> Delta.roundNear state.unit
-                |> Delta.div state.unit
+        current_ =
+            state.addFn state.delta.total delta
+
+        delta_ =
+            { current = current_
+            , total = total_
+            }
+
+        pos_ =
+            { current = Pos.addDelta current_ state.start
+            , total = Pos.addDelta total_ state.start
+            }
     in
-    { state
-        | currentUnits = currentUnits_
-        , total = total_
-    }
+    { state | delta = delta_, pos = pos_ }

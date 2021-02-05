@@ -1,6 +1,7 @@
 module Pos exposing (..)
 
 import Delta exposing (Delta)
+import MathEx
 
 
 type alias Pos =
@@ -83,6 +84,18 @@ addDeltaY p1 delta =
 map : (Float -> Float) -> Pos -> Pos
 map fn pos =
     { x = fn pos.x, y = fn pos.y }
+
+
+roundNear :
+    { pos : Pos
+    , unit : Float
+    }
+    -> Pos
+    -> Pos
+roundNear input pos =
+    { x = input.pos.x + MathEx.roundNear input.unit (pos.x - input.pos.x)
+    , y = input.pos.y + MathEx.roundNear input.unit (pos.y - input.pos.y)
+    }
 
 
 scale : Float -> Pos -> Pos

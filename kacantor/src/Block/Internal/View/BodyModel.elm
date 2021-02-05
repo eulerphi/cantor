@@ -5,10 +5,8 @@ import Delta
 import Grid
 import MaybeEx
 import Pair
-import Pos
+import Pos exposing (Pos)
 import Size exposing (Size)
-import Svg
-import Svg.Attributes as SvgAttrs
 import ViewData exposing (ViewData)
 
 
@@ -74,7 +72,16 @@ forBlock gd bd =
     in
     { top = Just top, mid = mid, bot = Just bot }
         |> scale gd
+        |> addPos bd.pos
         |> filterEmpty
+
+
+addPos : Pos -> BodyModel -> BodyModel
+addPos pos body =
+    { top = body.top |> Maybe.map (ViewData.addPos pos)
+    , mid = body.mid |> ViewData.addPos pos
+    , bot = body.bot |> Maybe.map (ViewData.addPos pos)
+    }
 
 
 filterEmpty : BodyModel -> BodyModel

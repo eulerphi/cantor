@@ -1,9 +1,9 @@
 module Block.Internal.View exposing (view)
 
 import Block.Internal.Component as Component exposing (Component)
-import Block.Internal.Components.Body as BodyComponent
-import Block.Internal.Components.Quantity as QuantityComponent
-import Block.Internal.Components.Width as WidthComponent
+import Block.Internal.Component.Body as BodyComponent
+import Block.Internal.Component.Quantity as QuantityComponent
+import Block.Internal.Component.Width as WidthComponent
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model as ViewModel
 import Draggable

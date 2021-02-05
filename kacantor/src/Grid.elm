@@ -2,8 +2,6 @@ module Grid exposing (Data, calculateUnit, centeredParams, emptyParams, forViewD
 
 import Html exposing (..)
 import List
-import Pos exposing (Pos)
-import Size exposing (Size)
 import Svg
 import Svg.Attributes as SvgAttrs
 import ViewData exposing (ViewData)

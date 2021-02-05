@@ -1,6 +1,6 @@
 module Block exposing (Block(..), Context(..), Msg(..), context, init, subscriptions, update, view)
 
-import Block.Internal.Types as Model
+import Block.Internal.Types as Types
 import Block.Internal.Update as Update
 import Block.Internal.View as View
 import Draggable
@@ -8,7 +8,6 @@ import Grid
 import Html exposing (..)
 import Pos
 import Svg
-import Tuple
 
 
 
@@ -16,15 +15,15 @@ import Tuple
 
 
 type Block
-    = Block Model.Block
+    = Block Types.Block
 
 
 type Context msg
-    = Context (Model.Context msg)
+    = Context (Types.Context msg)
 
 
 type Msg
-    = Msg Model.Msg
+    = Msg Types.Msg
 
 
 
@@ -33,7 +32,7 @@ type Msg
 
 init :
     { key : String
-    , xy : ( Int, Int )
+    , pos : ( Int, Int )
     , quantity : Int
     , width : Int
     }
@@ -41,10 +40,8 @@ init :
 init input =
     Block
         { key = input.key
-        , state = Model.Idle
-        , x = Tuple.first input.xy
-        , y = Tuple.second input.xy
-        , pos = Pos.fromInt input.xy
+        , state = Types.Idle
+        , pos = Pos.fromInt input.pos
         , quantity = input.quantity
         , headerOffset = 0
         , width = input.width
@@ -65,7 +62,7 @@ context envelope =
 
 subscriptions : Context msg -> Sub msg
 subscriptions (Context ctx) =
-    Draggable.subscriptions (ctx.envelop << Model.DragMsg) ctx.drag
+    Draggable.subscriptions (ctx.envelop << Types.DragMsg) ctx.drag
 
 
 

@@ -1,8 +1,9 @@
 module Block.Internal.Update exposing (update)
 
 import Block.Internal.Component as Component exposing (Component)
-import Block.Internal.Components.Quantity as QuantityControl
-import Block.Internal.Components.Width as WidthControl
+import Block.Internal.Component.Body as Body
+import Block.Internal.Component.Quantity as QuantityControl
+import Block.Internal.Component.Width as WidthControl
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model as ViewModel exposing (ViewModel)
 import Delta exposing (Delta)
@@ -40,7 +41,7 @@ update context gd msg model =
             )
 
         DragMove delta ->
-            ( model
+            ( model |> Maybe.map (dragMove delta gd)
             , context
             , Cmd.none
             )
@@ -74,54 +75,86 @@ dragConfig envelop =
 
 startDrag : Id -> Grid.Data -> Block -> Block
 startDrag id gd bd =
-    bd
+    let
+        vm =
+            ViewModel.forBlock gd bd
+
+        drag =
+            case id.part of
+                Component.Body ->
+                    Body.startDrag vm bd
+
+                Component.Quantity ->
+                    QuantityControl.startDrag vm bd
+
+                _ ->
+                    Body.startDrag vm bd
+    in
+    { bd | state = Dragging id.part drag }
 
 
 
--- let
---     vm =
---         ViewModel.forBlock gd bd
---     dragState =
---         case id.part of
---             Body ->
---                 initBodyDragState vm bd
---             _ ->
---                 initBodyDragState vm bd
--- in
 -- { bd | state = Dragging id.part dragState }
--- initBodyDragState : ViewModel -> Data -> DragState
--- initBodyDragState vm bd =
---     { start = Pos.init ( 0, 0 )
---     , current = Delta.none
---     , total = Delta.none
---     }
+
+
+dragMove : Delta -> Grid.Data -> Block -> Block
+dragMove newDelta gd bd =
+    case bd.state of
+        Dragging component drag ->
+            let
+                drag_ =
+                    DragState.add newDelta drag
+
+                bd_ =
+                    case component of
+                        Component.Body ->
+                            Body.dragMove drag_ gd bd
+
+                        Component.Quantity ->
+                            QuantityControl.dragMove drag_ gd bd
+
+                        _ ->
+                            bd
+            in
+            { bd_ | state = Dragging component drag_ }
+
+        _ ->
+            bd
 
 
 endDrag : Grid.Data -> Block -> Block
 endDrag gd bd =
-    let
-        dragDelta =
-            case bd.state of
-                Dragging Component.Body dragState ->
-                    dragState.total
+    case bd.state of
+        Dragging component drag ->
+            let
+                bd_ =
+                    case component of
+                        Component.Body ->
+                            Body.dragEnd drag gd bd
 
-                _ ->
-                    Delta.none
+                        _ ->
+                            bd
+            in
+            { bd_ | state = Selected }
 
-        ( dx, dy ) =
-            dragDelta
-                |> Delta.roundNear (toFloat gd.unit)
-                |> Delta.map (\v -> round <| v / toFloat gd.unit)
-    in
-    { bd | x = bd.x + dx, y = bd.y + dy, state = Selected }
-
-
-dragMove : ( Int, Int ) -> Grid.Data -> Block -> Block
-dragMove newDelta gd bd =
-    bd
+        _ ->
+            bd
 
 
 
+-- let
+--     dragDelta =
+--         case bd.state of
+--             Dragging Component.Body drag ->
+--                 drag.delta.total
+--             _ ->
+--                 Delta.none
+--     ( dx, dy ) =
+--         dragDelta
+--             |> Delta.roundNear (toFloat gd.unit)
+--             |> Delta.map (\v -> round <| v / toFloat gd.unit)
+-- in
+-- { bd | x = bd.x + dx, y = bd.y + dy, state = Selected }
 -- let
 --     block_ =
 --         case bd.state of

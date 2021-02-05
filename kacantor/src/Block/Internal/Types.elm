@@ -11,8 +11,6 @@ type alias Block =
     { key : String
     , state : State
     , pos : Pos
-    , x : Int
-    , y : Int
     , quantity : Int
     , headerOffset : Int
     , width : Int
@@ -41,5 +39,5 @@ type Msg
 
 type State
     = Idle
-    | Dragging Component DragState
+    | Dragging Component (DragState Block)
     | Selected

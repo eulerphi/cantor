@@ -41,8 +41,8 @@ init _ =
             { blocks =
                 Group.init
                     BlockMsg
-                    [ Block.init { key = "1", xy = ( 5, 5 ), quantity = 43, width = 10 }
-                    , Block.init { key = "3", xy = ( 15, 15 ), quantity = 36, width = 10 }
+                    [ Block.init { key = "1", pos = ( 0, 0 ), quantity = 43, width = 10 }
+                    , Block.init { key = "3", pos = ( 0, 0 ), quantity = 36, width = 10 }
                     ]
             , grid = Grid.emptyParams
             , margin = 20

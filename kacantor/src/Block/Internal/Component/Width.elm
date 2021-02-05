@@ -1,4 +1,4 @@
-module Block.Internal.Components.Width exposing (..)
+module Block.Internal.Component.Width exposing (..)
 
 import Block.Internal.Component as Component exposing (Component)
 import Block.Internal.Types exposing (..)

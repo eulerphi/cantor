@@ -22,12 +22,9 @@ add val vd =
     }
 
 
-addPos :
-    { v | pos : Pos }
-    -> ViewData
-    -> ViewData
-addPos val vd =
-    { vd | pos = Pos.add val.pos vd.pos }
+addPos : Pos -> ViewData -> ViewData
+addPos pos vd =
+    { vd | pos = Pos.add vd.pos pos }
 
 
 hasSize : ViewData -> Bool
