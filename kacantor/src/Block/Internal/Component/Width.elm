@@ -1,14 +1,11 @@
 module Block.Internal.Component.Width exposing (..)
 
-import Block.Internal.Component as Component exposing (Component)
+import Block.Internal.Component as Component
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.BodyModel
-import Block.Internal.View.Model as ViewModel exposing (ViewModel)
+import Block.Internal.View.Model exposing (ViewModel)
 import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Grid
-import MathEx
-import Pair
 import Pos exposing (Pos)
 import Svg
 import Svg.Attributes as SvgAttrs
@@ -34,31 +31,28 @@ view attrs vm =
 viewControl : List (Svg.Attribute msg) -> ViewModel -> Svg.Svg msg
 viewControl attrs vm =
     let
-        { radius, pos, cpos } =
+        { radius, rootpos, cpos, guideVisible } =
             case vm.block.state of
                 Dragging Component.Width drag ->
                     { radius = round (vm.grid.unit / 1.2)
-                    , pos =
-                        drag.start
-                            |> Pos.addDelta drag.delta.current
-                    , cpos =
-                        drag.start
-                            |> circlePos vm.grid.unit vm.block.size.height
-                            |> Pos.addDelta drag.delta.total
+                    , rootpos = drag.start |> Pos.addDelta drag.delta.current
+                    , cpos = drag.start2 |> Pos.addDelta drag.delta.total
+                    , guideVisible = True
                     }
 
                 _ ->
                     let
-                        p =
+                        root =
                             rootPos vm
                     in
                     { radius = round (vm.grid.unit / 1.5)
-                    , pos = p
-                    , cpos = p |> circlePos vm.grid.unit vm.block.size.height
+                    , rootpos = root
+                    , cpos = root |> circlePos vm
+                    , guideVisible = False
                     }
 
         vbarP1 =
-            pos
+            rootpos
 
         vbarP2 =
             vbarP1 |> Pos.addDelta (Delta.init ( 0, vm.block.size.height ))
@@ -70,9 +64,13 @@ viewControl attrs vm =
             Pos.init ( cpos.x, hbarP1.y )
 
         ( guideP1, guideP2 ) =
-            ( Pos.init ( cpos.x, vm.grid.pos.y )
-            , Pos.init ( cpos.x, vm.grid.pos.y + vm.grid.size.height )
-            )
+            if guideVisible then
+                ( Pos cpos.x vm.grid.pos.y
+                , Pos cpos.x (vm.grid.pos.y + vm.grid.size.height)
+                )
+
+            else
+                ( Pos 0 0, Pos 0 0 )
     in
     Svg.g
         (SvgAttrs.class "width-control" :: attrs)
@@ -90,7 +88,7 @@ viewControl attrs vm =
             , SvgAttrs.y1 <| Pos.toYString vbarP1
             , SvgAttrs.x2 <| Pos.toXString vbarP2
             , SvgAttrs.y2 <| Pos.toYString vbarP2
-            , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
+            , SvgAttrs.strokeWidth <| String.fromFloat <| barWidth
             ]
             []
         , Svg.line
@@ -98,7 +96,7 @@ viewControl attrs vm =
             , SvgAttrs.y1 <| Pos.toYString hbarP1
             , SvgAttrs.x2 <| Pos.toXString hbarP2
             , SvgAttrs.y2 <| Pos.toYString hbarP2
-            , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
+            , SvgAttrs.strokeWidth <| String.fromFloat <| barWidth
             ]
             []
         , Svg.circle
@@ -110,8 +108,13 @@ viewControl attrs vm =
         ]
 
 
-lineWidth : Float
-lineWidth =
+barOffset : Float
+barOffset =
+    6
+
+
+barWidth : Float
+barWidth =
     3
 
 
@@ -120,24 +123,21 @@ guideLineWidth =
     3
 
 
-circlePos : Float -> Float -> Pos -> Pos
-circlePos unit blockHeight pos =
-    pos |> Pos.addDelta (Delta unit (blockHeight / 2))
+circlePos : ViewModel -> Pos -> Pos
+circlePos vm root =
+    root |> Pos.addDelta (Delta vm.grid.unit (vm.block.size.height / 2))
 
 
 rootPos : ViewModel -> Pos
 rootPos vm =
     let
-        root =
+        rootElement =
             Maybe.withDefault vm.body.mid vm.body.top
 
         delta =
-            Delta.init
-                ( vm.block.size.width + lineWidth
-                , 0
-                )
+            Delta (vm.block.size.width + barOffset) 0
     in
-    Pos.addDelta delta root.pos
+    rootElement.pos |> Pos.addDelta delta
 
 
 
@@ -146,36 +146,16 @@ rootPos vm =
 
 startDrag : ViewModel -> Block -> DragState Block
 startDrag vm bd =
-    DragState.init
-        { start = rootPos vm
+    let
+        rootpos =
+            rootPos vm
+    in
+    DragState.init2
+        { start = rootpos
+        , start2 = rootpos |> circlePos vm
         , data = bd
         , addFn = Delta.addX
         }
-
-
-
--- dragMove2 : Delta -> Grid.Data -> Data -> Data
--- dragMove2 newDelta gd bd =
---     case bd.state of
---         DraggingWidthControl oldDelta ->
---             let
---                 { dx, dy } =
---                     Delta.addX oldDelta newDelta
---                 expectedWidthDelta =
---                     round dx // gd.unit
---                 width_ =
---                     MathEx.minmax 1 bd.quantity (bd.width + expectedWidthDelta)
---                 actualWidthDelta =
---                     width_ - bd.width
---                 dx_ =
---                     toFloat <| round dx - (actualWidthDelta * gd.unit)
---             in
---             { bd
---                 | state = DraggingWidthControl (Delta dx_ dy)
---                 , width = width_
---             }
---         _ ->
---             bd
 
 
 dragMove : DragState Block -> Grid.Data -> Block -> Block

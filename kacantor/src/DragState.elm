@@ -9,7 +9,11 @@ type alias DragState a =
     , data : a
     , delta : DragDelta
     , pos : DragPos
+
+    -- total hack :)
     , start : Pos
+    , start2 : Pos
+    , start3 : Pos
     }
 
 
@@ -47,6 +51,57 @@ init input =
         , total = input.start
         }
     , start = input.start
+    , start2 = Pos.origin
+    , start3 = Pos.origin
+    }
+
+
+init2 :
+    { start : Pos
+    , start2 : Pos
+    , data : a
+    , addFn : AddFunction
+    }
+    -> DragState a
+init2 input =
+    { addFn = input.addFn
+    , data = input.data
+    , delta =
+        { current = Delta.none
+        , total = Delta.none
+        }
+    , pos =
+        { current = input.start
+        , total = input.start
+        }
+    , start = input.start
+    , start2 = input.start2
+    , start3 = Pos.origin
+    }
+
+
+init3 :
+    { start : Pos
+    , start2 : Pos
+    , start3 : Pos
+    , data : a
+    , addFn : AddFunction
+    }
+    -> DragState a
+init3 input =
+    { addFn = input.addFn
+    , data = input.data
+    , delta =
+        { current = Delta.none
+        , total = Delta.none
+        }
+    , pos =
+        { current = input.start
+        , total = input.start
+        }
+    , start = input.start
+    , start2 = input.start2
+    , start3 = input.start3
     }
 
 
