@@ -5,31 +5,112 @@ import Block.Internal.Types exposing (..)
 import Block.Internal.View.BodyModel
 import Block.Internal.View.Model as ViewModel exposing (ViewModel)
 import Delta exposing (Delta)
+import DragState exposing (DragState)
 import Grid
 import MathEx
 import Pair
-import Pos
+import Pos exposing (Pos)
 import Svg
 import Svg.Attributes as SvgAttrs
+
+
+
+-- VIEW
+
+
+view : List (Svg.Attribute msg) -> ViewModel -> Maybe (Svg.Svg msg)
+view attrs vm =
+    case vm.block.state of
+        Dragging Component.Width _ ->
+            Just (viewControl attrs vm)
+
+        Selected ->
+            Just (viewControl attrs vm)
+
+        _ ->
+            Nothing
+
+
+viewControl : List (Svg.Attribute msg) -> ViewModel -> Svg.Svg msg
+viewControl attrs vm =
+    let
+        { radius, cpos, delta } =
+            case vm.block.state of
+                Dragging Component.Width drag ->
+                    { radius = round (vm.grid.unit / 1.2)
+                    , cpos = drag.pos.total
+                    , delta = drag.delta.total
+                    }
+
+                _ ->
+                    { radius = round (vm.grid.unit / 1.5)
+                    , cpos = rootPos vm
+                    , delta = Delta.none
+                    }
+
+        pos =
+            rootPos vm
+
+        p1 =
+            pos |> Pos.addDelta delta
+
+        p2 =
+            p1 |> Pos.add (Pos.init ( -vm.grid.unit, 0 ))
+
+        -- p1 =
+        -- p2 =
+        --     Pos.addY p1 { x = 0.0, y = vm.block.size.height }
+    in
+    Svg.g
+        (SvgAttrs.class "width-control" :: attrs)
+        [ Svg.line
+            [ SvgAttrs.x1 <| Pos.toXString p1
+            , SvgAttrs.y1 <| Pos.toYString p1
+            , SvgAttrs.x2 <| Pos.toXString p2
+            , SvgAttrs.y2 <| Pos.toYString p2
+            , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
+            ]
+            []
+        , Svg.circle
+            [ SvgAttrs.cx <| Pos.toXString cpos
+            , SvgAttrs.cy <| Pos.toYString cpos
+            , SvgAttrs.r <| String.fromInt <| radius
+            ]
+            []
+        ]
+
+
+lineWidth : Float
+lineWidth =
+    3
+
+
+rootPos : ViewModel -> Pos
+rootPos vm =
+    let
+        root =
+            Maybe.withDefault vm.body.mid vm.body.top
+
+        delta =
+            Delta.init
+                ( vm.block.size.width + vm.grid.unit + lineWidth
+                , vm.grid.unit / 2
+                )
+    in
+    Pos.addDelta delta root.pos
 
 
 
 -- UPDATE
 
 
-updateDragMoveDelta : ( Int, Int ) -> ( Int, Int ) -> ( Int, Int )
-updateDragMoveDelta oldDelta newDelta =
-    Pair.add oldDelta newDelta
-
-
-updateWidth : Grid.Data -> Block -> Block
-updateWidth gd bd =
-    case bd.state of
-        Dragging Component.Width delta ->
-            bd
-
-        _ ->
-            bd
+startDrag : ViewModel -> Block -> DragState Block
+startDrag vm bd =
+    DragState.init
+        { start = rootPos vm
+        , data = bd
+        , addFn = Delta.addX
+        }
 
 
 
@@ -57,87 +138,11 @@ updateWidth gd bd =
 --             bd
 
 
-dragMove : ( Int, Int ) -> Grid.Data -> Block -> Block
-dragMove ( dx, dy ) gd bd =
+dragMove : DragState Block -> Grid.Data -> Block -> Block
+dragMove drag _ bd =
     bd
 
 
-
--- let
---     -- what if state is wrong...
---     -- vm =
---     --     ViewModel.forBlock gd bd
---     deltaWidth =
---         dx // gd.unit
---     dx_ =
---         dx - (deltaWidth * gd.unit)
---     width_ =
---         max 1 (min (bd.width + deltaWidth) bd.quantity)
--- in
--- { bd
---     | state = Dragging WidthControl ( dx_, dy )
---     , width = width_
--- }
--- VIEW
-
-
-view : List (Svg.Attribute msg) -> ViewModel -> Maybe (Svg.Svg msg)
-view attrs vm =
-    case vm.block.state of
-        Dragging Component.Width _ ->
-            Just (viewControl attrs vm)
-
-        Selected ->
-            Just (viewControl attrs vm)
-
-        _ ->
-            Nothing
-
-
-viewControl : List (Svg.Attribute msg) -> ViewModel -> Svg.Svg msg
-viewControl attrs vm =
-    Svg.g [] []
-
-
-
--- let
---     ( radius, delta ) =
---         case vm.block.state of
---             Dragging WidthControl ( dx, dy ) ->
---                 ( round (toFloat vm.grid.unit / 1.2)
---                 , Pos.fromInt ( dx, dy )
---                 )
---             _ ->
---                 ( round (toFloat vm.grid.unit / 1.5), Pos.origin )
---     lineWidth =
---         3.0
---     root =
---         Maybe.withDefault vm.body.mid vm.body.top
---     p1 =
---         Pos.add4
---             (Pos.init ( root.size.width + lineWidth, root.pos.y ))
---             vm.block.pos
---             root.pos
---             { x = delta.x, y = 0.0 }
---     p2 =
---         Pos.addY p1 { x = 0.0, y = vm.block.size.height }
---     cpos =
---         Pos.addY p1 delta
--- in
--- Svg.g
---     (SvgAttrs.class "width-control" :: attrs)
---     [ Svg.line
---         [ SvgAttrs.x1 <| Pos.toXString p1
---         , SvgAttrs.y1 <| Pos.toYString p1
---         , SvgAttrs.x2 <| Pos.toXString p2
---         , SvgAttrs.y2 <| Pos.toYString p2
---         , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
---         ]
---         []
---     , Svg.circle
---         [ SvgAttrs.cx <| Pos.toXString cpos
---         , SvgAttrs.cy <| Pos.toYString cpos
---         , SvgAttrs.r <| String.fromInt <| radius
---         ]
---         []
---     ]
+dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block
+dragEnd drag gd bd =
+    Just bd

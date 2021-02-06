@@ -25,11 +25,23 @@ size body =
                 mvd
                     |> Maybe.map (\vd -> vd.size)
                     |> Maybe.withDefault Size.none
+
+        s1 =
+            getSizeOrNone body.top
+
+        s2 =
+            body.mid.size
+
+        s3 =
+            getSizeOrNone body.bot
+
+        width =
+            Size.maxWidth3 s1 s2 s3
+
+        height =
+            Size.addHeight3 s1 s2 s3
     in
-    Size.add3
-        (getSizeOrNone body.top)
-        body.mid.size
-        (getSizeOrNone body.bot)
+    Size.init ( width, height )
 
 
 forBlock : Grid.Data -> Block -> BodyModel

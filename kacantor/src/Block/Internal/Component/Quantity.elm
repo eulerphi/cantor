@@ -1,14 +1,12 @@
 module Block.Internal.Component.Quantity exposing (..)
 
-import Block.Internal.Component as Component exposing (Component)
+import Block.Internal.Component as Component
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.BodyModel
-import Block.Internal.View.Model as ViewModel exposing (ViewModel)
-import Delta exposing (Delta)
+import Block.Internal.View.Model exposing (ViewModel)
+import Delta
 import DragState exposing (DragState)
 import Grid
 import MathEx
-import Pair
 import Pos exposing (Pos)
 import Size
 import Svg exposing (Attribute, Svg)
@@ -127,7 +125,7 @@ startDrag vm bd =
     DragState.init
         { start = rootPos vm
         , data = bd
-        , addFn = Delta.addX
+        , addFn = Delta.add
         }
 
 
@@ -172,45 +170,10 @@ dragMove drag gd bd =
     { bd | quantity = quantity__ }
 
 
+dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block
+dragEnd _ _ bd =
+    if bd.quantity <= 0 then
+        Nothing
 
---     quantityDeltaX =
---         dx // gd.unit
---     quantityDeltaY =
---         dy // gd.unit
---     qdx =
---         max remainder (dx // gd.unit)
---     qdy =
---         if quantityDeltaY /= 0 then
---             bd.width * quantityDeltaY
---         else
---             0
---     quantityDelta =
---         if abs quantityDeltaX > abs qdy then
---             quantityDeltaX
---         else
---             qdy
---     -- max quantityDeltaX qdy
---     quantity_ =
---         max 0 (bd.quantity + quantityDelta)
---     dx_ =
---         dx - (quantityDeltaX * gd.unit)
---     dy_ =
---         dy - (quantityDeltaY * gd.unit)
--- in
--- { bd
---     | state = Dragging AddControl ( dx_, dy_ )
---     , quantity = quantity_
--- }
-
-
-dragEnd : DragState Block -> Grid.Data -> Block -> Block
-dragEnd drag gd bd =
-    let
-        pos_ =
-            Pos.roundNear
-                { pos = Pos.fromInt ( gd.x, gd.y )
-                , unit = toFloat gd.unit
-                }
-                drag.pos.current
-    in
-    { bd | pos = pos_ }
+    else
+        Just bd

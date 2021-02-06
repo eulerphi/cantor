@@ -51,12 +51,12 @@ update context gd msg model =
         -- , Cmd.none
         -- )
         EndDrag ->
-            ( model |> Maybe.map (endDrag gd)
+            ( model |> Maybe.andThen (endDrag gd)
             , context
             , Cmd.none
             )
 
-        Select id ->
+        Select _ ->
             ( model |> Maybe.map (\m -> { m | state = Selected })
             , context
             , Cmd.none
@@ -87,14 +87,13 @@ startDrag id gd bd =
                 Component.Quantity ->
                     QuantityControl.startDrag vm bd
 
+                Component.Width ->
+                    WidthControl.startDrag vm bd
+
                 _ ->
                     Body.startDrag vm bd
     in
     { bd | state = Dragging id.part drag }
-
-
-
--- { bd | state = Dragging id.part dragState }
 
 
 dragMove : Delta -> Grid.Data -> Block -> Block
@@ -113,6 +112,9 @@ dragMove newDelta gd bd =
                         Component.Quantity ->
                             QuantityControl.dragMove drag_ gd bd
 
+                        Component.Width ->
+                            WidthControl.dragMove drag_ gd bd
+
                         _ ->
                             bd
             in
@@ -122,7 +124,7 @@ dragMove newDelta gd bd =
             bd
 
 
-endDrag : Grid.Data -> Block -> Block
+endDrag : Grid.Data -> Block -> Maybe Block
 endDrag gd bd =
     case bd.state of
         Dragging component drag ->
@@ -132,62 +134,16 @@ endDrag gd bd =
                         Component.Body ->
                             Body.dragEnd drag gd bd
 
+                        Component.Quantity ->
+                            QuantityControl.dragEnd drag gd bd
+
+                        Component.Width ->
+                            WidthControl.dragEnd drag gd bd
+
                         _ ->
-                            bd
+                            Just bd
             in
-            { bd_ | state = Selected }
+            bd_ |> Maybe.map (\b -> { b | state = Selected })
 
         _ ->
-            bd
-
-
-
--- let
---     dragDelta =
---         case bd.state of
---             Dragging Component.Body drag ->
---                 drag.delta.total
---             _ ->
---                 Delta.none
---     ( dx, dy ) =
---         dragDelta
---             |> Delta.roundNear (toFloat gd.unit)
---             |> Delta.map (\v -> round <| v / toFloat gd.unit)
--- in
--- { bd | x = bd.x + dx, y = bd.y + dy, state = Selected }
--- let
---     block_ =
---         case bd.state of
---             Dragging QuantityControl dragState ->
---                 QuantityControl.dragMove
---                     (Pair.add oldDelta newDelta)
---                     gd
---                     bd
---             Dragging Body oldDelta ->
---                 { bd | state = Dragging Body (Pair.add oldDelta newDelta) }
---             Dragging WidthControl oldDelta ->
---                 WidthControl.dragMove
---                     (Pair.add oldDelta newDelta)
---                     gd
---                     bd
---             _ ->
---                 bd
--- in
--- block_
--- handleDragMove : ( Int, Int ) -> Data -> Data
--- handleDragMove newDelta bd =
---     let
---         ( state_, cmd_ ) =
---             case bd.state of
---                 Dragging Body oldDelta ->
---                     ( Dragging Body (Body.updateDragMoveDelta oldDelta newDelta)
---                     , Cmd.none
---                     )
---                 Dragging WidthControl oldDelta ->
---                     ( Dragging WidthControl (WidthControl.updateDragMoveDelta oldDelta newDelta)
---                     , Cmd.none
---                     )
---                 _ ->
---                     ( bd.state, Cmd.none )
---     in
---     { bd | state = state_ }
+            Just bd

@@ -57,7 +57,7 @@ add delta state =
             Delta.add state.delta.total delta
 
         current_ =
-            state.addFn state.delta.total delta
+            state.addFn state.delta.current delta
 
         delta_ =
             { current = current_

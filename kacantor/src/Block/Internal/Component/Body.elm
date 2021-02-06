@@ -61,7 +61,7 @@ dragMove drag _ bd =
     { bd | pos = drag.pos.current }
 
 
-dragEnd : DragState Block -> Grid.Data -> Block -> Block
+dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block
 dragEnd drag gd bd =
     let
         pos_ =
@@ -71,4 +71,4 @@ dragEnd drag gd bd =
                 }
                 drag.pos.current
     in
-    { bd | pos = pos_ }
+    Just { bd | pos = pos_ }

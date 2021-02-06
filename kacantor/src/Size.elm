@@ -29,30 +29,29 @@ add s1 s2 =
     }
 
 
-add3 : Size -> Size -> Size -> Size
-add3 s1 s2 s3 =
-    { width = s1.width + s2.width + s3.width
-    , height = s1.height + s2.height + s3.height
-    }
-
-
-addWidth : Size -> Size -> Size
+addWidth : Size -> Size -> Float
 addWidth s1 s2 =
-    { width = s1.width + s2.width
-    , height = s1.height
-    }
+    s1.width + s2.width
 
 
-addHeight : Size -> Size -> Size
+addHeight : Size -> Size -> Float
 addHeight s1 s2 =
-    { width = s1.width
-    , height = s1.height + s2.height
-    }
+    s1.height + s2.height
+
+
+addHeight3 : Size -> Size -> Size -> Float
+addHeight3 s1 s2 s3 =
+    s1.height + s2.height + s3.height
 
 
 map : (Float -> Float) -> Size -> Size
 map fn size =
     { width = fn size.width, height = fn size.height }
+
+
+maxWidth3 : Size -> Size -> Size -> Float
+maxWidth3 s1 s2 s3 =
+    max s1.width (max s2.width s3.width)
 
 
 scale : Float -> Size -> Size
