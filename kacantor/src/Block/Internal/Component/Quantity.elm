@@ -80,7 +80,6 @@ viewControl attrs vm =
             , SvgAttrs.height <| Size.toHeightString rectSize
             , SvgAttrs.height <| Size.toHeightString rectSize
             , SvgAttrs.fillOpacity "0"
-            , SvgAttrs.stroke "black"
             ]
             []
         , Svg.line
@@ -89,7 +88,6 @@ viewControl attrs vm =
             , SvgAttrs.x2 <| Pos.toXString vlineP2
             , SvgAttrs.y2 <| Pos.toYString vlineP2
             , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
-            , SvgAttrs.stroke "black"
             ]
             []
         , Svg.circle

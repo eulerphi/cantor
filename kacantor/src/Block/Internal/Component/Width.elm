@@ -34,40 +34,70 @@ view attrs vm =
 viewControl : List (Svg.Attribute msg) -> ViewModel -> Svg.Svg msg
 viewControl attrs vm =
     let
-        { radius, cpos, delta } =
+        { radius, pos, cpos } =
             case vm.block.state of
                 Dragging Component.Width drag ->
                     { radius = round (vm.grid.unit / 1.2)
-                    , cpos = drag.pos.total
-                    , delta = drag.delta.total
+                    , pos =
+                        drag.start
+                            |> Pos.addDelta drag.delta.current
+                    , cpos =
+                        drag.start
+                            |> circlePos vm.grid.unit vm.block.size.height
+                            |> Pos.addDelta drag.delta.total
                     }
 
                 _ ->
+                    let
+                        p =
+                            rootPos vm
+                    in
                     { radius = round (vm.grid.unit / 1.5)
-                    , cpos = rootPos vm
-                    , delta = Delta.none
+                    , pos = p
+                    , cpos = p |> circlePos vm.grid.unit vm.block.size.height
                     }
 
-        pos =
-            rootPos vm
+        vbarP1 =
+            pos
 
-        p1 =
-            pos |> Pos.addDelta delta
+        vbarP2 =
+            vbarP1 |> Pos.addDelta (Delta.init ( 0, vm.block.size.height ))
 
-        p2 =
-            p1 |> Pos.add (Pos.init ( -vm.grid.unit, 0 ))
+        hbarP1 =
+            vbarP1 |> Pos.addDelta (Delta.init ( 0, vm.block.size.height / 2 ))
 
-        -- p1 =
-        -- p2 =
-        --     Pos.addY p1 { x = 0.0, y = vm.block.size.height }
+        hbarP2 =
+            Pos.init ( cpos.x, hbarP1.y )
+
+        ( guideP1, guideP2 ) =
+            ( Pos.init ( cpos.x, vm.grid.pos.y )
+            , Pos.init ( cpos.x, vm.grid.pos.y + vm.grid.size.height )
+            )
     in
     Svg.g
         (SvgAttrs.class "width-control" :: attrs)
         [ Svg.line
-            [ SvgAttrs.x1 <| Pos.toXString p1
-            , SvgAttrs.y1 <| Pos.toYString p1
-            , SvgAttrs.x2 <| Pos.toXString p2
-            , SvgAttrs.y2 <| Pos.toYString p2
+            [ SvgAttrs.x1 <| Pos.toXString guideP1
+            , SvgAttrs.y1 <| Pos.toYString guideP1
+            , SvgAttrs.x2 <| Pos.toXString guideP2
+            , SvgAttrs.y2 <| Pos.toYString guideP2
+            , SvgAttrs.strokeWidth <| String.fromFloat <| guideLineWidth
+            , SvgAttrs.strokeDasharray "4"
+            ]
+            []
+        , Svg.line
+            [ SvgAttrs.x1 <| Pos.toXString vbarP1
+            , SvgAttrs.y1 <| Pos.toYString vbarP1
+            , SvgAttrs.x2 <| Pos.toXString vbarP2
+            , SvgAttrs.y2 <| Pos.toYString vbarP2
+            , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
+            ]
+            []
+        , Svg.line
+            [ SvgAttrs.x1 <| Pos.toXString hbarP1
+            , SvgAttrs.y1 <| Pos.toYString hbarP1
+            , SvgAttrs.x2 <| Pos.toXString hbarP2
+            , SvgAttrs.y2 <| Pos.toYString hbarP2
             , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
             ]
             []
@@ -85,6 +115,16 @@ lineWidth =
     3
 
 
+guideLineWidth : Float
+guideLineWidth =
+    3
+
+
+circlePos : Float -> Float -> Pos -> Pos
+circlePos unit blockHeight pos =
+    pos |> Pos.addDelta (Delta unit (blockHeight / 2))
+
+
 rootPos : ViewModel -> Pos
 rootPos vm =
     let
@@ -93,8 +133,8 @@ rootPos vm =
 
         delta =
             Delta.init
-                ( vm.block.size.width + vm.grid.unit + lineWidth
-                , vm.grid.unit / 2
+                ( vm.block.size.width + lineWidth
+                , 0
                 )
     in
     Pos.addDelta delta root.pos
@@ -139,10 +179,22 @@ startDrag vm bd =
 
 
 dragMove : DragState Block -> Grid.Data -> Block -> Block
-dragMove drag _ bd =
-    bd
+dragMove drag gd bd =
+    let
+        unitDelta =
+            drag.delta.current
+                |> Delta.roundNear (toFloat gd.unit)
+                |> Delta.div (toFloat gd.unit)
+
+        dx =
+            round unitDelta.dx
+
+        width_ =
+            max 1 (drag.data.width + dx)
+    in
+    { bd | width = width_ }
 
 
 dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block
-dragEnd drag gd bd =
+dragEnd _ _ bd =
     Just bd
