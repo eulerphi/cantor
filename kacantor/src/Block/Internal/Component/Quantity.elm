@@ -139,27 +139,35 @@ dragMove drag gd bd =
                 |> Delta.roundNear (toFloat gd.unit)
                 |> Delta.div (toFloat gd.unit)
 
-        -- ignores offset remainder
+        -- TODO: handle offset remainder
         remainder =
             modBy drag.data.width drag.data.quantity
 
-        ( minX, maxX ) =
-            ( -remainder, drag.data.width - remainder )
-
-        dx =
-            MathEx.minmax minX maxX (round unitDelta.dx)
-
-        quantity_ =
-            drag.data.quantity + dx
-
         minY =
-            modBy drag.data.width quantity_
+            if remainder > 0 then
+                remainder
+
+            else
+                drag.data.width
 
         dy =
             round unitDelta.dy * drag.data.width
 
+        quantity_ =
+            max minY (drag.data.quantity + dy)
+
+        ( minX, maxX ) =
+            if remainder > 0 then
+                ( -remainder, drag.data.width - remainder )
+
+            else
+                ( -drag.data.width, 0 )
+
+        dx =
+            MathEx.minmax minX maxX (round unitDelta.dx)
+
         quantity__ =
-            max minY (quantity_ + dy)
+            max 0 (quantity_ + dx)
     in
     { bd | quantity = quantity__ }
 

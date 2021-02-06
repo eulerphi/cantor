@@ -11240,8 +11240,10 @@ var $author$project$Block$Internal$Component$Quantity$dragMove = F3(
 			gd.unit,
 			A2($author$project$Delta$roundNear, gd.unit, drag.delta.current));
 		var remainder = A2($elm$core$Basics$modBy, drag.data.width, drag.data.quantity);
+		var minY = (remainder > 0) ? remainder : drag.data.width;
 		var dy = $elm$core$Basics$round(unitDelta.dy) * drag.data.width;
-		var _v0 = _Utils_Tuple2(-remainder, drag.data.width - remainder);
+		var quantity_ = A2($elm$core$Basics$max, minY, drag.data.quantity + dy);
+		var _v0 = (remainder > 0) ? _Utils_Tuple2(-remainder, drag.data.width - remainder) : _Utils_Tuple2(-drag.data.width, 0);
 		var minX = _v0.a;
 		var maxX = _v0.b;
 		var dx = A3(
@@ -11249,9 +11251,7 @@ var $author$project$Block$Internal$Component$Quantity$dragMove = F3(
 			minX,
 			maxX,
 			$elm$core$Basics$round(unitDelta.dx));
-		var quantity_ = drag.data.quantity + dx;
-		var minY = A2($elm$core$Basics$modBy, drag.data.width, quantity_);
-		var quantity__ = A2($elm$core$Basics$max, minY, quantity_ + dy);
+		var quantity__ = A2($elm$core$Basics$max, 0, quantity_ + dx);
 		return _Utils_update(
 			bd,
 			{quantity: quantity__});
