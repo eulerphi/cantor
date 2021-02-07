@@ -7,7 +7,7 @@ import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Grid
 import Pos exposing (Pos)
-import Svg
+import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 
 
@@ -15,7 +15,7 @@ import Svg.Attributes as SvgAttrs
 -- VIEW
 
 
-view : List (Svg.Attribute msg) -> ViewModel -> Maybe (Svg.Svg msg)
+view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging Component.Width _ ->
@@ -28,7 +28,7 @@ view attrs vm =
             Nothing
 
 
-viewControl : List (Svg.Attribute msg) -> ViewModel -> Svg.Svg msg
+viewControl : List (Attribute msg) -> ViewModel -> Svg msg
 viewControl attrs vm =
     let
         { radius, rootpos, cpos, guideVisible } =
@@ -110,7 +110,7 @@ viewControl attrs vm =
 
 barOffset : Float
 barOffset =
-    6
+    4
 
 
 barWidth : Float

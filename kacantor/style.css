@@ -54,6 +54,19 @@
     stroke: rgb(37,166,201);
 }
 
+.block .offset-control {
+    cursor: w-resize;
+    fill: rgb(85,209,229);
+    stroke: rgb(85,209,229);
+}
+
+.block .outline {
+    fill: rgba(255, 255, 255, 0);
+    stroke: rgb(156, 151, 151);
+    stroke-dasharray: 6;
+    stroke-width: 2;
+}
+
 .block .width-control {
     cursor: w-resize;
     fill: rgb(85,209,229);

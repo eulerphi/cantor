@@ -2,6 +2,8 @@ module Block.Internal.View exposing (view)
 
 import Block.Internal.Component as Component exposing (Component)
 import Block.Internal.Component.Body as BodyComponent
+import Block.Internal.Component.Offset as OffsetControl
+import Block.Internal.Component.Outline as OutlineComponent
 import Block.Internal.Component.Quantity as QuantityComponent
 import Block.Internal.Component.Width as WidthComponent
 import Block.Internal.Types exposing (..)
@@ -22,16 +24,22 @@ view context gd bd =
         vm =
             ViewModel.forBlock gd bd
 
+        background =
+            [ OutlineComponent.view [] vm
+            ]
+                |> Maybe.Extra.values
+
         body =
             BodyComponent.view (eventAttrsFn Component.Body) vm
 
         controls =
             [ WidthComponent.view (eventAttrsFn Component.Width) vm
+            , OffsetControl.view (eventAttrsFn Component.Offset) vm
             , QuantityComponent.view (eventAttrsFn Component.Quantity) vm
             ]
                 |> Maybe.Extra.values
     in
-    Svg.g [ SvgAttrs.class "block" ] (body :: controls)
+    Svg.g [ SvgAttrs.class "block" ] (background ++ body :: controls)
 
 
 eventAttrs : (Msg -> msg) -> String -> Component -> List (Attribute msg)

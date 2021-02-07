@@ -2,6 +2,7 @@ module Block.Internal.Update exposing (update)
 
 import Block.Internal.Component as Component exposing (Component)
 import Block.Internal.Component.Body as Body
+import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Quantity as QuantityControl
 import Block.Internal.Component.Width as WidthControl
 import Block.Internal.Types exposing (..)
@@ -84,14 +85,14 @@ startDrag id gd bd =
                 Component.Body ->
                     Body.startDrag vm bd
 
+                Component.Offset ->
+                    OffsetControl.startDrag vm bd
+
                 Component.Quantity ->
                     QuantityControl.startDrag vm bd
 
                 Component.Width ->
                     WidthControl.startDrag vm bd
-
-                _ ->
-                    Body.startDrag vm bd
     in
     { bd | state = Dragging id.part drag }
 
@@ -109,14 +110,14 @@ dragMove newDelta gd bd =
                         Component.Body ->
                             Body.dragMove drag_ gd bd
 
+                        Component.Offset ->
+                            OffsetControl.dragMove drag_ gd bd
+
                         Component.Quantity ->
                             QuantityControl.dragMove drag_ gd bd
 
                         Component.Width ->
                             WidthControl.dragMove drag_ gd bd
-
-                        _ ->
-                            bd
             in
             { bd_ | state = Dragging component drag_ }
 
@@ -134,14 +135,14 @@ endDrag gd bd =
                         Component.Body ->
                             Body.dragEnd drag gd bd
 
+                        Component.Offset ->
+                            OffsetControl.dragEnd drag gd bd
+
                         Component.Quantity ->
                             QuantityControl.dragEnd drag gd bd
 
                         Component.Width ->
                             WidthControl.dragEnd drag gd bd
-
-                        _ ->
-                            Just bd
             in
             bd_ |> Maybe.map (\b -> { b | state = Selected })
 
