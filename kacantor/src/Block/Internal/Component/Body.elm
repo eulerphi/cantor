@@ -8,8 +8,10 @@ import Grid
 import List
 import Maybe.Extra
 import Pos
+import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
+import SvgEx
 import ViewData exposing (ViewData)
 
 
@@ -38,9 +40,31 @@ view eventAttrs vm =
 
 viewRect : ViewModel -> ViewData -> Svg.Svg msg
 viewRect vm vd =
+    let
+        grid =
+            Grid.forViewData (round vm.grid.unit) vd
+
+        gridElements =
+            Grid.view grid
+
+        --hack time
+        { width, height } =
+            vd.size
+                |> Size.scale (1 / vm.grid.unit)
+
+        quantity =
+            vm.block.width * (round height - 1) + round width
+
+        txt =
+            SvgEx.centeredText
+                [ SvgAttrs.class (vd.class ++ "-text") ]
+                vd.pos
+                (Size vm.grid.unit vm.grid.unit)
+                (String.fromInt quantity)
+    in
     Svg.g
         [ SvgAttrs.class vd.class ]
-        (Grid.view (Grid.forViewData (round vm.grid.unit) vd))
+        (gridElements ++ [ txt ])
 
 
 

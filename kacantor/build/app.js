@@ -12214,6 +12214,77 @@ var $elm_community$maybe_extra$Maybe$Extra$cons = F2(
 		}
 	});
 var $elm_community$maybe_extra$Maybe$Extra$values = A2($elm$core$List$foldr, $elm_community$maybe_extra$Maybe$Extra$cons, _List_Nil);
+var $author$project$Size$Size = F2(
+	function (width, height) {
+		return {height: height, width: width};
+	});
+var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
+var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $author$project$Size$toHeightString = function (size) {
+	return $elm$core$String$fromFloat(size.height);
+};
+var $author$project$Size$toWidthString = function (size) {
+	return $elm$core$String$fromFloat(size.width);
+};
+var $author$project$Pos$toXString = function (pos) {
+	return $elm$core$String$fromFloat(pos.x);
+};
+var $author$project$Pos$toYString = function (pos) {
+	return $elm$core$String$fromFloat(pos.y);
+};
+var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var $author$project$SvgEx$translateToPos = function (pos) {
+	var _v0 = _Utils_Tuple2(
+		$author$project$Pos$toXString(pos),
+		$author$project$Pos$toYString(pos));
+	var x = _v0.a;
+	var y = _v0.b;
+	return $elm$svg$Svg$Attributes$transform('translate(' + (x + (' ' + (y + ')'))));
+};
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $author$project$SvgEx$centeredText = F4(
+	function (attrs, pos, size, text) {
+		return A2(
+			$elm$svg$Svg$g,
+			A2(
+				$elm$core$List$cons,
+				$author$project$SvgEx$translateToPos(pos),
+				attrs),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$svg,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$width(
+							$author$project$Size$toWidthString(size)),
+							$elm$svg$Svg$Attributes$height(
+							$author$project$Size$toHeightString(size))
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$svg$Svg$text_,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$x('50%'),
+									$elm$svg$Svg$Attributes$y('50%'),
+									$elm$svg$Svg$Attributes$fill('black'),
+									$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+									$elm$svg$Svg$Attributes$textAnchor('middle')
+								]),
+							_List_fromArray(
+								[
+									$elm$svg$Svg$text(text)
+								]))
+						]))
+				]));
+	});
 var $author$project$Grid$forViewData = F2(
 	function (unit, vd) {
 		return {
@@ -12277,9 +12348,6 @@ var $author$project$Grid$vline = F2(
 			'grid-vline');
 		return A3($author$project$Grid$line, p1, p2, _class);
 	});
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $author$project$Grid$view = function (params) {
 	var verticalLines = A2(
 		$elm$core$List$map,
@@ -12311,17 +12379,34 @@ var $author$project$Grid$view = function (params) {
 };
 var $author$project$Block$Internal$Component$Body$viewRect = F2(
 	function (vm, vd) {
+		var grid = A2(
+			$author$project$Grid$forViewData,
+			$elm$core$Basics$round(vm.grid.unit),
+			vd);
+		var gridElements = $author$project$Grid$view(grid);
+		var _v0 = A2($author$project$Size$scale, 1 / vm.grid.unit, vd.size);
+		var width = _v0.width;
+		var height = _v0.height;
+		var quantity = (vm.block.width * ($elm$core$Basics$round(height) - 1)) + $elm$core$Basics$round(width);
+		var txt = A4(
+			$author$project$SvgEx$centeredText,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$class(vd._class + '-text')
+				]),
+			vd.pos,
+			A2($author$project$Size$Size, vm.grid.unit, vm.grid.unit),
+			$elm$core$String$fromInt(quantity));
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
 				[
 					$elm$svg$Svg$Attributes$class(vd._class)
 				]),
-			$author$project$Grid$view(
-				A2(
-					$author$project$Grid$forViewData,
-					$elm$core$Basics$round(vm.grid.unit),
-					vd)));
+			_Utils_ap(
+				gridElements,
+				_List_fromArray(
+					[txt])));
 	});
 var $author$project$Block$Internal$Component$Body$view = F2(
 	function (eventAttrs, vm) {
@@ -12358,12 +12443,6 @@ var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
-var $author$project$Pos$toXString = function (pos) {
-	return $elm$core$String$fromFloat(pos.x);
-};
-var $author$project$Pos$toYString = function (pos) {
-	return $elm$core$String$fromFloat(pos.y);
-};
 var $author$project$Block$Internal$Component$Offset$viewControl = F2(
 	function (attrs, vm) {
 		var _v0 = function () {
@@ -12477,10 +12556,6 @@ var $author$project$Size$add = F2(
 	function (s1, s2) {
 		return {height: s1.height + s2.height, width: s1.width + s2.width};
 	});
-var $author$project$Size$Size = F2(
-	function (width, height) {
-		return {height: height, width: width};
-	});
 var $author$project$Delta$scale = F2(
 	function (unit, d) {
 		return {dx: unit * d.dx, dy: unit * d.dy};
@@ -12491,12 +12566,6 @@ var $author$project$Block$Internal$Config$outlineSizeDelta = function () {
 	var dy = _v0.dy;
 	return A2($author$project$Size$Size, dx, dy);
 }();
-var $author$project$Size$toHeightString = function (size) {
-	return $elm$core$String$fromFloat(size.height);
-};
-var $author$project$Size$toWidthString = function (size) {
-	return $elm$core$String$fromFloat(size.width);
-};
 var $author$project$Block$Internal$Component$Outline$viewOutline = F2(
 	function (attrs, vm) {
 		var size = A2($author$project$Size$add, $author$project$Block$Internal$Config$outlineSizeDelta, vm.block.size);
