@@ -4,6 +4,24 @@
     /* margin: 20px; */
 }
 
+.invisible {
+    fill: none;
+    stroke:none
+}
+
+/* ADD BlOCK BTN */
+#add-block-btn {
+    stroke: rgb(101,197,219);
+    fill: rgba(101, 197, 219);
+}
+
+#add-block-btn text {
+    font-size: larger;
+    pointer-events: none;
+    fill: rgba(255, 255, 255);
+    stroke: rgb(255, 255, 255);
+}
+
 /* GRID */
 
 #grid .grid-rect {
@@ -41,6 +59,7 @@
 
 .block .body-top text,
 .block .body-bot text {
+    pointer-events: none;
     stroke: rgb(255, 255, 255);
     fill: rgb(255, 255, 255);
 }
@@ -61,6 +80,7 @@
 }
 
 .block .body-mid text {
+    pointer-events: none;
     stroke: rgb(255, 255, 255);
     fill: rgb(255, 255, 255);
 }
@@ -90,6 +110,7 @@
 
 .block .ruler text {
     fill: rgb(255, 255, 255);
+    pointer-events: none;
     stroke: rgb(255, 255, 255);
     stroke-width: 1;
 }
@@ -102,4 +123,9 @@
 .block .quantity-control {
     fill: rgb(85,209,229);
     stroke: rgb(85,209,229);
+}
+
+.block .quantity-control rect {
+    stroke-width: 2;
+    stroke-dasharray: 4;
 }

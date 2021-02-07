@@ -81,6 +81,11 @@ addDeltaY p1 delta =
     }
 
 
+deltaBetween : Pos -> Pos -> Delta
+deltaBetween start end =
+    Delta (end.x - start.x) (end.y - start.y)
+
+
 map : (Float -> Float) -> Pos -> Pos
 map fn pos =
     { x = fn pos.x, y = fn pos.y }

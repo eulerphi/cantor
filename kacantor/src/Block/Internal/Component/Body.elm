@@ -44,8 +44,8 @@ viewRect vm vd =
         grid =
             Grid.forViewData (round vm.grid.unit) vd
 
-        gridElements =
-            Grid.view grid
+        gridElement =
+            Grid.view [] grid
 
         --hack time
         { width, height } =
@@ -64,7 +64,7 @@ viewRect vm vd =
     in
     Svg.g
         [ SvgAttrs.class vd.class ]
-        (gridElements ++ [ txt ])
+        [ gridElement, txt ]
 
 
 

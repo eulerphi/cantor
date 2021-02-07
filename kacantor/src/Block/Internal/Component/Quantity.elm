@@ -6,9 +6,9 @@ import Block.Internal.View.Model exposing (ViewModel)
 import Delta
 import DragState exposing (DragState)
 import Grid
-import MathEx
+import Pair
 import Pos exposing (Pos)
-import Size
+import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 
@@ -51,28 +51,22 @@ viewControl attrs vm =
             unit / 2
 
         rectPos =
-            let
-                delta =
-                    Delta.init ( -lineWidth, -lineWidth )
-            in
-            Pos.addDelta delta pos
+            pos
 
         rectSize =
-            Size.init ( unit + 2 * lineWidth, unit + 2 * lineWidth )
+            Size unit unit
 
         vlineP1 =
-            Pos.add rectPos <| Pos.init ( halfUnit + lineWidth, rectSize.height )
+            Pos.add rectPos <| Pos.init ( halfUnit, rectSize.height )
 
         vlineP2 =
             Pos.addY vlineP1 <| Pos.init ( 0, unit )
 
-        -- p2 =
-        --     Pos.addY p1 { x = 0.0, y = vm.block.size.height }
         circlePos =
             vlineP2
     in
     Svg.g
-        (SvgAttrs.class "quantity-control" :: attrs)
+        [ SvgAttrs.class "quantity-control" ]
         [ Svg.rect
             [ SvgAttrs.x <| Pos.toXString rectPos
             , SvgAttrs.y <| Pos.toYString rectPos
@@ -91,10 +85,12 @@ viewControl attrs vm =
             ]
             []
         , Svg.circle
-            [ SvgAttrs.cx <| Pos.toXString circlePos
-            , SvgAttrs.cy <| Pos.toYString circlePos
-            , SvgAttrs.r <| String.fromInt <| radius
-            ]
+            (attrs
+                ++ [ SvgAttrs.cx <| Pos.toXString circlePos
+                   , SvgAttrs.cy <| Pos.toYString circlePos
+                   , SvgAttrs.r <| String.fromInt <| radius
+                   ]
+            )
             []
         ]
 
@@ -130,42 +126,22 @@ startDrag vm bd =
 dragMove : DragState Block -> Grid.Data -> Block -> Block
 dragMove drag gd bd =
     let
-        unitDelta =
-            drag.delta.current
-                |> Delta.roundNear (toFloat gd.unit)
+        pos =
+            drag.pos.total
+                |> Pos.roundNear { pos = Pos.fromInt ( gd.x, gd.y ), unit = toFloat gd.unit }
+
+        ( dx, dy ) =
+            pos
+                |> Pos.deltaBetween bd.pos
                 |> Delta.div (toFloat gd.unit)
+                |> Delta.map (max 0)
+                |> Pair.map round
 
-        -- TODO: handle offset remainder
-        remainder =
-            modBy drag.data.width drag.data.quantity
-
-        minY =
-            if remainder > 0 then
-                remainder
-
-            else
-                drag.data.width
-
-        dy =
-            round unitDelta.dy * drag.data.width
-
+        -- Better, but still doesn't correctly handle header offsets
         quantity_ =
-            max minY (drag.data.quantity + dy)
-
-        ( minX, maxX ) =
-            if remainder > 0 then
-                ( -remainder, drag.data.width - remainder )
-
-            else
-                ( -drag.data.width, 0 )
-
-        dx =
-            MathEx.minmax minX maxX (round unitDelta.dx)
-
-        quantity__ =
-            max 0 (quantity_ + dx)
+            (dy * bd.width) + dx - bd.headerOffset
     in
-    { bd | quantity = quantity__ }
+    { bd | quantity = quantity_ }
 
 
 dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block

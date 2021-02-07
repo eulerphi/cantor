@@ -1,4 +1,12 @@
-module Block.Group exposing (Group, init, subscriptions, update, view)
+module Block.Group exposing
+    ( Group
+    , addBlock
+    , clearSelection
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
 import Block exposing (Block(..), Context, Msg(..))
 import Block.Internal.Types as Types
@@ -56,6 +64,22 @@ update gd msg model =
                     Block.update model.context gd msg model.active
             in
             ( { model | active = active_, context = context_ }, cmd_ )
+
+
+addBlock : Block -> Group msg -> Group msg
+addBlock block group =
+    { group | rest = block :: group.rest }
+
+
+clearSelection : Group msg -> Group msg
+clearSelection group =
+    let
+        active_ =
+            group.active
+                |> Maybe.map Block.clearSelection
+                |> MaybeEx.toList
+    in
+    { group | active = Nothing, rest = group.rest ++ active_ }
 
 
 view : Grid.Data -> Group msg -> List (Svg.Svg msg)

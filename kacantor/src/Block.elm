@@ -1,4 +1,14 @@
-module Block exposing (Block(..), Context(..), Msg(..), context, init, subscriptions, update, view)
+module Block exposing
+    ( Block(..)
+    , Context(..)
+    , Msg(..)
+    , clearSelection
+    , context
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
 import Block.Internal.Types as Types
 import Block.Internal.Update as Update
@@ -87,6 +97,11 @@ update (Context ctx) gd (Msg msg) block =
             bd_ |> Maybe.map (\b -> Block b)
     in
     ( block_, Context ctx_, cmd_ )
+
+
+clearSelection : Block -> Block
+clearSelection (Block bd) =
+    Block { bd | state = Types.Idle }
 
 
 

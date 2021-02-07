@@ -74,8 +74,8 @@ calculateUnit wh minUnits =
     min (Tuple.first wh) (Tuple.second wh) // minUnits
 
 
-view : Data -> List (Svg.Svg msg)
-view params =
+view : List (Svg.Attribute msg) -> Data -> Svg.Svg msg
+view attrs params =
     let
         rect =
             Svg.rect
@@ -95,7 +95,9 @@ view params =
             List.range 1 (params.width // params.unit - 1)
                 |> List.map (vline params)
     in
-    rect :: horizontalLines ++ verticalLines
+    Svg.g
+        attrs
+        (rect :: horizontalLines ++ verticalLines)
 
 
 lineClass : Bool -> String -> String

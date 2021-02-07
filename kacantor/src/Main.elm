@@ -5,12 +5,17 @@ import Block.Group as Group exposing (Group)
 import Browser
 import Browser.Dom
 import Browser.Events
+import CircleButton
 import Grid
 import Html exposing (div)
 import Html.Attributes as HtmlAttrs
 import Pair
+import Pos exposing (Pos)
+import Size
 import Svg
 import Svg.Attributes as SvgAttrs
+import Svg.Events as SvgEvts
+import SvgEx
 import Task
 import Tuple
 
@@ -22,6 +27,7 @@ import Tuple
 type alias Model =
     { blocks : Group Msg
     , grid : Grid.Data
+    , key : Int
     , margin : Int
     , size : ( Int, Int )
     }
@@ -29,6 +35,8 @@ type alias Model =
 
 type Msg
     = NoOp
+    | AddBlock
+    | ClearSelection
     | SizeChanged ( Int, Int )
     | WindowResized
     | BlockMsg Block.Msg
@@ -38,13 +46,9 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         m =
-            { blocks =
-                Group.init
-                    BlockMsg
-                    [ Block.init { key = "1", pos = ( 0, 0 ), quantity = 43, width = 10 }
-                    , Block.init { key = "3", pos = ( 0, 0 ), quantity = 36, width = 10 }
-                    ]
+            { blocks = Group.init BlockMsg []
             , grid = Grid.emptyParams
+            , key = 0
             , margin = 20
             , size = ( 0, 0 )
             }
@@ -71,22 +75,30 @@ subscriptions m =
 view : Model -> Html.Html Msg
 view m =
     let
-        parts =
-            [ Svg.g
-                [ SvgAttrs.id "grid" ]
-                (Grid.view m.grid)
-            , Svg.g
-                [ SvgAttrs.id "blocks" ]
-                (Group.view m.grid m.blocks)
-            ]
+        windowSize =
+            Size.fromInt m.size
     in
     div
         [ HtmlAttrs.id "root" ]
         [ Svg.svg
-            [ SvgAttrs.width <| String.fromInt <| Tuple.first m.size
-            , SvgAttrs.height <| String.fromInt <| Tuple.second m.size
+            [ SvgAttrs.width <| Size.toWidthString windowSize
+            , SvgAttrs.height <| Size.toHeightString windowSize
             ]
-            parts
+            [ Grid.view
+                [ SvgAttrs.id "grid"
+                , SvgEvts.onClick ClearSelection
+                ]
+                m.grid
+            , Svg.g
+                [ SvgAttrs.id "blocks" ]
+                (Group.view m.grid m.blocks)
+            , CircleButton.view
+                [ SvgAttrs.id "add-block-btn"
+                , SvgEvts.onClick AddBlock
+                ]
+                m.grid
+                "+"
+            ]
         ]
 
 
@@ -129,6 +141,34 @@ update msg m =
     case msg of
         NoOp ->
             ( m, Cmd.none )
+
+        AddBlock ->
+            let
+                key_ =
+                    m.key + 1
+
+                pos =
+                    m.size |> Pair.map (\v -> v // 2)
+
+                newBlock =
+                    Block.init
+                        { key = String.fromInt key_
+                        , pos = pos
+                        , quantity = 10
+                        , width = 10
+                        }
+
+                blocks_ =
+                    Group.addBlock newBlock m.blocks
+            in
+            ( { m | blocks = blocks_, key = key_ }, Cmd.none )
+
+        ClearSelection ->
+            let
+                blocks_ =
+                    Group.clearSelection m.blocks
+            in
+            ( { m | blocks = blocks_ }, Cmd.none )
 
         SizeChanged wh ->
             let
