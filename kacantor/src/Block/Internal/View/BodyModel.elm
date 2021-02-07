@@ -47,8 +47,8 @@ forBlock : Grid.Data -> Block -> BodyModel
 forBlock gd bd =
     let
         ( topWidth, topHeight ) =
-            if bd.headerOffset > 0 && bd.width > bd.headerOffset then
-                ( bd.width - bd.headerOffset, 1 )
+            if bd.headerOffset > 0 then
+                ( min bd.quantity (bd.width - bd.headerOffset), 1 )
 
             else
                 ( 0, 0 )

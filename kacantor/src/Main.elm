@@ -147,13 +147,21 @@ update msg m =
                 key_ =
                     m.key + 1
 
-                pos =
-                    m.size |> Pair.map (\v -> v // 2)
+                ( gridPos, gridUnit ) =
+                    ( Pos.fromInt ( m.grid.x, m.grid.y )
+                    , toFloat m.grid.unit
+                    )
+
+                { x, y } =
+                    m.size
+                        |> Pair.map (\v -> v // 2)
+                        |> Pos.fromInt
+                        |> Pos.roundNear { pos = gridPos, unit = gridUnit }
 
                 newBlock =
                     Block.init
                         { key = String.fromInt key_
-                        , pos = pos
+                        , pos = ( round x, round y )
                         , quantity = 10
                         , width = 10
                         }

@@ -11007,6 +11007,9 @@ var $elm$core$Basics$modBy = _Basics_modBy;
 var $author$project$Main$isAlternateLine = function (idx) {
 	return (idx === 2) || (!A2($elm$core$Basics$modBy, 5, idx - 2));
 };
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
 var $elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -11016,6 +11019,47 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$MathEx$roundNear = F2(
+	function (unit, value) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			value,
+			A2(
+				$elm$core$Maybe$map,
+				$elm$core$Tuple$first,
+				$elm$core$List$head(
+					A2(
+						$elm$core$List$sortBy,
+						$elm$core$Tuple$second,
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return _Utils_Tuple2(
+									x,
+									$elm$core$Basics$abs(x - value));
+							},
+							A2(
+								$elm$core$List$map,
+								function (x) {
+									return x * unit;
+								},
+								A2(
+									$elm$core$List$map,
+									A2($elm$core$Basics$composeL, $elm$core$Basics$toFloat, $elm$core$Basics$round),
+									A2(
+										$elm$core$List$map,
+										$elm$core$Basics$add(value / unit),
+										_List_fromArray(
+											[-1, 0, 1])))))))));
+	});
+var $author$project$Pos$roundNear = F2(
+	function (input, pos) {
+		return {
+			x: input.pos.x + A2($author$project$MathEx$roundNear, input.unit, pos.x - input.pos.x),
+			y: input.pos.y + A2($author$project$MathEx$roundNear, input.unit, pos.y - input.pos.y)
+		};
+	});
 var $elm$core$List$partition = F2(
 	function (pred, list) {
 		var step = F2(
@@ -11207,43 +11251,6 @@ var $author$project$Delta$div = F2(
 	function (unit, d) {
 		return {dx: d.dx / unit, dy: d.dy / unit};
 	});
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$MathEx$roundNear = F2(
-	function (unit, value) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			value,
-			A2(
-				$elm$core$Maybe$map,
-				$elm$core$Tuple$first,
-				$elm$core$List$head(
-					A2(
-						$elm$core$List$sortBy,
-						$elm$core$Tuple$second,
-						A2(
-							$elm$core$List$map,
-							function (x) {
-								return _Utils_Tuple2(
-									x,
-									$elm$core$Basics$abs(x - value));
-							},
-							A2(
-								$elm$core$List$map,
-								function (x) {
-									return x * unit;
-								},
-								A2(
-									$elm$core$List$map,
-									A2($elm$core$Basics$composeL, $elm$core$Basics$toFloat, $elm$core$Basics$round),
-									A2(
-										$elm$core$List$map,
-										$elm$core$Basics$add(value / unit),
-										_List_fromArray(
-											[-1, 0, 1])))))))));
-	});
 var $author$project$Delta$roundNear = F2(
 	function (unit, d) {
 		return {
@@ -11281,13 +11288,6 @@ var $author$project$Delta$map = F2(
 			fn(d.dx),
 			fn(d.dy));
 	});
-var $author$project$Pos$roundNear = F2(
-	function (input, pos) {
-		return {
-			x: input.pos.x + A2($author$project$MathEx$roundNear, input.unit, pos.x - input.pos.x),
-			y: input.pos.y + A2($author$project$MathEx$roundNear, input.unit, pos.y - input.pos.y)
-		};
-	});
 var $author$project$Block$Internal$Component$Quantity$dragMove = F3(
 	function (drag, gd, bd) {
 		var pos = A2(
@@ -11310,7 +11310,7 @@ var $author$project$Block$Internal$Component$Quantity$dragMove = F3(
 					A2($author$project$Pos$deltaBetween, bd.pos, pos))));
 		var dx = _v0.a;
 		var dy = _v0.b;
-		var quantity_ = ((dy * bd.width) + dx) - bd.headerOffset;
+		var quantity_ = ((dy * bd.width) + A2($elm$core$Basics$min, dx, bd.width)) - bd.headerOffset;
 		return _Utils_update(
 			bd,
 			{quantity: quantity_});
@@ -11497,7 +11497,9 @@ var $author$project$Block$Internal$View$BodyModel$scale = F2(
 	});
 var $author$project$Block$Internal$View$BodyModel$forBlock = F2(
 	function (gd, bd) {
-		var _v0 = ((bd.headerOffset > 0) && (_Utils_cmp(bd.width, bd.headerOffset) > 0)) ? _Utils_Tuple2(bd.width - bd.headerOffset, 1) : _Utils_Tuple2(0, 0);
+		var _v0 = (bd.headerOffset > 0) ? _Utils_Tuple2(
+			A2($elm$core$Basics$min, bd.quantity, bd.width - bd.headerOffset),
+			1) : _Utils_Tuple2(0, 0);
 		var topWidth = _v0.a;
 		var topHeight = _v0.b;
 		var top = {
@@ -11954,17 +11956,31 @@ var $author$project$Main$update = F2(
 			case 'NoOp':
 				return _Utils_Tuple2(m, $elm$core$Platform$Cmd$none);
 			case 'AddBlock':
-				var pos = A2(
-					$author$project$Pair$map,
-					function (v) {
-						return (v / 2) | 0;
-					},
-					m.size);
 				var key_ = m.key + 1;
+				var _v1 = _Utils_Tuple2(
+					$author$project$Pos$fromInt(
+						_Utils_Tuple2(m.grid.x, m.grid.y)),
+					m.grid.unit);
+				var gridPos = _v1.a;
+				var gridUnit = _v1.b;
+				var _v2 = A2(
+					$author$project$Pos$roundNear,
+					{pos: gridPos, unit: gridUnit},
+					$author$project$Pos$fromInt(
+						A2(
+							$author$project$Pair$map,
+							function (v) {
+								return (v / 2) | 0;
+							},
+							m.size)));
+				var x = _v2.x;
+				var y = _v2.y;
 				var newBlock = $author$project$Block$init(
 					{
 						key: $elm$core$String$fromInt(key_),
-						pos: pos,
+						pos: _Utils_Tuple2(
+							$elm$core$Basics$round(x),
+							$elm$core$Basics$round(y)),
 						quantity: 10,
 						width: 10
 					});
@@ -12003,9 +12019,9 @@ var $author$project$Main$update = F2(
 					$author$project$Main$changeSizeTask(m));
 			default:
 				var subMsg = msg.a;
-				var _v1 = A3($author$project$Block$Group$update, m.grid, subMsg, m.blocks);
-				var blocks_ = _v1.a;
-				var cmd_ = _v1.b;
+				var _v3 = A3($author$project$Block$Group$update, m.grid, subMsg, m.blocks);
+				var blocks_ = _v3.a;
+				var cmd_ = _v3.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						m,

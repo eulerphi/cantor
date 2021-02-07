@@ -137,9 +137,8 @@ dragMove drag gd bd =
                 |> Delta.map (max 0)
                 |> Pair.map round
 
-        -- Better, but still doesn't correctly handle header offsets
         quantity_ =
-            (dy * bd.width) + dx - bd.headerOffset
+            (dy * bd.width) + min dx bd.width - bd.headerOffset
     in
     { bd | quantity = quantity_ }
 
