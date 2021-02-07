@@ -7,9 +7,7 @@ import Block.Internal.View.Model exposing (ViewModel)
 import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Grid
-import MathEx
 import Pos exposing (Pos)
-import Size
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 

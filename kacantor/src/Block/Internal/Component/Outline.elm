@@ -3,10 +3,7 @@ module Block.Internal.Component.Outline exposing (..)
 import Block.Internal.Config as Config
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
-import Delta exposing (Delta)
-import DragState exposing (DragState)
-import Grid
-import Pos exposing (Pos)
+import Pos
 import Size
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs

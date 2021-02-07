@@ -1,20 +1,17 @@
 module Block.Internal.Update exposing (update)
 
-import Block.Internal.Component as Component exposing (Component)
+import Block.Internal.Component as Component
 import Block.Internal.Component.Body as Body
 import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Quantity as QuantityControl
 import Block.Internal.Component.Width as WidthControl
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model as ViewModel exposing (ViewModel)
+import Block.Internal.View.Model as ViewModel
 import Delta exposing (Delta)
-import DragState exposing (DragState)
+import DragState
 import Draggable
 import Draggable.Events
 import Grid
-import MathEx
-import Pair
-import Pos exposing (Pos)
 
 
 update :
@@ -47,10 +44,6 @@ update context gd msg model =
             , Cmd.none
             )
 
-        -- ( model |> Maybe.map (dragMove delta gd)
-        -- , context
-        -- , Cmd.none
-        -- )
         EndDrag ->
             ( model |> Maybe.andThen (endDrag gd)
             , context

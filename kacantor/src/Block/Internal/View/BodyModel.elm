@@ -1,7 +1,6 @@
 module Block.Internal.View.BodyModel exposing (..)
 
 import Block.Internal.Types exposing (..)
-import Delta
 import Grid
 import MaybeEx
 import Pair
