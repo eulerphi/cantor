@@ -11289,9 +11289,10 @@ var $author$project$Block$Internal$Component$Width$dragMove = F3(
 			A2($author$project$Delta$roundNear, gd.unit, drag.delta.current));
 		var dx = $elm$core$Basics$round(unitDelta.dx);
 		var width_ = A2($elm$core$Basics$max, 1, drag.data.width + dx);
+		var headerOffset_ = A2($elm$core$Basics$min, bd.headerOffset, width_ - 1);
 		return _Utils_update(
 			bd,
-			{width: width_});
+			{headerOffset: headerOffset_, width: width_});
 	});
 var $author$project$Block$Internal$Update$dragMove = F3(
 	function (newDelta, gd, bd) {
@@ -11658,7 +11659,7 @@ var $author$project$DragState$init2 = function (input) {
 var $author$project$Block$Internal$Component$Width$barOffset = 4;
 var $author$project$Block$Internal$Component$Width$rootPos = function (vm) {
 	var rootElement = A2($elm$core$Maybe$withDefault, vm.body.mid, vm.body.top);
-	var delta = A2($author$project$Delta$Delta, vm.block.size.width + $author$project$Block$Internal$Component$Width$barOffset, 0);
+	var delta = A2($author$project$Delta$Delta, rootElement.size.width + $author$project$Block$Internal$Component$Width$barOffset, 0);
 	return A2($author$project$Pos$addDelta, delta, rootElement.pos);
 };
 var $author$project$Block$Internal$Component$Width$startDrag = F2(
@@ -12730,6 +12731,165 @@ var $author$project$Block$Internal$Component$Quantity$view = F2(
 		}
 		return $elm$core$Maybe$Nothing;
 	});
+var $author$project$Block$Internal$Component$Ruler$hLinePositions = F2(
+	function (vm, root) {
+		var halfWidth = vm.block.size.width / 2;
+		return _Utils_Tuple2(
+			A2(
+				$author$project$Pos$addDelta,
+				A2($author$project$Delta$Delta, -halfWidth, 0),
+				root),
+			A2(
+				$author$project$Pos$addDelta,
+				A2($author$project$Delta$Delta, halfWidth, 0),
+				root));
+	});
+var $author$project$Block$Internal$Component$Ruler$rootOffset = function (vm) {
+	return (3 * vm.grid.unit) / 4;
+};
+var $author$project$Block$Internal$Component$Ruler$rootPosition = function (vm) {
+	return A2(
+		$author$project$Pos$addDelta,
+		A2(
+			$author$project$Delta$Delta,
+			0,
+			-$author$project$Block$Internal$Component$Ruler$rootOffset(vm)),
+		A2(
+			$author$project$Pos$addDelta,
+			A2($author$project$Delta$Delta, vm.block.size.width / 2, 0),
+			vm.block.pos));
+};
+var $author$project$Block$Internal$Component$Ruler$txtPositionAndSize = F2(
+	function (vm, root) {
+		var offset = $author$project$Block$Internal$Component$Ruler$rootOffset(vm) / 2;
+		var pos = A2(
+			$author$project$Pos$addDelta,
+			A2($author$project$Delta$Delta, -offset, -offset),
+			root);
+		var size = A2(
+			$author$project$Size$scale,
+			2,
+			A2($author$project$Size$Size, offset, offset));
+		return _Utils_Tuple2(pos, size);
+	});
+var $author$project$Block$Internal$Component$Ruler$vlinePositions = F2(
+	function (vm, pos) {
+		var topDelta = A2(
+			$author$project$Delta$Delta,
+			0,
+			$author$project$Block$Internal$Component$Ruler$rootOffset(vm) / (-2));
+		var botDelta = A2(
+			$author$project$Delta$Delta,
+			0,
+			$author$project$Block$Internal$Component$Ruler$rootOffset(vm) / 2);
+		return _Utils_Tuple2(
+			A2($author$project$Pos$addDelta, topDelta, pos),
+			A2($author$project$Pos$addDelta, botDelta, pos));
+	});
+var $author$project$Block$Internal$Component$Ruler$viewOutline = F2(
+	function (attrs, vm) {
+		var root = $author$project$Block$Internal$Component$Ruler$rootPosition(vm);
+		var _v0 = A2($author$project$Block$Internal$Component$Ruler$txtPositionAndSize, vm, root);
+		var txtPos = _v0.a;
+		var txtSize = _v0.b;
+		var _v1 = A2($author$project$Block$Internal$Component$Ruler$hLinePositions, vm, root);
+		var hlineP1 = _v1.a;
+		var hlineP2 = _v1.b;
+		var _v2 = A2($author$project$Block$Internal$Component$Ruler$vlinePositions, vm, hlineP1);
+		var leftP1 = _v2.a;
+		var leftP2 = _v2.b;
+		var _v3 = A2($author$project$Block$Internal$Component$Ruler$vlinePositions, vm, hlineP2);
+		var rightP1 = _v3.a;
+		var rightP2 = _v3.b;
+		return A2(
+			$elm$svg$Svg$g,
+			A2(
+				$elm$core$List$cons,
+				$elm$svg$Svg$Attributes$class('ruler'),
+				attrs),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$author$project$Pos$toXString(hlineP1)),
+							$elm$svg$Svg$Attributes$y1(
+							$author$project$Pos$toYString(hlineP1)),
+							$elm$svg$Svg$Attributes$x2(
+							$author$project$Pos$toXString(hlineP2)),
+							$elm$svg$Svg$Attributes$y2(
+							$author$project$Pos$toYString(hlineP2))
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$author$project$Pos$toXString(leftP1)),
+							$elm$svg$Svg$Attributes$y1(
+							$author$project$Pos$toYString(leftP1)),
+							$elm$svg$Svg$Attributes$x2(
+							$author$project$Pos$toXString(leftP2)),
+							$elm$svg$Svg$Attributes$y2(
+							$author$project$Pos$toYString(leftP2))
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$author$project$Pos$toXString(rightP1)),
+							$elm$svg$Svg$Attributes$y1(
+							$author$project$Pos$toYString(rightP1)),
+							$elm$svg$Svg$Attributes$x2(
+							$author$project$Pos$toXString(rightP2)),
+							$elm$svg$Svg$Attributes$y2(
+							$author$project$Pos$toYString(rightP2))
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$rect,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x(
+							$author$project$Pos$toXString(txtPos)),
+							$elm$svg$Svg$Attributes$y(
+							$author$project$Pos$toYString(txtPos)),
+							$elm$svg$Svg$Attributes$width(
+							$author$project$Size$toWidthString(txtSize)),
+							$elm$svg$Svg$Attributes$height(
+							$author$project$Size$toHeightString(txtSize))
+						]),
+					_List_Nil),
+					A4(
+					$author$project$SvgEx$centeredText,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$class('ruler-text')
+						]),
+					txtPos,
+					txtSize,
+					$elm$core$String$fromInt(vm.block.width))
+				]));
+	});
+var $author$project$Block$Internal$Component$Ruler$view = F2(
+	function (attrs, vm) {
+		var _v0 = vm.block.state;
+		switch (_v0.$) {
+			case 'Dragging':
+				return $elm$core$Maybe$Just(
+					A2($author$project$Block$Internal$Component$Ruler$viewOutline, attrs, vm));
+			case 'Selected':
+				return $elm$core$Maybe$Just(
+					A2($author$project$Block$Internal$Component$Ruler$viewOutline, attrs, vm));
+			default:
+				return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Pos$Pos = F2(
 	function (x, y) {
 		return {x: x, y: y};
@@ -12905,7 +13065,8 @@ var $author$project$Block$Internal$View$view = F3(
 		var background = $elm_community$maybe_extra$Maybe$Extra$values(
 			_List_fromArray(
 				[
-					A2($author$project$Block$Internal$Component$Outline$view, _List_Nil, vm)
+					A2($author$project$Block$Internal$Component$Outline$view, _List_Nil, vm),
+					A2($author$project$Block$Internal$Component$Ruler$view, _List_Nil, vm)
 				]));
 		return A2(
 			$elm$svg$Svg$g,

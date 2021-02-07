@@ -135,7 +135,7 @@ rootPos vm =
             Maybe.withDefault vm.body.mid vm.body.top
 
         delta =
-            Delta (vm.block.size.width + barOffset) 0
+            Delta (rootElement.size.width + barOffset) 0
     in
     rootElement.pos |> Pos.addDelta delta
 
@@ -171,8 +171,13 @@ dragMove drag gd bd =
 
         width_ =
             max 1 (drag.data.width + dx)
+
+        headerOffset_ =
+            min
+                bd.headerOffset
+                (width_ - 1)
     in
-    { bd | width = width_ }
+    { bd | headerOffset = headerOffset_, width = width_ }
 
 
 dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block

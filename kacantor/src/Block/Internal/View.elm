@@ -5,6 +5,7 @@ import Block.Internal.Component.Body as BodyComponent
 import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Outline as OutlineComponent
 import Block.Internal.Component.Quantity as QuantityComponent
+import Block.Internal.Component.Ruler as Ruler
 import Block.Internal.Component.Width as WidthComponent
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model as ViewModel
@@ -26,6 +27,7 @@ view context gd bd =
 
         background =
             [ OutlineComponent.view [] vm
+            , Ruler.view [] vm
             ]
                 |> Maybe.Extra.values
 
