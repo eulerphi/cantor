@@ -94,7 +94,7 @@
 }
 
 .block .outline {
-    fill: rgba(255, 255, 255, 0);
+    fill: none;
     stroke: rgb(156, 151, 151);
     stroke-dasharray: 6;
     stroke-width: 2;

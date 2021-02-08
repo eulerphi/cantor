@@ -13165,6 +13165,12 @@ var $author$project$Block$Internal$View$view = F3(
 	function (context, gd, bd) {
 		var vm = A2($author$project$Block$Internal$View$Model$forBlock, gd, bd);
 		var eventAttrsFn = A2($author$project$Block$Internal$View$eventAttrs, context.envelop, bd.key);
+		var decorators = $elm_community$maybe_extra$Maybe$Extra$values(
+			_List_fromArray(
+				[
+					A2($author$project$Block$Internal$Component$Outline$view, _List_Nil, vm),
+					A2($author$project$Block$Internal$Component$Ruler$view, _List_Nil, vm)
+				]));
 		var controls = $elm_community$maybe_extra$Maybe$Extra$values(
 			_List_fromArray(
 				[
@@ -13185,21 +13191,16 @@ var $author$project$Block$Internal$View$view = F3(
 			$author$project$Block$Internal$Component$Body$view,
 			eventAttrsFn($author$project$Block$Internal$Component$Body),
 			vm);
-		var background = $elm_community$maybe_extra$Maybe$Extra$values(
-			_List_fromArray(
-				[
-					A2($author$project$Block$Internal$Component$Outline$view, _List_Nil, vm),
-					A2($author$project$Block$Internal$Component$Ruler$view, _List_Nil, vm)
-				]));
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
 				[
 					$elm$svg$Svg$Attributes$class('block')
 				]),
-			_Utils_ap(
-				background,
-				A2($elm$core$List$cons, body, controls)));
+			A2(
+				$elm$core$List$cons,
+				body,
+				_Utils_ap(decorators, controls)));
 	});
 var $author$project$Block$view = F3(
 	function (_v0, gd, _v1) {

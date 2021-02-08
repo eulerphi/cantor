@@ -25,14 +25,14 @@ view context gd bd =
         vm =
             ViewModel.forBlock gd bd
 
-        background =
+        body =
+            BodyComponent.view (eventAttrsFn Component.Body) vm
+
+        decorators =
             [ OutlineComponent.view [] vm
             , Ruler.view [] vm
             ]
                 |> Maybe.Extra.values
-
-        body =
-            BodyComponent.view (eventAttrsFn Component.Body) vm
 
         controls =
             [ WidthComponent.view (eventAttrsFn Component.Width) vm
@@ -41,7 +41,7 @@ view context gd bd =
             ]
                 |> Maybe.Extra.values
     in
-    Svg.g [ SvgAttrs.class "block" ] (background ++ body :: controls)
+    Svg.g [ SvgAttrs.class "block" ] (body :: decorators ++ controls)
 
 
 eventAttrs : (Msg -> msg) -> String -> Component -> List (Attribute msg)

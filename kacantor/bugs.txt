@@ -1,8 +1,8 @@
-# Block isn't touch draggable until first selecting
+# Blocks can "disappear" when resizing the screen.
 
-    Repro: Add block and try to drag it.
-    Expected: Block is dragged.
-    Actual: Block is selected.
+    Repro: Use a phone in portrait orientation then rotate.
+    Expected: Blocks should move into a visible part of the grid.
+    Actual: They are offscreen.
 
 # Quantity control should position at last block of top body part if that is the only body part.
 
@@ -10,9 +10,3 @@
     Expected: Quantity outline is around last block in top body.
     Actual: It is around the last block of the width.
     Desc: This happens because mid was (incorrectly) assumed to always exist in View.BodyModel.
-
-# Blocks can "disappear" when resizing the screen.
-
-    Repro: Use a phone in portrait orientation then rotate.
-    Expected: Blocks should move into a visible part of the grid.
-    Actual: They are offscreen.
