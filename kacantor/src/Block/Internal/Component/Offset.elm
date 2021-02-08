@@ -7,6 +7,7 @@ import Block.Internal.View.Model exposing (ViewModel)
 import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Grid
+import MathEx
 import Pos exposing (Pos)
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
@@ -28,36 +29,59 @@ view attrs vm =
 viewControl : List (Attribute msg) -> ViewModel -> Svg msg
 viewControl attrs vm =
     let
-        ( radius, pos ) =
+        { radius, rootpos, cpos, guideVisible } =
             case vm.block.state of
                 Dragging Component.Offset drag ->
-                    ( Config.circleActiveSize vm.grid.unit
-                    , drag.pos.total
-                    )
+                    { radius = Config.circleActiveSize vm.grid.unit
+                    , rootpos = drag.start |> Pos.addDelta drag.delta.current
+                    , cpos = drag.start2 |> Pos.addDelta drag.delta.total
+                    , guideVisible = True
+                    }
 
                 _ ->
-                    ( Config.circleIdleSize vm.grid.unit
-                    , rootPos vm
-                    )
+                    let
+                        root =
+                            rootPosition vm
+                    in
+                    { radius = Config.circleIdleSize vm.grid.unit
+                    , rootpos = root
+                    , cpos = root |> circlePosition vm
+                    , guideVisible = False
+                    }
 
         barP1 =
-            pos
+            rootpos
 
         barP2 =
-            pos |> Pos.addDelta (Delta 0 vm.grid.unit)
+            rootpos |> Pos.addDelta (Delta 0 vm.grid.unit)
 
         connectorP1 =
-            pos |> Pos.addDelta (Delta -vm.grid.unit (vm.grid.unit / 2))
+            rootpos |> Pos.addDelta (Delta -vm.grid.unit (vm.grid.unit / 2))
 
         connectorP2 =
             connectorP1 |> Pos.addDelta (Delta vm.grid.unit 0)
 
-        circlePos =
-            connectorP1
+        ( guideP1, guideP2 ) =
+            if guideVisible then
+                ( Pos cpos.x vm.grid.pos.y
+                , Pos cpos.x (vm.grid.pos.y + vm.grid.size.height)
+                )
+
+            else
+                ( Pos 0 0, Pos 0 0 )
     in
     Svg.g
-        (SvgAttrs.class "offset-control" :: attrs)
+        [ SvgAttrs.class "offset-control" ]
         [ Svg.line
+            [ SvgAttrs.x1 <| Pos.toXString guideP1
+            , SvgAttrs.y1 <| Pos.toYString guideP1
+            , SvgAttrs.x2 <| Pos.toXString guideP2
+            , SvgAttrs.y2 <| Pos.toYString guideP2
+            , SvgAttrs.strokeWidth <| String.fromFloat <| Config.guideLineWidth
+            , SvgAttrs.strokeDasharray "4"
+            ]
+            []
+        , Svg.line
             [ SvgAttrs.x1 <| Pos.toXString barP1
             , SvgAttrs.y1 <| Pos.toYString barP1
             , SvgAttrs.x2 <| Pos.toXString barP2
@@ -74,16 +98,23 @@ viewControl attrs vm =
             ]
             []
         , Svg.circle
-            [ SvgAttrs.cx <| Pos.toXString circlePos
-            , SvgAttrs.cy <| Pos.toYString circlePos
-            , SvgAttrs.r <| String.fromFloat <| radius
-            ]
+            (attrs
+                ++ [ SvgAttrs.cx <| Pos.toXString cpos
+                   , SvgAttrs.cy <| Pos.toYString cpos
+                   , SvgAttrs.r <| String.fromFloat <| radius
+                   ]
+            )
             []
         ]
 
 
-rootPos : ViewModel -> Pos
-rootPos vm =
+circlePosition : ViewModel -> Pos -> Pos
+circlePosition vm rootpos =
+    rootpos |> Pos.addDelta (Delta -vm.grid.unit (vm.grid.unit / 2))
+
+
+rootPosition : ViewModel -> Pos
+rootPosition vm =
     let
         root =
             Maybe.withDefault vm.body.mid vm.body.top
@@ -97,8 +128,16 @@ rootPos vm =
 
 startDrag : ViewModel -> Block -> DragState Block
 startDrag vm bd =
-    DragState.init
-        { start = rootPos vm
+    let
+        rootpos =
+            rootPosition vm
+
+        cpos =
+            rootpos |> circlePosition vm
+    in
+    DragState.init2
+        { start = rootPosition vm
+        , start2 = cpos
         , data = bd
         , addFn = Delta.addX
         }
@@ -112,11 +151,14 @@ dragMove drag gd bd =
                 |> Delta.roundNear (toFloat gd.unit)
                 |> Delta.div (toFloat gd.unit)
 
+        minOffset =
+            0
+
         maxOffset =
             bd.width - 1
 
         headerOffset_ =
-            min maxOffset (drag.data.headerOffset + round dx)
+            MathEx.minmax minOffset maxOffset (drag.data.headerOffset + round dx)
     in
     { bd | headerOffset = headerOffset_ }
 

@@ -3,6 +3,7 @@ module Block.Internal.Config exposing
     , circleActiveSize
     , circleIdleSize
     , connectorLineWidth
+    , guideLineWidth
     , offsetPosDelta
     , outlinePosDelta
     , outlineSizeDelta
@@ -14,6 +15,11 @@ import Size exposing (Size)
 
 barLineWidth : Float
 barLineWidth =
+    3
+
+
+guideLineWidth : Float
+guideLineWidth =
     3
 
 

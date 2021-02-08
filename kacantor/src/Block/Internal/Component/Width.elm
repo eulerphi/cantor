@@ -1,6 +1,7 @@
 module Block.Internal.Component.Width exposing (..)
 
 import Block.Internal.Component as Component
+import Block.Internal.Config as Config
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
 import Delta exposing (Delta)
@@ -79,7 +80,7 @@ viewControl attrs vm =
             , SvgAttrs.y1 <| Pos.toYString guideP1
             , SvgAttrs.x2 <| Pos.toXString guideP2
             , SvgAttrs.y2 <| Pos.toYString guideP2
-            , SvgAttrs.strokeWidth <| String.fromFloat <| guideLineWidth
+            , SvgAttrs.strokeWidth <| String.fromFloat <| Config.guideLineWidth
             , SvgAttrs.strokeDasharray "4"
             ]
             []
@@ -115,11 +116,6 @@ barOffset =
 
 barWidth : Float
 barWidth =
-    3
-
-
-guideLineWidth : Float
-guideLineWidth =
     3
 
 

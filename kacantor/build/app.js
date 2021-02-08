@@ -11251,6 +11251,13 @@ var $author$project$Delta$div = F2(
 	function (unit, d) {
 		return {dx: d.dx / unit, dy: d.dy / unit};
 	});
+var $author$project$MathEx$minmax = F3(
+	function (minVal, maxVal, val) {
+		return A2(
+			$elm$core$Basics$max,
+			minVal,
+			A2($elm$core$Basics$min, val, maxVal));
+	});
 var $author$project$Delta$roundNear = F2(
 	function (unit, d) {
 		return {
@@ -11260,14 +11267,16 @@ var $author$project$Delta$roundNear = F2(
 	});
 var $author$project$Block$Internal$Component$Offset$dragMove = F3(
 	function (drag, gd, bd) {
+		var minOffset = 0;
 		var maxOffset = bd.width - 1;
 		var _v0 = A2(
 			$author$project$Delta$div,
 			gd.unit,
 			A2($author$project$Delta$roundNear, gd.unit, drag.delta.current));
 		var dx = _v0.dx;
-		var headerOffset_ = A2(
-			$elm$core$Basics$min,
+		var headerOffset_ = A3(
+			$author$project$MathEx$minmax,
+			minOffset,
 			maxOffset,
 			drag.data.headerOffset + $elm$core$Basics$round(dx));
 		return _Utils_update(
@@ -11629,23 +11638,44 @@ var $author$project$Delta$addX = F2(
 	function (d1, d2) {
 		return {dx: d1.dx + d2.dx, dy: d1.dy};
 	});
+var $author$project$Block$Internal$Component$Offset$circlePosition = F2(
+	function (vm, rootpos) {
+		return A2(
+			$author$project$Pos$addDelta,
+			A2($author$project$Delta$Delta, -vm.grid.unit, vm.grid.unit / 2),
+			rootpos);
+	});
+var $author$project$DragState$init2 = function (input) {
+	return {
+		addFn: input.addFn,
+		data: input.data,
+		delta: {current: $author$project$Delta$none, total: $author$project$Delta$none},
+		pos: {current: input.start, total: input.start},
+		start: input.start,
+		start2: input.start2,
+		start3: $author$project$Pos$origin
+	};
+};
 var $author$project$Block$Internal$Config$outlinePosDelta = A2($author$project$Delta$Delta, -4, -4);
 var $author$project$Block$Internal$Config$offsetPosDelta = function () {
 	var _v0 = $author$project$Block$Internal$Config$outlinePosDelta;
 	var dx = _v0.dx;
 	return A2($author$project$Delta$Delta, dx, 0);
 }();
-var $author$project$Block$Internal$Component$Offset$rootPos = function (vm) {
+var $author$project$Block$Internal$Component$Offset$rootPosition = function (vm) {
 	var root = A2($elm$core$Maybe$withDefault, vm.body.mid, vm.body.top);
 	return A2($author$project$Pos$addDelta, $author$project$Block$Internal$Config$offsetPosDelta, root.pos);
 };
 var $author$project$Block$Internal$Component$Offset$startDrag = F2(
 	function (vm, bd) {
-		return $author$project$DragState$init(
+		var rootpos = $author$project$Block$Internal$Component$Offset$rootPosition(vm);
+		var cpos = A2($author$project$Block$Internal$Component$Offset$circlePosition, vm, rootpos);
+		return $author$project$DragState$init2(
 			{
 				addFn: $author$project$Delta$addX,
 				data: bd,
-				start: $author$project$Block$Internal$Component$Offset$rootPos(vm)
+				start: $author$project$Block$Internal$Component$Offset$rootPosition(vm),
+				start2: cpos
 			});
 	});
 var $author$project$Block$Internal$Component$Quantity$rootPos = function (vm) {
@@ -11670,17 +11700,6 @@ var $author$project$Block$Internal$Component$Width$circlePos = F2(
 			A2($author$project$Delta$Delta, vm.grid.unit, vm.block.size.height / 2),
 			root);
 	});
-var $author$project$DragState$init2 = function (input) {
-	return {
-		addFn: input.addFn,
-		data: input.data,
-		delta: {current: $author$project$Delta$none, total: $author$project$Delta$none},
-		pos: {current: input.start, total: input.start},
-		start: input.start,
-		start2: input.start2,
-		start3: $author$project$Pos$origin
-	};
-};
 var $author$project$Block$Internal$Component$Width$barOffset = 4;
 var $author$project$Block$Internal$Component$Width$rootPos = function (vm) {
 	var rootElement = A2($elm$core$Maybe$withDefault, vm.body.mid, vm.body.top);
@@ -12499,6 +12518,10 @@ var $author$project$Block$Internal$Component$Body$view = F2(
 				eventAttrs),
 			elements);
 	});
+var $author$project$Pos$Pos = F2(
+	function (x, y) {
+		return {x: x, y: y};
+	});
 var $author$project$Block$Internal$Config$barLineWidth = 3;
 var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
 var $author$project$Block$Internal$Config$circleActiveSize = function (unit) {
@@ -12510,7 +12533,9 @@ var $author$project$Block$Internal$Config$circleIdleSize = function (unit) {
 var $author$project$Block$Internal$Config$connectorLineWidth = 3;
 var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
 var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $author$project$Block$Internal$Config$guideLineWidth = 3;
 var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
 var $author$project$Block$Internal$Component$Offset$viewControl = F2(
 	function (attrs, vm) {
@@ -12519,39 +12544,71 @@ var $author$project$Block$Internal$Component$Offset$viewControl = F2(
 			if ((_v1.$ === 'Dragging') && (_v1.a.$ === 'Offset')) {
 				var _v2 = _v1.a;
 				var drag = _v1.b;
-				return _Utils_Tuple2(
-					$author$project$Block$Internal$Config$circleActiveSize(vm.grid.unit),
-					drag.pos.total);
+				return {
+					cpos: A2($author$project$Pos$addDelta, drag.delta.total, drag.start2),
+					guideVisible: true,
+					radius: $author$project$Block$Internal$Config$circleActiveSize(vm.grid.unit),
+					rootpos: A2($author$project$Pos$addDelta, drag.delta.current, drag.start)
+				};
 			} else {
-				return _Utils_Tuple2(
-					$author$project$Block$Internal$Config$circleIdleSize(vm.grid.unit),
-					$author$project$Block$Internal$Component$Offset$rootPos(vm));
+				var root = $author$project$Block$Internal$Component$Offset$rootPosition(vm);
+				return {
+					cpos: A2($author$project$Block$Internal$Component$Offset$circlePosition, vm, root),
+					guideVisible: false,
+					radius: $author$project$Block$Internal$Config$circleIdleSize(vm.grid.unit),
+					rootpos: root
+				};
 			}
 		}();
-		var radius = _v0.a;
-		var pos = _v0.b;
-		var barP1 = pos;
+		var radius = _v0.radius;
+		var rootpos = _v0.rootpos;
+		var cpos = _v0.cpos;
+		var guideVisible = _v0.guideVisible;
+		var barP1 = rootpos;
 		var barP2 = A2(
 			$author$project$Pos$addDelta,
 			A2($author$project$Delta$Delta, 0, vm.grid.unit),
-			pos);
+			rootpos);
 		var connectorP1 = A2(
 			$author$project$Pos$addDelta,
 			A2($author$project$Delta$Delta, -vm.grid.unit, vm.grid.unit / 2),
-			pos);
-		var circlePos = connectorP1;
+			rootpos);
 		var connectorP2 = A2(
 			$author$project$Pos$addDelta,
 			A2($author$project$Delta$Delta, vm.grid.unit, 0),
 			connectorP1);
+		var _v3 = guideVisible ? _Utils_Tuple2(
+			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y),
+			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y + vm.grid.size.height)) : _Utils_Tuple2(
+			A2($author$project$Pos$Pos, 0, 0),
+			A2($author$project$Pos$Pos, 0, 0));
+		var guideP1 = _v3.a;
+		var guideP2 = _v3.b;
 		return A2(
 			$elm$svg$Svg$g,
-			A2(
-				$elm$core$List$cons,
-				$elm$svg$Svg$Attributes$class('offset-control'),
-				attrs),
 			_List_fromArray(
 				[
+					$elm$svg$Svg$Attributes$class('offset-control')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$author$project$Pos$toXString(guideP1)),
+							$elm$svg$Svg$Attributes$y1(
+							$author$project$Pos$toYString(guideP1)),
+							$elm$svg$Svg$Attributes$x2(
+							$author$project$Pos$toXString(guideP2)),
+							$elm$svg$Svg$Attributes$y2(
+							$author$project$Pos$toYString(guideP2)),
+							$elm$svg$Svg$Attributes$strokeWidth(
+							$elm$core$String$fromFloat($author$project$Block$Internal$Config$guideLineWidth)),
+							$elm$svg$Svg$Attributes$strokeDasharray('4')
+						]),
+					_List_Nil),
 					A2(
 					$elm$svg$Svg$line,
 					_List_fromArray(
@@ -12586,15 +12643,17 @@ var $author$project$Block$Internal$Component$Offset$viewControl = F2(
 					_List_Nil),
 					A2(
 					$elm$svg$Svg$circle,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$cx(
-							$author$project$Pos$toXString(circlePos)),
-							$elm$svg$Svg$Attributes$cy(
-							$author$project$Pos$toYString(circlePos)),
-							$elm$svg$Svg$Attributes$r(
-							$elm$core$String$fromFloat(radius))
-						]),
+					_Utils_ap(
+						attrs,
+						_List_fromArray(
+							[
+								$elm$svg$Svg$Attributes$cx(
+								$author$project$Pos$toXString(cpos)),
+								$elm$svg$Svg$Attributes$cy(
+								$author$project$Pos$toYString(cpos)),
+								$elm$svg$Svg$Attributes$r(
+								$elm$core$String$fromFloat(radius))
+							])),
 					_List_Nil)
 				]));
 	});
@@ -12955,13 +13014,7 @@ var $author$project$Block$Internal$Component$Ruler$view = F2(
 				return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Pos$Pos = F2(
-	function (x, y) {
-		return {x: x, y: y};
-	});
 var $author$project$Block$Internal$Component$Width$barWidth = 3;
-var $author$project$Block$Internal$Component$Width$guideLineWidth = 3;
-var $elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
 var $author$project$Block$Internal$Component$Width$viewControl = F2(
 	function (attrs, vm) {
 		var _v0 = function () {
@@ -13030,7 +13083,7 @@ var $author$project$Block$Internal$Component$Width$viewControl = F2(
 							$elm$svg$Svg$Attributes$y2(
 							$author$project$Pos$toYString(guideP2)),
 							$elm$svg$Svg$Attributes$strokeWidth(
-							$elm$core$String$fromFloat($author$project$Block$Internal$Component$Width$guideLineWidth)),
+							$elm$core$String$fromFloat($author$project$Block$Internal$Config$guideLineWidth)),
 							$elm$svg$Svg$Attributes$strokeDasharray('4')
 						]),
 					_List_Nil),
