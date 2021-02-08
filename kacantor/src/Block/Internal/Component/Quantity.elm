@@ -134,11 +134,11 @@ dragMove drag gd bd =
             pos
                 |> Pos.deltaBetween bd.pos
                 |> Delta.div (toFloat gd.unit)
-                |> Delta.map (max 0)
-                |> Pair.map round
+                |> Delta.map round
+                |> Tuple.mapBoth (\x -> max x -1) (\y -> max y 0)
 
         quantity_ =
-            (dy * bd.width) + min dx bd.width - bd.headerOffset
+            (dy * bd.width) + min (dx + 1) bd.width - bd.headerOffset
     in
     { bd | quantity = quantity_ }
 

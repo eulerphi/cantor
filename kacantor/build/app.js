@@ -11307,19 +11307,24 @@ var $author$project$Block$Internal$Component$Quantity$dragMove = F3(
 				unit: gd.unit
 			},
 			drag.pos.total);
-		var _v0 = A2(
-			$author$project$Pair$map,
-			$elm$core$Basics$round,
+		var _v0 = A3(
+			$elm$core$Tuple$mapBoth,
+			function (x) {
+				return A2($elm$core$Basics$max, x, -1);
+			},
+			function (y) {
+				return A2($elm$core$Basics$max, y, 0);
+			},
 			A2(
 				$author$project$Delta$map,
-				$elm$core$Basics$max(0),
+				$elm$core$Basics$round,
 				A2(
 					$author$project$Delta$div,
 					gd.unit,
 					A2($author$project$Pos$deltaBetween, bd.pos, pos))));
 		var dx = _v0.a;
 		var dy = _v0.b;
-		var quantity_ = ((dy * bd.width) + A2($elm$core$Basics$min, dx, bd.width)) - bd.headerOffset;
+		var quantity_ = ((dy * bd.width) + A2($elm$core$Basics$min, dx + 1, bd.width)) - bd.headerOffset;
 		return _Utils_update(
 			bd,
 			{quantity: quantity_});
