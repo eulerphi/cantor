@@ -3,10 +3,10 @@ module Block.Internal.Component.Quantity exposing (..)
 import Block.Internal.Component as Component
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
+import CircleDragControl as CircleControl
 import Delta
 import DragState exposing (DragState)
 import Grid
-import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
@@ -29,15 +29,15 @@ view attrs vm =
 viewControl : List (Attribute msg) -> ViewModel -> Svg msg
 viewControl attrs vm =
     let
-        ( radius, pos ) =
+        ( active, pos ) =
             case vm.block.state of
                 Dragging Component.Quantity drag ->
-                    ( round (vm.grid.unit / 1.2)
+                    ( True
                     , drag.pos.total
                     )
 
                 _ ->
-                    ( round (vm.grid.unit / 1.5)
+                    ( False
                     , rootPos vm
                     )
 
@@ -60,9 +60,9 @@ viewControl attrs vm =
             Pos.add rectPos <| Pos.init ( halfUnit, rectSize.height )
 
         vlineP2 =
-            Pos.addY vlineP1 <| Pos.init ( 0, unit )
+            vlineP1 |> Pos.addY (2 * unit)
 
-        circlePos =
+        cpos =
             vlineP2
     in
     Svg.g
@@ -84,14 +84,12 @@ viewControl attrs vm =
             , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
             ]
             []
-        , Svg.circle
-            (attrs
-                ++ [ SvgAttrs.cx <| Pos.toXString circlePos
-                   , SvgAttrs.cy <| Pos.toYString circlePos
-                   , SvgAttrs.r <| String.fromInt <| radius
-                   ]
-            )
-            []
+        , CircleControl.view
+            attrs
+            { active = active
+            , pos = cpos
+            , unit = vm.grid.unit
+            }
         ]
 
 

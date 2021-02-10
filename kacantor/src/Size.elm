@@ -49,6 +49,11 @@ map fn size =
     { width = fn size.width, height = fn size.height }
 
 
+toPair : Size -> ( Float, Float )
+toPair size =
+    ( size.width, size.height )
+
+
 maxWidth3 : Size -> Size -> Size -> Float
 maxWidth3 s1 s2 s3 =
     max s1.width (max s2.width s3.width)

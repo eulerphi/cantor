@@ -46,17 +46,17 @@ add4 p1 p2 p3 p4 =
     }
 
 
-addX : Pos -> Pos -> Pos
-addX p1 p2 =
-    { x = p1.x + p2.x
-    , y = p1.y
+addX : Float -> Pos -> Pos
+addX xValue pos =
+    { x = pos.x + xValue
+    , y = pos.y
     }
 
 
-addY : Pos -> Pos -> Pos
-addY p1 p2 =
-    { x = p1.x
-    , y = p1.y + p2.y
+addY : Float -> Pos -> Pos
+addY yValue pos =
+    { x = pos.x
+    , y = pos.y + yValue
     }
 
 

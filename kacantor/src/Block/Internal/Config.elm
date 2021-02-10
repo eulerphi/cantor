@@ -30,7 +30,7 @@ circleActiveSize unit =
 
 circleIdleSize : Float -> Float
 circleIdleSize unit =
-    unit / 1.5
+    unit / 3
 
 
 connectorLineWidth : Float

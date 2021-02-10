@@ -10,14 +10,12 @@ import Grid
 import Html exposing (div)
 import Html.Attributes as HtmlAttrs
 import Pair
-import Pos exposing (Pos)
+import Pos
 import Size
 import Svg
 import Svg.Attributes as SvgAttrs
 import Svg.Events as SvgEvts
-import SvgEx
 import Task
-import Tuple
 
 
 
@@ -26,6 +24,7 @@ import Tuple
 
 type alias Model =
     { blocks : Group Msg
+    , devicePixelRatio : Float
     , grid : Grid.Data
     , key : Int
     , margin : Int
@@ -42,11 +41,12 @@ type Msg
     | BlockMsg Block.Msg
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : Float -> ( Model, Cmd Msg )
+init devicePixelRatio =
     let
         m =
             { blocks = Group.init BlockMsg []
+            , devicePixelRatio = devicePixelRatio
             , grid = Grid.emptyParams
             , key = 0
             , margin = 20
@@ -202,7 +202,7 @@ update msg m =
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program Float Model Msg
 main =
     Browser.element
         { init = init

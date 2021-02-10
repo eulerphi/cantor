@@ -4,6 +4,7 @@ import Block.Internal.Component as Component
 import Block.Internal.Config as Config
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
+import CircleDragControl as CircleControl
 import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Grid
@@ -32,13 +33,12 @@ view attrs vm =
 viewControl : List (Attribute msg) -> ViewModel -> Svg msg
 viewControl attrs vm =
     let
-        { radius, rootpos, cpos, guideVisible } =
+        { active, rootpos, cpos } =
             case vm.block.state of
                 Dragging Component.Width drag ->
-                    { radius = round (vm.grid.unit / 1.2)
+                    { active = True
                     , rootpos = drag.start |> Pos.addDelta drag.delta.current
                     , cpos = drag.start2 |> Pos.addDelta drag.delta.total
-                    , guideVisible = True
                     }
 
                 _ ->
@@ -46,10 +46,9 @@ viewControl attrs vm =
                         root =
                             rootPos vm
                     in
-                    { radius = round (vm.grid.unit / 1.5)
+                    { active = False
                     , rootpos = root
                     , cpos = root |> circlePos vm
-                    , guideVisible = False
                     }
 
         vbarP1 =
@@ -65,7 +64,7 @@ viewControl attrs vm =
             Pos.init ( cpos.x, hbarP1.y )
 
         ( guideP1, guideP2 ) =
-            if guideVisible then
+            if active then
                 ( Pos cpos.x vm.grid.pos.y
                 , Pos cpos.x (vm.grid.pos.y + vm.grid.size.height)
                 )
@@ -100,12 +99,12 @@ viewControl attrs vm =
             , SvgAttrs.strokeWidth <| String.fromFloat <| barWidth
             ]
             []
-        , Svg.circle
-            [ SvgAttrs.cx <| Pos.toXString cpos
-            , SvgAttrs.cy <| Pos.toYString cpos
-            , SvgAttrs.r <| String.fromInt <| radius
-            ]
-            []
+        , CircleControl.view
+            attrs
+            { active = active
+            , pos = cpos
+            , unit = vm.grid.unit
+            }
         ]
 
 
@@ -119,9 +118,14 @@ barWidth =
     3
 
 
+circlePositionXOffset : ViewModel -> Float
+circlePositionXOffset vm =
+    2 * vm.grid.unit
+
+
 circlePos : ViewModel -> Pos -> Pos
 circlePos vm root =
-    root |> Pos.addDelta (Delta vm.grid.unit (vm.block.size.height / 2))
+    root |> Pos.addDelta (Delta (circlePositionXOffset vm) (vm.block.size.height / 2))
 
 
 rootPos : ViewModel -> Pos

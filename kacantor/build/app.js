@@ -10643,9 +10643,10 @@ var $author$project$Block$Group$init = F2(
 			rest: blocks
 		};
 	});
-var $author$project$Main$init = function (_v0) {
+var $author$project$Main$init = function (devicePixelRatio) {
 	var m = {
 		blocks: A2($author$project$Block$Group$init, $author$project$Main$BlockMsg, _List_Nil),
+		devicePixelRatio: devicePixelRatio,
 		grid: $author$project$Grid$emptyParams,
 		key: 0,
 		margin: 20,
@@ -11441,18 +11442,56 @@ var $author$project$ViewData$addPos = F2(
 	});
 var $author$project$Block$Internal$View$BodyModel$addPos = F2(
 	function (pos, body) {
-		return {
-			bot: A2(
-				$elm$core$Maybe$map,
-				$author$project$ViewData$addPos(pos),
-				body.bot),
-			mid: A2($author$project$ViewData$addPos, pos, body.mid),
-			top: A2(
-				$elm$core$Maybe$map,
-				$author$project$ViewData$addPos(pos),
-				body.top)
-		};
+		return _Utils_update(
+			body,
+			{
+				bot: A2(
+					$elm$core$Maybe$map,
+					$author$project$ViewData$addPos(pos),
+					body.bot),
+				mid: A2($author$project$ViewData$addPos, pos, body.mid),
+				top: A2(
+					$elm$core$Maybe$map,
+					$author$project$ViewData$addPos(pos),
+					body.top)
+			});
 	});
+var $elm_community$maybe_extra$Maybe$Extra$cons = F2(
+	function (item, list) {
+		if (item.$ === 'Just') {
+			var v = item.a;
+			return A2($elm$core$List$cons, v, list);
+		} else {
+			return list;
+		}
+	});
+var $elm_community$maybe_extra$Maybe$Extra$values = A2($elm$core$List$foldr, $elm_community$maybe_extra$Maybe$Extra$cons, _List_Nil);
+var $author$project$Block$Internal$View$BodyModel$fillVals = function (body) {
+	var top = A2(
+		$elm$core$Maybe$map,
+		function (vd) {
+			return $elm$core$String$fromFloat(vd.size.width);
+		},
+		body.top);
+	var mid = (body.mid.size.height > 0) ? $elm$core$Maybe$Just(
+		'(' + ($elm$core$String$fromFloat(body.mid.size.height) + (' x ' + ($elm$core$String$fromFloat(body.mid.size.width) + ')')))) : $elm$core$Maybe$Nothing;
+	var bot = A2(
+		$elm$core$Maybe$map,
+		function (vd) {
+			return $elm$core$String$fromFloat(vd.size.width);
+		},
+		body.bot);
+	return _Utils_update(
+		body,
+		{
+			str2: A2(
+				$elm$core$String$join,
+				' + ',
+				$elm_community$maybe_extra$Maybe$Extra$values(
+					_List_fromArray(
+						[top, mid, bot])))
+		});
+};
 var $author$project$MaybeEx$filter = F2(
 	function (fn, maybe) {
 		var filterFn = function (val) {
@@ -11464,11 +11503,13 @@ var $author$project$ViewData$hasSize = function (vd) {
 	return (vd.size.width > 0) && (vd.size.height > 0);
 };
 var $author$project$Block$Internal$View$BodyModel$filterEmpty = function (body) {
-	return {
-		bot: A2($author$project$MaybeEx$filter, $author$project$ViewData$hasSize, body.bot),
-		mid: body.mid,
-		top: A2($author$project$MaybeEx$filter, $author$project$ViewData$hasSize, body.top)
-	};
+	return _Utils_update(
+		body,
+		{
+			bot: A2($author$project$MaybeEx$filter, $author$project$ViewData$hasSize, body.bot),
+			mid: body.mid,
+			top: A2($author$project$MaybeEx$filter, $author$project$ViewData$hasSize, body.top)
+		});
 };
 var $author$project$Size$fromInt = function (_v0) {
 	var w = _v0.a;
@@ -11503,11 +11544,13 @@ var $author$project$ViewData$scaleByInt = F2(
 var $author$project$Block$Internal$View$BodyModel$scale = F2(
 	function (gd, body) {
 		var scaleFn = $author$project$ViewData$scaleByInt(gd.unit);
-		return {
-			bot: A2($elm$core$Maybe$map, scaleFn, body.bot),
-			mid: scaleFn(body.mid),
-			top: A2($elm$core$Maybe$map, scaleFn, body.top)
-		};
+		return _Utils_update(
+			body,
+			{
+				bot: A2($elm$core$Maybe$map, scaleFn, body.bot),
+				mid: scaleFn(body.mid),
+				top: A2($elm$core$Maybe$map, scaleFn, body.top)
+			});
 	});
 var $author$project$Block$Internal$View$BodyModel$forBlock = F2(
 	function (gd, bd) {
@@ -11543,18 +11586,21 @@ var $author$project$Block$Internal$View$BodyModel$forBlock = F2(
 			size: $author$project$Size$fromInt(
 				_Utils_Tuple2(botWidth, botHeight))
 		};
-		return $author$project$Block$Internal$View$BodyModel$filterEmpty(
+		return A2(
+			$author$project$Block$Internal$View$BodyModel$addPos,
+			bd.pos,
 			A2(
-				$author$project$Block$Internal$View$BodyModel$addPos,
-				bd.pos,
-				A2(
-					$author$project$Block$Internal$View$BodyModel$scale,
-					gd,
-					{
-						bot: $elm$core$Maybe$Just(bot),
-						mid: mid,
-						top: $elm$core$Maybe$Just(top)
-					})));
+				$author$project$Block$Internal$View$BodyModel$scale,
+				gd,
+				$author$project$Block$Internal$View$BodyModel$fillVals(
+					$author$project$Block$Internal$View$BodyModel$filterEmpty(
+						{
+							bot: $elm$core$Maybe$Just(bot),
+							mid: mid,
+							str1: $elm$core$String$fromInt(bd.quantity),
+							str2: '',
+							top: $elm$core$Maybe$Just(top)
+						}))));
 	});
 var $author$project$Size$addHeight3 = F3(
 	function (s1, s2, s3) {
@@ -11643,11 +11689,17 @@ var $author$project$Delta$addX = F2(
 	function (d1, d2) {
 		return {dx: d1.dx + d2.dx, dy: d1.dy};
 	});
+var $author$project$Block$Internal$Component$Offset$circlePositionXOffset = function (vm) {
+	return 2 * vm.grid.unit;
+};
 var $author$project$Block$Internal$Component$Offset$circlePosition = F2(
 	function (vm, rootpos) {
 		return A2(
 			$author$project$Pos$addDelta,
-			A2($author$project$Delta$Delta, -vm.grid.unit, vm.grid.unit / 2),
+			A2(
+				$author$project$Delta$Delta,
+				-$author$project$Block$Internal$Component$Offset$circlePositionXOffset(vm),
+				vm.grid.unit / 2),
 			rootpos);
 	});
 var $author$project$DragState$init2 = function (input) {
@@ -11698,11 +11750,17 @@ var $author$project$Block$Internal$Component$Quantity$startDrag = F2(
 				start: $author$project$Block$Internal$Component$Quantity$rootPos(vm)
 			});
 	});
+var $author$project$Block$Internal$Component$Width$circlePositionXOffset = function (vm) {
+	return 2 * vm.grid.unit;
+};
 var $author$project$Block$Internal$Component$Width$circlePos = F2(
 	function (vm, root) {
 		return A2(
 			$author$project$Pos$addDelta,
-			A2($author$project$Delta$Delta, vm.grid.unit, vm.block.size.height / 2),
+			A2(
+				$author$project$Delta$Delta,
+				$author$project$Block$Internal$Component$Width$circlePositionXOffset(vm),
+				vm.block.size.height / 2),
 			root);
 	});
 var $author$project$Block$Internal$Component$Width$barOffset = 4;
@@ -12301,81 +12359,6 @@ var $author$project$Block$Internal$View$eventAttrs = F3(
 				id,
 				A2($elm$core$Basics$composeL, envelop, $author$project$Block$Internal$Types$DragMsg)));
 	});
-var $elm_community$maybe_extra$Maybe$Extra$cons = F2(
-	function (item, list) {
-		if (item.$ === 'Just') {
-			var v = item.a;
-			return A2($elm$core$List$cons, v, list);
-		} else {
-			return list;
-		}
-	});
-var $elm_community$maybe_extra$Maybe$Extra$values = A2($elm$core$List$foldr, $elm_community$maybe_extra$Maybe$Extra$cons, _List_Nil);
-var $author$project$Size$Size = F2(
-	function (width, height) {
-		return {height: height, width: width};
-	});
-var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
-var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
-var $author$project$Pos$toXString = function (pos) {
-	return $elm$core$String$fromFloat(pos.x);
-};
-var $author$project$Pos$toYString = function (pos) {
-	return $elm$core$String$fromFloat(pos.y);
-};
-var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
-var $author$project$SvgEx$translateToPos = function (pos) {
-	var _v0 = _Utils_Tuple2(
-		$author$project$Pos$toXString(pos),
-		$author$project$Pos$toYString(pos));
-	var x = _v0.a;
-	var y = _v0.b;
-	return $elm$svg$Svg$Attributes$transform('translate(' + (x + (' ' + (y + ')'))));
-};
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $author$project$SvgEx$centeredText = F4(
-	function (attrs, pos, size, text) {
-		return A2(
-			$elm$svg$Svg$g,
-			A2(
-				$elm$core$List$cons,
-				$author$project$SvgEx$translateToPos(pos),
-				attrs),
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$svg,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$width(
-							$author$project$Size$toWidthString(size)),
-							$elm$svg$Svg$Attributes$height(
-							$author$project$Size$toHeightString(size))
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$svg$Svg$text_,
-							_List_fromArray(
-								[
-									$elm$svg$Svg$Attributes$x('50%'),
-									$elm$svg$Svg$Attributes$y('50%'),
-									$elm$svg$Svg$Attributes$fill('black'),
-									$elm$svg$Svg$Attributes$dominantBaseline('middle'),
-									$elm$svg$Svg$Attributes$textAnchor('middle')
-								]),
-							_List_fromArray(
-								[
-									$elm$svg$Svg$text(text)
-								]))
-						]))
-				]));
-	});
 var $author$project$Grid$forViewData = F2(
 	function (unit, vd) {
 		return {
@@ -12389,6 +12372,9 @@ var $author$project$Grid$forViewData = F2(
 			y: $elm$core$Basics$round(vd.pos.y)
 		};
 	});
+var $author$project$Size$toPair = function (size) {
+	return _Utils_Tuple2(size.width, size.height);
+};
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
@@ -12439,6 +12425,9 @@ var $author$project$Grid$vline = F2(
 			'grid-vline');
 		return A3($author$project$Grid$line, p1, p2, _class);
 	});
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
 var $author$project$Grid$view = F2(
 	function (attrs, params) {
 		var verticalLines = A2(
@@ -12472,18 +12461,74 @@ var $author$project$Grid$view = F2(
 				rect,
 				_Utils_ap(horizontalLines, verticalLines)));
 	});
-var $author$project$Block$Internal$Component$Body$viewRect = F2(
-	function (vm, vd) {
-		var grid = A2(
-			$author$project$Grid$forViewData,
-			$elm$core$Basics$round(vm.grid.unit),
-			vd);
-		var gridElement = A2($author$project$Grid$view, _List_Nil, grid);
-		var _v0 = A2($author$project$Size$scale, 1 / vm.grid.unit, vd.size);
-		var width = _v0.width;
-		var height = _v0.height;
-		var quantity = (vm.block.width * ($elm$core$Basics$round(height) - 1)) + $elm$core$Basics$round(width);
-		var txt = A4(
+var $author$project$Size$Size = F2(
+	function (width, height) {
+		return {height: height, width: width};
+	});
+var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
+var $elm$svg$Svg$text_ = $elm$svg$Svg$trustedNode('text');
+var $author$project$Pos$toXString = function (pos) {
+	return $elm$core$String$fromFloat(pos.x);
+};
+var $author$project$Pos$toYString = function (pos) {
+	return $elm$core$String$fromFloat(pos.y);
+};
+var $elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
+var $author$project$SvgEx$translateToPos = function (pos) {
+	var _v0 = _Utils_Tuple2(
+		$author$project$Pos$toXString(pos),
+		$author$project$Pos$toYString(pos));
+	var x = _v0.a;
+	var y = _v0.b;
+	return $elm$svg$Svg$Attributes$transform('translate(' + (x + (' ' + (y + ')'))));
+};
+var $author$project$SvgEx$centeredText = F4(
+	function (attrs, pos, size, text) {
+		return A2(
+			$elm$svg$Svg$g,
+			A2(
+				$elm$core$List$cons,
+				$author$project$SvgEx$translateToPos(pos),
+				attrs),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$svg,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$width(
+							$author$project$Size$toWidthString(size)),
+							$elm$svg$Svg$Attributes$height(
+							$author$project$Size$toHeightString(size))
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$svg$Svg$text_,
+							_List_fromArray(
+								[
+									$elm$svg$Svg$Attributes$x('50%'),
+									$elm$svg$Svg$Attributes$y('50%'),
+									$elm$svg$Svg$Attributes$fill('black'),
+									$elm$svg$Svg$Attributes$dominantBaseline('middle'),
+									$elm$svg$Svg$Attributes$textAnchor('middle')
+								]),
+							_List_fromArray(
+								[
+									$elm$svg$Svg$text(text)
+								]))
+						]))
+				]));
+	});
+var $author$project$Block$Internal$Component$Body$viewTxt = F3(
+	function (_v0, vm, vd) {
+		var cols = _v0.a;
+		var rows = _v0.b;
+		var quantity = (vm.block.width * (rows - 1)) + cols;
+		return A4(
 			$author$project$SvgEx$centeredText,
 			_List_fromArray(
 				[
@@ -12492,6 +12537,26 @@ var $author$project$Block$Internal$Component$Body$viewRect = F2(
 			vd.pos,
 			A2($author$project$Size$Size, vm.grid.unit, vm.grid.unit),
 			$elm$core$String$fromInt(quantity));
+	});
+var $author$project$Block$Internal$Component$Body$viewRect = F2(
+	function (vm, vd) {
+		var grid = A2(
+			$author$project$Grid$forViewData,
+			$elm$core$Basics$round(vm.grid.unit),
+			vd);
+		var gridElement = A2($author$project$Grid$view, _List_Nil, grid);
+		var _v0 = A2(
+			$author$project$Pair$map,
+			$elm$core$Basics$round,
+			$author$project$Size$toPair(
+				A2($author$project$Size$scale, 1 / vm.grid.unit, vd.size)));
+		var cols = _v0.a;
+		var rows = _v0.b;
+		var txt = A3(
+			$author$project$Block$Internal$Component$Body$viewTxt,
+			_Utils_Tuple2(cols, rows),
+			vm,
+			vd);
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
@@ -12527,21 +12592,68 @@ var $author$project$Pos$Pos = F2(
 	function (x, y) {
 		return {x: x, y: y};
 	});
+var $author$project$Pos$addY = F2(
+	function (yValue, pos) {
+		return {x: pos.x, y: pos.y + yValue};
+	});
 var $author$project$Block$Internal$Config$barLineWidth = 3;
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $author$project$Block$Internal$Config$circleActiveSize = function (unit) {
-	return unit / 1.2;
-};
-var $author$project$Block$Internal$Config$circleIdleSize = function (unit) {
-	return unit / 1.5;
-};
 var $author$project$Block$Internal$Config$connectorLineWidth = 3;
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var $author$project$Block$Internal$Config$guideLineWidth = 3;
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
 var $elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
 var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $author$project$CircleDragControl$controlRadius = function (_v0) {
+	var active = _v0.active;
+	var unit = _v0.unit;
+	return active ? (unit / 1.2) : (unit / 3);
+};
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $author$project$CircleDragControl$gripRadius = function (_v0) {
+	var active = _v0.active;
+	var unit = _v0.unit;
+	return active ? (unit / 1.2) : (unit / 1.5);
+};
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $author$project$CircleDragControl$view = F2(
+	function (attrs, input) {
+		return A2(
+			$elm$svg$Svg$g,
+			A2(
+				$elm$core$List$cons,
+				$elm$svg$Svg$Attributes$class('drag-control'),
+				attrs),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx(
+							$author$project$Pos$toXString(input.pos)),
+							$elm$svg$Svg$Attributes$cy(
+							$author$project$Pos$toYString(input.pos)),
+							$elm$svg$Svg$Attributes$r(
+							$elm$core$String$fromFloat(
+								$author$project$CircleDragControl$controlRadius(input)))
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$class('grip'),
+							$elm$svg$Svg$Attributes$cx(
+							$author$project$Pos$toXString(input.pos)),
+							$elm$svg$Svg$Attributes$cy(
+							$author$project$Pos$toYString(input.pos)),
+							$elm$svg$Svg$Attributes$r(
+							$elm$core$String$fromFloat(
+								$author$project$CircleDragControl$gripRadius(input)))
+						]),
+					_List_Nil)
+				]));
+	});
 var $author$project$Block$Internal$Component$Offset$viewControl = F2(
 	function (attrs, vm) {
 		var _v0 = function () {
@@ -12550,45 +12662,36 @@ var $author$project$Block$Internal$Component$Offset$viewControl = F2(
 				var _v2 = _v1.a;
 				var drag = _v1.b;
 				return {
+					active: true,
 					cpos: A2($author$project$Pos$addDelta, drag.delta.total, drag.start2),
-					guideVisible: true,
-					radius: $author$project$Block$Internal$Config$circleActiveSize(vm.grid.unit),
 					rootpos: A2($author$project$Pos$addDelta, drag.delta.current, drag.start)
 				};
 			} else {
 				var root = $author$project$Block$Internal$Component$Offset$rootPosition(vm);
 				return {
+					active: false,
 					cpos: A2($author$project$Block$Internal$Component$Offset$circlePosition, vm, root),
-					guideVisible: false,
-					radius: $author$project$Block$Internal$Config$circleIdleSize(vm.grid.unit),
 					rootpos: root
 				};
 			}
 		}();
-		var radius = _v0.radius;
+		var active = _v0.active;
 		var rootpos = _v0.rootpos;
 		var cpos = _v0.cpos;
-		var guideVisible = _v0.guideVisible;
-		var barP1 = rootpos;
-		var barP2 = A2(
-			$author$project$Pos$addDelta,
-			A2($author$project$Delta$Delta, 0, vm.grid.unit),
-			rootpos);
-		var connectorP1 = A2(
-			$author$project$Pos$addDelta,
-			A2($author$project$Delta$Delta, -vm.grid.unit, vm.grid.unit / 2),
-			rootpos);
-		var connectorP2 = A2(
-			$author$project$Pos$addDelta,
-			A2($author$project$Delta$Delta, vm.grid.unit, 0),
-			connectorP1);
-		var _v3 = guideVisible ? _Utils_Tuple2(
+		var _v3 = active ? _Utils_Tuple2(
 			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y),
 			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y + vm.grid.size.height)) : _Utils_Tuple2(
 			A2($author$project$Pos$Pos, 0, 0),
 			A2($author$project$Pos$Pos, 0, 0));
 		var guideP1 = _v3.a;
 		var guideP2 = _v3.b;
+		var barP1 = rootpos;
+		var barP2 = A2(
+			$author$project$Pos$addDelta,
+			A2($author$project$Delta$Delta, 0, vm.grid.unit),
+			rootpos);
+		var connectorP1 = A2($author$project$Pos$addY, vm.grid.unit / 2, rootpos);
+		var connectorP2 = A2($author$project$Pos$Pos, cpos.x, connectorP1.y);
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
@@ -12647,19 +12750,9 @@ var $author$project$Block$Internal$Component$Offset$viewControl = F2(
 						]),
 					_List_Nil),
 					A2(
-					$elm$svg$Svg$circle,
-					_Utils_ap(
-						attrs,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$cx(
-								$author$project$Pos$toXString(cpos)),
-								$elm$svg$Svg$Attributes$cy(
-								$author$project$Pos$toYString(cpos)),
-								$elm$svg$Svg$Attributes$r(
-								$elm$core$String$fromFloat(radius))
-							])),
-					_List_Nil)
+					$author$project$CircleDragControl$view,
+					attrs,
+					{active: active, pos: cpos, unit: vm.grid.unit})
 				]));
 	});
 var $author$project$Block$Internal$Component$Offset$view = F2(
@@ -12741,10 +12834,6 @@ var $author$project$Block$Internal$Component$Outline$view = F2(
 				return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Pos$addY = F2(
-	function (p1, p2) {
-		return {x: p1.x, y: p1.y + p2.y};
-	});
 var $elm$svg$Svg$Attributes$fillOpacity = _VirtualDom_attribute('fill-opacity');
 var $author$project$Block$Internal$Component$Quantity$viewControl = F2(
 	function (attrs, vm) {
@@ -12757,16 +12846,14 @@ var $author$project$Block$Internal$Component$Quantity$viewControl = F2(
 			if ((_v1.$ === 'Dragging') && (_v1.a.$ === 'Quantity')) {
 				var _v2 = _v1.a;
 				var drag = _v1.b;
-				return _Utils_Tuple2(
-					$elm$core$Basics$round(vm.grid.unit / 1.2),
-					drag.pos.total);
+				return _Utils_Tuple2(true, drag.pos.total);
 			} else {
 				return _Utils_Tuple2(
-					$elm$core$Basics$round(vm.grid.unit / 1.5),
+					false,
 					$author$project$Block$Internal$Component$Quantity$rootPos(vm));
 			}
 		}();
-		var radius = _v0.a;
+		var active = _v0.a;
 		var pos = _v0.b;
 		var rectPos = pos;
 		var vlineP1 = A2(
@@ -12774,12 +12861,8 @@ var $author$project$Block$Internal$Component$Quantity$viewControl = F2(
 			rectPos,
 			$author$project$Pos$init(
 				_Utils_Tuple2(halfUnit, rectSize.height)));
-		var vlineP2 = A2(
-			$author$project$Pos$addY,
-			vlineP1,
-			$author$project$Pos$init(
-				_Utils_Tuple2(0, unit)));
-		var circlePos = vlineP2;
+		var vlineP2 = A2($author$project$Pos$addY, 2 * unit, vlineP1);
+		var cpos = vlineP2;
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
@@ -12822,19 +12905,9 @@ var $author$project$Block$Internal$Component$Quantity$viewControl = F2(
 						]),
 					_List_Nil),
 					A2(
-					$elm$svg$Svg$circle,
-					_Utils_ap(
-						attrs,
-						_List_fromArray(
-							[
-								$elm$svg$Svg$Attributes$cx(
-								$author$project$Pos$toXString(circlePos)),
-								$elm$svg$Svg$Attributes$cy(
-								$author$project$Pos$toYString(circlePos)),
-								$elm$svg$Svg$Attributes$r(
-								$elm$core$String$fromInt(radius))
-							])),
-					_List_Nil)
+					$author$project$CircleDragControl$view,
+					attrs,
+					{active: active, pos: cpos, unit: vm.grid.unit})
 				]));
 	});
 var $author$project$Block$Internal$Component$Quantity$view = F2(
@@ -12860,165 +12933,74 @@ var $author$project$Block$Internal$Component$Quantity$view = F2(
 		}
 		return $elm$core$Maybe$Nothing;
 	});
-var $author$project$Block$Internal$Component$Ruler$hLinePositions = F2(
-	function (vm, root) {
-		var halfWidth = vm.block.size.width / 2;
-		return _Utils_Tuple2(
-			A2(
-				$author$project$Pos$addDelta,
-				A2($author$project$Delta$Delta, -halfWidth, 0),
-				root),
-			A2(
-				$author$project$Pos$addDelta,
-				A2($author$project$Delta$Delta, halfWidth, 0),
-				root));
-	});
-var $author$project$Block$Internal$Component$Ruler$rootOffset = function (vm) {
-	return (3 * vm.grid.unit) / 4;
-};
-var $author$project$Block$Internal$Component$Ruler$rootPosition = function (vm) {
-	return A2(
-		$author$project$Pos$addDelta,
-		A2(
-			$author$project$Delta$Delta,
-			0,
-			-$author$project$Block$Internal$Component$Ruler$rootOffset(vm)),
-		A2(
-			$author$project$Pos$addDelta,
-			A2($author$project$Delta$Delta, vm.block.size.width / 2, 0),
-			vm.block.pos));
-};
-var $author$project$Block$Internal$Component$Ruler$txtPositionAndSize = F2(
-	function (vm, root) {
-		var offset = $author$project$Block$Internal$Component$Ruler$rootOffset(vm) / 2;
-		var pos = A2(
-			$author$project$Pos$addDelta,
-			A2($author$project$Delta$Delta, -offset, -offset),
-			root);
-		var size = A2(
-			$author$project$Size$scale,
-			2,
-			A2($author$project$Size$Size, offset, offset));
-		return _Utils_Tuple2(pos, size);
-	});
-var $author$project$Block$Internal$Component$Ruler$vlinePositions = F2(
-	function (vm, pos) {
-		var topDelta = A2(
-			$author$project$Delta$Delta,
-			0,
-			$author$project$Block$Internal$Component$Ruler$rootOffset(vm) / (-2));
-		var botDelta = A2(
-			$author$project$Delta$Delta,
-			0,
-			$author$project$Block$Internal$Component$Ruler$rootOffset(vm) / 2);
-		return _Utils_Tuple2(
-			A2($author$project$Pos$addDelta, topDelta, pos),
-			A2($author$project$Pos$addDelta, botDelta, pos));
-	});
-var $author$project$Block$Internal$Component$Ruler$viewOutline = F2(
-	function (attrs, vm) {
-		var root = $author$project$Block$Internal$Component$Ruler$rootPosition(vm);
-		var _v0 = A2($author$project$Block$Internal$Component$Ruler$txtPositionAndSize, vm, root);
-		var txtPos = _v0.a;
-		var txtSize = _v0.b;
-		var _v1 = A2($author$project$Block$Internal$Component$Ruler$hLinePositions, vm, root);
-		var hlineP1 = _v1.a;
-		var hlineP2 = _v1.b;
-		var _v2 = A2($author$project$Block$Internal$Component$Ruler$vlinePositions, vm, hlineP1);
-		var leftP1 = _v2.a;
-		var leftP2 = _v2.b;
-		var _v3 = A2($author$project$Block$Internal$Component$Ruler$vlinePositions, vm, hlineP2);
-		var rightP1 = _v3.a;
-		var rightP2 = _v3.b;
-		return A2(
-			$elm$svg$Svg$g,
-			A2(
-				$elm$core$List$cons,
-				$elm$svg$Svg$Attributes$class('ruler'),
-				attrs),
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$line,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x1(
-							$author$project$Pos$toXString(hlineP1)),
-							$elm$svg$Svg$Attributes$y1(
-							$author$project$Pos$toYString(hlineP1)),
-							$elm$svg$Svg$Attributes$x2(
-							$author$project$Pos$toXString(hlineP2)),
-							$elm$svg$Svg$Attributes$y2(
-							$author$project$Pos$toYString(hlineP2))
-						]),
-					_List_Nil),
-					A2(
-					$elm$svg$Svg$line,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x1(
-							$author$project$Pos$toXString(leftP1)),
-							$elm$svg$Svg$Attributes$y1(
-							$author$project$Pos$toYString(leftP1)),
-							$elm$svg$Svg$Attributes$x2(
-							$author$project$Pos$toXString(leftP2)),
-							$elm$svg$Svg$Attributes$y2(
-							$author$project$Pos$toYString(leftP2))
-						]),
-					_List_Nil),
-					A2(
-					$elm$svg$Svg$line,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x1(
-							$author$project$Pos$toXString(rightP1)),
-							$elm$svg$Svg$Attributes$y1(
-							$author$project$Pos$toYString(rightP1)),
-							$elm$svg$Svg$Attributes$x2(
-							$author$project$Pos$toXString(rightP2)),
-							$elm$svg$Svg$Attributes$y2(
-							$author$project$Pos$toYString(rightP2))
-						]),
-					_List_Nil),
-					A2(
-					$elm$svg$Svg$rect,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$x(
-							$author$project$Pos$toXString(txtPos)),
-							$elm$svg$Svg$Attributes$y(
-							$author$project$Pos$toYString(txtPos)),
-							$elm$svg$Svg$Attributes$width(
-							$author$project$Size$toWidthString(txtSize)),
-							$elm$svg$Svg$Attributes$height(
-							$author$project$Size$toHeightString(txtSize))
-						]),
-					_List_Nil),
-					A4(
-					$author$project$SvgEx$centeredText,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$class('ruler-text')
-						]),
-					txtPos,
-					txtSize,
-					$elm$core$String$fromInt(vm.block.width))
-				]));
-	});
 var $author$project$Block$Internal$Component$Ruler$view = F2(
 	function (attrs, vm) {
 		var _v0 = vm.block.state;
-		switch (_v0.$) {
-			case 'Dragging':
-				return $elm$core$Maybe$Just(
-					A2($author$project$Block$Internal$Component$Ruler$viewOutline, attrs, vm));
-			case 'Selected':
-				return $elm$core$Maybe$Just(
-					A2($author$project$Block$Internal$Component$Ruler$viewOutline, attrs, vm));
-			default:
-				return $elm$core$Maybe$Nothing;
-		}
+		return $elm$core$Maybe$Nothing;
 	});
+var $author$project$Pos$addX = F2(
+	function (xValue, pos) {
+		return {x: pos.x + xValue, y: pos.y};
+	});
+var $author$project$Block$Internal$Component$Title$rootPosition = F2(
+	function (vm, size) {
+		return A2(
+			$author$project$Pos$addX,
+			-(size.width / 2),
+			A2(
+				$author$project$Pos$addX,
+				vm.block.size.width / 2,
+				A2($author$project$Pos$addY, -((4 * vm.grid.unit) / 3), vm.block.pos)));
+	});
+var $author$project$Block$Internal$Component$Title$titleSize = F2(
+	function (vm, txt) {
+		return A2(
+			$author$project$Size$Size,
+			(16 / 1.5) * $elm$core$String$length(txt),
+			vm.grid.unit);
+	});
+var $author$project$Block$Internal$Component$Title$viewTitle = function (vm) {
+	var txt = vm.body.str1 + (' = ' + vm.body.str2);
+	var size = A2($author$project$Block$Internal$Component$Title$titleSize, vm, txt);
+	var pos = A2($author$project$Block$Internal$Component$Title$rootPosition, vm, size);
+	return A2(
+		$elm$svg$Svg$g,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$class('title')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x(
+						$author$project$Pos$toXString(pos)),
+						$elm$svg$Svg$Attributes$y(
+						$author$project$Pos$toYString(pos)),
+						$elm$svg$Svg$Attributes$width(
+						$author$project$Size$toWidthString(size)),
+						$elm$svg$Svg$Attributes$height(
+						$author$project$Size$toHeightString(size))
+					]),
+				_List_Nil),
+				A4($author$project$SvgEx$centeredText, _List_Nil, pos, size, txt)
+			]));
+};
+var $author$project$Block$Internal$Component$Title$view = function (vm) {
+	var _v0 = vm.block.state;
+	switch (_v0.$) {
+		case 'Dragging':
+			return $elm$core$Maybe$Just(
+				$author$project$Block$Internal$Component$Title$viewTitle(vm));
+		case 'Selected':
+			return $elm$core$Maybe$Just(
+				$author$project$Block$Internal$Component$Title$viewTitle(vm));
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Block$Internal$Component$Width$barWidth = 3;
 var $author$project$Block$Internal$Component$Width$viewControl = F2(
 	function (attrs, vm) {
@@ -13028,25 +13010,29 @@ var $author$project$Block$Internal$Component$Width$viewControl = F2(
 				var _v2 = _v1.a;
 				var drag = _v1.b;
 				return {
+					active: true,
 					cpos: A2($author$project$Pos$addDelta, drag.delta.total, drag.start2),
-					guideVisible: true,
-					radius: $elm$core$Basics$round(vm.grid.unit / 1.2),
 					rootpos: A2($author$project$Pos$addDelta, drag.delta.current, drag.start)
 				};
 			} else {
 				var root = $author$project$Block$Internal$Component$Width$rootPos(vm);
 				return {
+					active: false,
 					cpos: A2($author$project$Block$Internal$Component$Width$circlePos, vm, root),
-					guideVisible: false,
-					radius: $elm$core$Basics$round(vm.grid.unit / 1.5),
 					rootpos: root
 				};
 			}
 		}();
-		var radius = _v0.radius;
+		var active = _v0.active;
 		var rootpos = _v0.rootpos;
 		var cpos = _v0.cpos;
-		var guideVisible = _v0.guideVisible;
+		var _v3 = active ? _Utils_Tuple2(
+			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y),
+			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y + vm.grid.size.height)) : _Utils_Tuple2(
+			A2($author$project$Pos$Pos, 0, 0),
+			A2($author$project$Pos$Pos, 0, 0));
+		var guideP1 = _v3.a;
+		var guideP2 = _v3.b;
 		var vbarP1 = rootpos;
 		var hbarP1 = A2(
 			$author$project$Pos$addDelta,
@@ -13060,13 +13046,6 @@ var $author$project$Block$Internal$Component$Width$viewControl = F2(
 			$author$project$Delta$init(
 				_Utils_Tuple2(0, vm.block.size.height)),
 			vbarP1);
-		var _v3 = guideVisible ? _Utils_Tuple2(
-			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y),
-			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y + vm.grid.size.height)) : _Utils_Tuple2(
-			A2($author$project$Pos$Pos, 0, 0),
-			A2($author$project$Pos$Pos, 0, 0));
-		var guideP1 = _v3.a;
-		var guideP2 = _v3.b;
 		return A2(
 			$elm$svg$Svg$g,
 			A2(
@@ -13125,17 +13104,9 @@ var $author$project$Block$Internal$Component$Width$viewControl = F2(
 						]),
 					_List_Nil),
 					A2(
-					$elm$svg$Svg$circle,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$cx(
-							$author$project$Pos$toXString(cpos)),
-							$elm$svg$Svg$Attributes$cy(
-							$author$project$Pos$toYString(cpos)),
-							$elm$svg$Svg$Attributes$r(
-							$elm$core$String$fromInt(radius))
-						]),
-					_List_Nil)
+					$author$project$CircleDragControl$view,
+					attrs,
+					{active: active, pos: cpos, unit: vm.grid.unit})
 				]));
 	});
 var $author$project$Block$Internal$Component$Width$view = F2(
@@ -13169,7 +13140,8 @@ var $author$project$Block$Internal$View$view = F3(
 			_List_fromArray(
 				[
 					A2($author$project$Block$Internal$Component$Outline$view, _List_Nil, vm),
-					A2($author$project$Block$Internal$Component$Ruler$view, _List_Nil, vm)
+					A2($author$project$Block$Internal$Component$Ruler$view, _List_Nil, vm),
+					$author$project$Block$Internal$Component$Title$view(vm)
 				]));
 		var controls = $elm_community$maybe_extra$Maybe$Extra$values(
 			_List_fromArray(
@@ -13317,5 +13289,4 @@ var $author$project$Main$view = function (m) {
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
-_Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Delta.Delta":{"args":[],"type":"{ dx : Basics.Float, dy : Basics.Float }"},"Block.Internal.Types.Id":{"args":[],"type":"{ key : String.String, part : Block.Internal.Component.Component }"},"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"AddBlock":[],"ClearSelection":[],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[],"BlockMsg":["Block.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Block.Msg":{"args":[],"tags":{"Msg":["Block.Internal.Types.Msg"]}},"Block.Internal.Types.Msg":{"args":[],"tags":{"DragMsg":["Draggable.Msg Block.Internal.Types.Id"],"StartDrag":["Block.Internal.Types.Id"],"DragMove":["Delta.Delta"],"EndDrag":[],"Select":["Block.Internal.Types.Id"]}},"Block.Internal.Component.Component":{"args":[],"tags":{"Body":[],"Offset":[],"Quantity":[],"Width":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));
+_Platform_export({'Main':{'init':$author$project$Main$main($elm$json$Json$Decode$float)({"versions":{"elm":"0.19.1"},"types":{"message":"Main.Msg","aliases":{"Delta.Delta":{"args":[],"type":"{ dx : Basics.Float, dy : Basics.Float }"},"Block.Internal.Types.Id":{"args":[],"type":"{ key : String.String, part : Block.Internal.Component.Component }"},"Internal.Position":{"args":[],"type":"{ x : Basics.Int, y : Basics.Int }"}},"unions":{"Main.Msg":{"args":[],"tags":{"NoOp":[],"AddBlock":[],"ClearSelection":[],"SizeChanged":["( Basics.Int, Basics.Int )"],"WindowResized":[],"BlockMsg":["Block.Msg"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"Block.Msg":{"args":[],"tags":{"Msg":["Block.Internal.Types.Msg"]}},"Block.Internal.Types.Msg":{"args":[],"tags":{"DragMsg":["Draggable.Msg Block.Internal.Types.Id"],"StartDrag":["Block.Internal.Types.Id"],"DragMove":["Delta.Delta"],"EndDrag":[],"Select":["Block.Internal.Types.Id"]}},"Block.Internal.Component.Component":{"args":[],"tags":{"Body":[],"Offset":[],"Quantity":[],"Width":[]}},"Basics.Float":{"args":[],"tags":{"Float":[]}},"Draggable.Msg":{"args":["a"],"tags":{"Msg":["Internal.Msg a"]}},"String.String":{"args":[],"tags":{"String":[]}},"Internal.Msg":{"args":["a"],"tags":{"StartDragging":["a","Internal.Position"],"DragAt":["Internal.Position"],"StopDragging":[]}}}}})}});}(this));

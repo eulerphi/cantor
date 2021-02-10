@@ -1,11 +1,8 @@
 module Block.Internal.Component.Ruler exposing (..)
 
-import Block.Internal.Config as Config
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
 import Delta exposing (Delta)
-import DragState exposing (DragState)
-import Grid
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
@@ -16,12 +13,10 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging _ _ ->
-            Just (viewOutline attrs vm)
-
-        Selected ->
-            Just (viewOutline attrs vm)
-
+        -- Dragging _ _ ->
+        --     Just (viewOutline attrs vm)
+        -- Selected ->
+        --     Just (viewOutline attrs vm)
         _ ->
             Nothing
 
@@ -84,14 +79,14 @@ viewOutline attrs vm =
 
 rootOffset : ViewModel -> Float
 rootOffset vm =
-    3 * vm.grid.unit / 4
+    vm.grid.unit / 2
 
 
 rootPosition : ViewModel -> Pos
 rootPosition vm =
     vm.block.pos
-        |> Pos.addDelta (Delta (vm.block.size.width / 2) 0)
-        |> Pos.addDelta (Delta 0 -(rootOffset vm))
+        |> Pos.addX (vm.block.size.width / 2)
+        |> Pos.addY -(rootOffset vm)
 
 
 hLinePositions : ViewModel -> Pos -> ( Pos, Pos )
@@ -108,14 +103,11 @@ hLinePositions vm root =
 vlinePositions : ViewModel -> Pos -> ( Pos, Pos )
 vlinePositions vm pos =
     let
-        topDelta =
-            Delta 0 (rootOffset vm / -2)
-
-        botDelta =
-            Delta 0 (rootOffset vm / 2)
+        yDelta =
+            rootOffset vm / 2
     in
-    ( pos |> Pos.addDelta topDelta
-    , pos |> Pos.addDelta botDelta
+    ( pos |> Pos.addY yDelta
+    , pos |> Pos.addY -yDelta
     )
 
 

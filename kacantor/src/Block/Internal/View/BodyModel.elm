@@ -2,6 +2,7 @@ module Block.Internal.View.BodyModel exposing (..)
 
 import Block.Internal.Types exposing (..)
 import Grid
+import Maybe.Extra
 import MaybeEx
 import Pair
 import Pos exposing (Pos)
@@ -13,6 +14,8 @@ type alias BodyModel =
     { top : Maybe ViewData
     , mid : ViewData
     , bot : Maybe ViewData
+    , str1 : String
+    , str2 : String
     }
 
 
@@ -81,25 +84,58 @@ forBlock gd bd =
             , size = Size.fromInt ( botWidth, botHeight )
             }
     in
-    { top = Just top, mid = mid, bot = Just bot }
+    { top = Just top
+    , mid = mid
+    , bot = Just bot
+    , str1 = String.fromInt bd.quantity
+    , str2 = ""
+    }
+        |> filterEmpty
+        |> fillVals
         |> scale gd
         |> addPos bd.pos
-        |> filterEmpty
 
 
 addPos : Pos -> BodyModel -> BodyModel
 addPos pos body =
-    { top = body.top |> Maybe.map (ViewData.addPos pos)
-    , mid = body.mid |> ViewData.addPos pos
-    , bot = body.bot |> Maybe.map (ViewData.addPos pos)
+    { body
+        | top = body.top |> Maybe.map (ViewData.addPos pos)
+        , mid = body.mid |> ViewData.addPos pos
+        , bot = body.bot |> Maybe.map (ViewData.addPos pos)
     }
+
+
+fillVals : BodyModel -> BodyModel
+fillVals body =
+    let
+        top =
+            body.top |> Maybe.map (\vd -> String.fromFloat vd.size.width)
+
+        mid =
+            if body.mid.size.height > 0 then
+                Just
+                    ("("
+                        ++ String.fromFloat body.mid.size.height
+                        ++ " x "
+                        ++ String.fromFloat body.mid.size.width
+                        ++ ")"
+                    )
+
+            else
+                Nothing
+
+        bot =
+            body.bot |> Maybe.map (\vd -> String.fromFloat vd.size.width)
+    in
+    { body | str2 = String.join " + " <| Maybe.Extra.values [ top, mid, bot ] }
 
 
 filterEmpty : BodyModel -> BodyModel
 filterEmpty body =
-    { top = body.top |> MaybeEx.filter ViewData.hasSize
-    , mid = body.mid
-    , bot = body.bot |> MaybeEx.filter ViewData.hasSize
+    { body
+        | top = body.top |> MaybeEx.filter ViewData.hasSize
+        , mid = body.mid
+        , bot = body.bot |> MaybeEx.filter ViewData.hasSize
     }
 
 
@@ -109,9 +145,10 @@ scale gd body =
         scaleFn =
             ViewData.scaleByInt gd.unit
     in
-    { top = body.top |> Maybe.map scaleFn
-    , mid = body.mid |> scaleFn
-    , bot = body.bot |> Maybe.map scaleFn
+    { body
+        | top = body.top |> Maybe.map scaleFn
+        , mid = body.mid |> scaleFn
+        , bot = body.bot |> Maybe.map scaleFn
     }
 
 
