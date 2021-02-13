@@ -3,9 +3,10 @@ module Block.Internal.Component.Ruler exposing (..)
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
 import Delta exposing (Delta)
+import Maybe.Extra
 import Pos exposing (Pos)
 import Size exposing (Size)
-import Svg exposing (Attribute, Svg)
+import Svg exposing (Attribute, Svg, line)
 import Svg.Attributes as SvgAttrs
 import SvgEx
 
@@ -13,16 +14,29 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        -- Dragging _ _ ->
-        --     Just (viewOutline attrs vm)
-        -- Selected ->
-        --     Just (viewOutline attrs vm)
+        Dragging _ _ ->
+            Just (viewOutline attrs vm)
+
+        Selected ->
+            Just (viewOutline attrs vm)
+
         _ ->
             Nothing
 
 
 viewOutline : List (Attribute msg) -> ViewModel -> Svg msg
 viewOutline attrs vm =
+    let
+        optional =
+            [ viewHeightRuler vm ] |> Maybe.Extra.values
+    in
+    Svg.g
+        (SvgAttrs.class "ruler" :: attrs)
+        (viewWidthRuler attrs vm :: optional)
+
+
+viewWidthRuler : List (Attribute msg) -> ViewModel -> Svg msg
+viewWidthRuler attrs vm =
     let
         root =
             rootPosition vm
@@ -74,6 +88,113 @@ viewOutline attrs vm =
             txtPos
             txtSize
             (String.fromInt vm.block.width)
+        ]
+
+
+viewHeightRuler : ViewModel -> Maybe (Svg msg)
+viewHeightRuler vm =
+    let
+        { unit, halfUnit, quarterUnit } =
+            { unit = vm.grid.unit
+            , halfUnit = vm.grid.unit / 2
+            , quarterUnit = vm.grid.unit / 4
+            }
+
+        height =
+            vm.body.mid.size.height / unit
+
+        lineP1 =
+            vm.body.mid.pos
+                |> Pos.addX -halfUnit
+
+        lineP2 =
+            lineP1 |> Pos.addY vm.body.mid.size.height
+
+        hash1 =
+            ( lineP1 |> Pos.addX -quarterUnit
+            , lineP1 |> Pos.addX quarterUnit
+            )
+
+        hash2 =
+            ( lineP2 |> Pos.addX -quarterUnit
+            , lineP2 |> Pos.addX quarterUnit
+            )
+
+        txtSize =
+            Size halfUnit halfUnit
+
+        txtPos =
+            lineP1
+                |> Pos.addY (vm.body.mid.size.height / 2)
+                |> Pos.addX -(txtSize.width / 2)
+                |> Pos.addY -(txtSize.height / 2)
+    in
+    if height < 3 then
+        Nothing
+
+    else
+        Just <|
+            viewRuler
+                { class = "height-ruler"
+                , hash1 = hash1
+                , hash2 = hash2
+                , line = ( lineP1, lineP2 )
+                , txt =
+                    { val = String.fromInt <| round height
+                    , pos = txtPos
+                    , size = txtSize
+                    }
+                }
+
+
+viewRuler :
+    { class : String
+    , hash1 : ( Pos, Pos )
+    , hash2 : ( Pos, Pos )
+    , line : ( Pos, Pos )
+    , txt :
+        { val : String
+        , pos : Pos
+        , size : Size
+        }
+    }
+    -> Svg msg
+viewRuler input =
+    Svg.g
+        [ SvgAttrs.class input.class ]
+        [ Svg.line
+            [ SvgAttrs.x1 <| Pos.toXString <| Tuple.first input.line
+            , SvgAttrs.y1 <| Pos.toYString <| Tuple.first input.line
+            , SvgAttrs.x2 <| Pos.toXString <| Tuple.second input.line
+            , SvgAttrs.y2 <| Pos.toYString <| Tuple.second input.line
+            ]
+            []
+        , Svg.line
+            [ SvgAttrs.x1 <| Pos.toXString <| Tuple.first input.hash1
+            , SvgAttrs.y1 <| Pos.toYString <| Tuple.first input.hash1
+            , SvgAttrs.x2 <| Pos.toXString <| Tuple.second input.hash1
+            , SvgAttrs.y2 <| Pos.toYString <| Tuple.second input.hash1
+            ]
+            []
+        , Svg.line
+            [ SvgAttrs.x1 <| Pos.toXString <| Tuple.first input.hash2
+            , SvgAttrs.y1 <| Pos.toYString <| Tuple.first input.hash2
+            , SvgAttrs.x2 <| Pos.toXString <| Tuple.second input.hash2
+            , SvgAttrs.y2 <| Pos.toYString <| Tuple.second input.hash2
+            ]
+            []
+        , Svg.rect
+            [ SvgAttrs.x <| Pos.toXString input.txt.pos
+            , SvgAttrs.y <| Pos.toYString input.txt.pos
+            , SvgAttrs.width <| Size.toWidthString input.txt.size
+            , SvgAttrs.height <| Size.toHeightString input.txt.size
+            ]
+            []
+        , SvgEx.centeredText
+            []
+            input.txt.pos
+            input.txt.size
+            input.txt.val
         ]
 
 

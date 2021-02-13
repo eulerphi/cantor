@@ -1,5 +1,6 @@
 module Block.Internal.Component.Body exposing (..)
 
+import Block.Internal.Component.Foo as Ruler
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
 import Delta
@@ -55,8 +56,6 @@ viewRect vm vd =
                 |> Size.toPair
                 |> Pair.map round
 
-        -- disks =
-        --     viewDisks vm vd ( cols, rows )
         txt =
             viewTxt ( cols, rows ) vm vd
     in

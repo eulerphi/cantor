@@ -1,6 +1,6 @@
 module Block.Internal.Component.Quantity exposing (..)
 
-import Block.Internal.Component as Component
+import Block.Internal.Component as Component exposing (Component(..))
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
 import CircleDragControl as CircleControl
@@ -29,17 +29,19 @@ view attrs vm =
 viewControl : List (Attribute msg) -> ViewModel -> Svg msg
 viewControl attrs vm =
     let
-        ( active, pos ) =
+        { active, pos, info } =
             case vm.block.state of
                 Dragging Component.Quantity drag ->
-                    ( True
-                    , drag.pos.total
-                    )
+                    { active = True
+                    , pos = drag.pos.total
+                    , info = Nothing
+                    }
 
                 _ ->
-                    ( False
-                    , rootPos vm
-                    )
+                    { active = False
+                    , pos = rootPos vm
+                    , info = Nothing
+                    }
 
         lineWidth =
             3
@@ -121,15 +123,15 @@ startDrag vm bd =
         }
 
 
-dragMove : DragState Block -> Grid.Data -> Block -> Block
-dragMove drag gd bd =
+calculateDragQuantity : Grid.Data -> Block -> Pos -> Int
+calculateDragQuantity gd bd pos =
     let
-        pos =
-            drag.pos.total
+        pos_ =
+            pos
                 |> Pos.roundNear { pos = Pos.fromInt ( gd.x, gd.y ), unit = toFloat gd.unit }
 
         ( dx, dy ) =
-            pos
+            pos_
                 |> Pos.deltaBetween bd.pos
                 |> Delta.div (toFloat gd.unit)
                 |> Delta.map round
@@ -137,6 +139,15 @@ dragMove drag gd bd =
 
         quantity_ =
             (dy * bd.width) + min (dx + 1) bd.width - bd.headerOffset
+    in
+    quantity_
+
+
+dragMove : DragState Block -> Grid.Data -> Block -> Block
+dragMove drag gd bd =
+    let
+        quantity_ =
+            calculateDragQuantity gd bd drag.pos.total
     in
     { bd | quantity = quantity_ }
 

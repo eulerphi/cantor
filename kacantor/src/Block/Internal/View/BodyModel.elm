@@ -113,13 +113,7 @@ fillVals body =
 
         mid =
             if body.mid.size.height > 0 then
-                Just
-                    ("("
-                        ++ String.fromFloat body.mid.size.height
-                        ++ " x "
-                        ++ String.fromFloat body.mid.size.width
-                        ++ ")"
-                    )
+                Just <| String.fromFloat <| body.mid.size.height * body.mid.size.width
 
             else
                 Nothing

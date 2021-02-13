@@ -27,17 +27,29 @@ viewTitle : ViewModel -> Svg msg
 viewTitle vm =
     let
         txt =
-            vm.body.str1 ++ " = " ++ vm.body.str2
+            vm.body.str1
 
         size =
             titleSize vm txt
 
         pos =
             rootPosition vm size
+
+        ( lineP1, lineP2 ) =
+            ( Pos (pos.x + size.width) pos.y
+            , Pos (vm.block.pos.x - 2) (vm.block.pos.y + vm.block.size.height + 2)
+            )
     in
     Svg.g
         [ SvgAttrs.class "title" ]
-        [ Svg.rect
+        [ Svg.line
+            [ SvgAttrs.x1 <| Pos.toXString lineP1
+            , SvgAttrs.y1 <| Pos.toYString lineP1
+            , SvgAttrs.x2 <| Pos.toXString lineP2
+            , SvgAttrs.y2 <| Pos.toYString lineP2
+            ]
+            []
+        , Svg.rect
             [ SvgAttrs.x <| Pos.toXString pos
             , SvgAttrs.y <| Pos.toYString pos
             , SvgAttrs.width <| Size.toWidthString size
@@ -54,14 +66,11 @@ viewTitle vm =
 
 titleSize : ViewModel -> String -> Size
 titleSize vm txt =
-    Size
-        (16 / 1.5 * (toFloat <| String.length txt))
-        vm.grid.unit
+    Size (3 * vm.grid.unit / 2) (3 * vm.grid.unit / 2)
 
 
 rootPosition : ViewModel -> Size -> Pos
 rootPosition vm size =
     vm.block.pos
-        |> Pos.addY -(4 * vm.grid.unit / 3)
-        |> Pos.addX (vm.block.size.width / 2)
-        |> Pos.addX -(size.width / 2)
+        |> Pos.addX -(size.width + vm.grid.unit / 2)
+        |> Pos.addY (vm.block.size.height + vm.grid.unit / 2)

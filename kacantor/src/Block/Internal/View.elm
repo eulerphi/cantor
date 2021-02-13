@@ -38,7 +38,8 @@ view context gd bd =
 
         controls =
             [ WidthComponent.view (eventAttrsFn Component.Width) vm
-            , OffsetControl.view (eventAttrsFn Component.Offset) vm
+
+            -- , OffsetControl.view (eventAttrsFn Component.Offset) vm
             , QuantityComponent.view (eventAttrsFn Component.Quantity) vm
             ]
                 |> Maybe.Extra.values
