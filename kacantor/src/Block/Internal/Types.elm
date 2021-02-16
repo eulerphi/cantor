@@ -1,8 +1,9 @@
 module Block.Internal.Types exposing (Block, Context, Id, Msg(..), State(..))
 
 import Block.Internal.Component exposing (..)
+import Box exposing (Box)
 import Delta exposing (Delta)
-import DragState exposing (DragState)
+import DragState exposing (DragState, DragState2)
 import Draggable
 import Pos exposing (Pos)
 
@@ -37,7 +38,15 @@ type Msg
     | Select Id
 
 
+type alias DraggingBodyData =
+    { this : Block
+    , those : List Block
+    , drag : DragState2
+    }
+
+
 type State
     = Idle
     | Dragging Component (DragState Block)
+    | DraggingBody DraggingBodyData
     | Selected

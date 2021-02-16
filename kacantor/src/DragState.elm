@@ -17,6 +17,13 @@ type alias DragState a =
     }
 
 
+type alias DragState2 =
+    { current : Pos
+    , delta : Delta
+    , start : Pos
+    }
+
+
 type alias AddFunction =
     Delta -> Delta -> Delta
 

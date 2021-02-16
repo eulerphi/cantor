@@ -20,31 +20,31 @@ import Svg.Attributes as SvgAttrs
 view : Context msg -> Grid.Data -> Block -> Svg msg
 view context gd bd =
     let
-        eventAttrsFn =
+        attrsFn =
             eventAttrs context.envelop bd.key
 
         vm =
             ViewModel.forBlock gd bd
 
+        vm2 =
+            ViewModel.forBlock2 gd bd
+
         body =
-            BodyComponent.view (eventAttrsFn Component.Body) vm
+            vm2 |> BodyComponent.view (attrsFn Component.Body)
 
-        decorators =
-            [ OutlineComponent.view [] vm
-            , Ruler.view [] vm
-            , TitleComponent.view vm
+        elements =
+            [ OutlineComponent.view []
+            , Ruler.view []
+            , TitleComponent.view
+            , WidthComponent.view (attrsFn Component.Width)
+
+            -- , OffsetControl.view (attrsFn Component.Offset)
+            , QuantityComponent.view (attrsFn Component.Quantity)
             ]
-                |> Maybe.Extra.values
-
-        controls =
-            [ WidthComponent.view (eventAttrsFn Component.Width) vm
-
-            -- , OffsetControl.view (eventAttrsFn Component.Offset) vm
-            , QuantityComponent.view (eventAttrsFn Component.Quantity) vm
-            ]
+                |> List.map (\fn -> fn vm)
                 |> Maybe.Extra.values
     in
-    Svg.g [ SvgAttrs.class "block" ] (body :: decorators ++ controls)
+    Svg.g [ SvgAttrs.class "block" ] (body :: elements)
 
 
 eventAttrs : (Msg -> msg) -> String -> Component -> List (Attribute msg)

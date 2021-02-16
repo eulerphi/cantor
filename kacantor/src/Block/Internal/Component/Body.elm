@@ -1,8 +1,8 @@
 module Block.Internal.Component.Body exposing (..)
 
-import Block.Internal.Component.Foo as Ruler
+import Block.Internal.Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.View.Model exposing (ViewModel, ViewModel2)
 import Delta
 import DragState exposing (DragState)
 import Grid
@@ -21,47 +21,33 @@ import ViewData exposing (ViewData)
 -- VIEW
 
 
-view : List (Attribute msg) -> ViewModel -> Svg msg
-view eventAttrs vm =
-    let
-        viewFn =
-            viewRect vm
-
-        optional =
-            [ vm.body.top, vm.body.bot ]
-                |> List.map (Maybe.map viewFn)
-
-        elements =
-            (Just (viewFn vm.body.mid) :: optional)
-                |> Maybe.Extra.values
-    in
+view : List (Attribute msg) -> ViewModel2 -> Svg msg
+view attrs vm =
     Svg.g
-        (SvgAttrs.class "block-body" :: eventAttrs)
-        elements
+        (SvgAttrs.class "block-body" :: attrs)
+        (vm.sections |> List.map (viewRect vm))
 
 
-viewRect : ViewModel -> ViewData -> Svg.Svg msg
-viewRect vm vd =
+viewRect : ViewModel2 -> Section -> Svg msg
+viewRect vm s =
     let
         grid =
-            Grid.forViewData (round vm.grid.unit) vd
-
-        gridElement =
-            Grid.view [] grid
-
-        -- hack time : need to refactor ViewData to take a generic
-        ( cols, rows ) =
-            vd.size
-                |> Size.scale (1 / vm.grid.unit)
-                |> Size.toPair
-                |> Pair.map round
+            Grid.view
+                []
+                { x = round s.box.pos.x
+                , y = round s.box.pos.y
+                , width = round s.box.size.width
+                , height = round s.box.size.height
+                , unit = vm.grid.unit
+                , isAlternateLine = \_ -> False
+                }
 
         txt =
-            viewTxt ( cols, rows ) vm vd
+            viewTxt vm s
     in
     Svg.g
-        [ SvgAttrs.class vd.class ]
-        [ gridElement, txt ]
+        [ SvgAttrs.class s.class ]
+        [ grid, txt ]
 
 
 viewDisks : ViewModel -> ViewData -> ( Int, Int ) -> List (Svg msg)
@@ -122,17 +108,13 @@ diskIndexes ( cols, rows ) =
     List.range 1 rows |> List.map inner |> List.concat
 
 
-viewTxt : ( Int, Int ) -> ViewModel -> ViewData -> Svg msg
-viewTxt ( cols, rows ) vm vd =
-    let
-        quantity =
-            vm.block.width * (rows - 1) + cols
-    in
+viewTxt : ViewModel2 -> Section -> Svg msg
+viewTxt vm s =
     SvgEx.centeredText
-        [ SvgAttrs.class (vd.class ++ "-text") ]
-        vd.pos
-        (Size vm.grid.unit vm.grid.unit)
-        (String.fromInt quantity)
+        [ SvgAttrs.class (s.class ++ "-text") ]
+        s.box.pos
+        (Size.fromInt ( vm.grid.unit, vm.grid.unit ))
+        (String.fromInt s.quantity)
 
 
 

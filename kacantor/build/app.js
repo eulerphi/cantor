@@ -12363,22 +12363,156 @@ var $author$project$Block$Internal$View$eventAttrs = F3(
 				id,
 				A2($elm$core$Basics$composeL, envelop, $author$project$Block$Internal$Types$DragMsg)));
 	});
-var $author$project$Grid$forViewData = F2(
-	function (unit, vd) {
+var $author$project$Box$addPos = F2(
+	function (pos, box) {
+		return _Utils_update(
+			box,
+			{
+				pos: A2($author$project$Pos$add, pos, box.pos)
+			});
+	});
+var $author$project$Block$Internal$Section$addPos = F2(
+	function (pos, section) {
+		return _Utils_update(
+			section,
+			{
+				box: A2($author$project$Box$addPos, pos, section.box)
+			});
+	});
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $author$project$Box$Box = F2(
+	function (pos, size) {
+		return {pos: pos, size: size};
+	});
+var $author$project$Box$fromInt = function (input) {
+	return A2(
+		$author$project$Box$Box,
+		$author$project$Pos$fromInt(
+			_Utils_Tuple2(input.x, input.y)),
+		$author$project$Size$fromInt(
+			_Utils_Tuple2(input.width, input.height)));
+};
+var $author$project$Box$hasSize = function (box) {
+	return (box.size.width > 0) && (box.size.height > 0);
+};
+var $author$project$Block$Internal$Section$hasSize = function (section) {
+	return $author$project$Box$hasSize(section.box);
+};
+var $author$project$Box$scale = F2(
+	function (value, box) {
+		return A2(
+			$author$project$Box$Box,
+			A2($author$project$Pos$scale, value, box.pos),
+			A2($author$project$Size$scale, value, box.size));
+	});
+var $author$project$Block$Internal$Section$scale = F2(
+	function (value, section) {
+		return _Utils_update(
+			section,
+			{
+				box: A2($author$project$Box$scale, value, section.box)
+			});
+	});
+var $author$project$Block$Internal$Section$forBlock = F2(
+	function (gd, bd) {
+		var _v0 = (bd.headerOffset > 0) ? _Utils_Tuple2(
+			A2($elm$core$Basics$min, bd.quantity, bd.width - bd.headerOffset),
+			1) : _Utils_Tuple2(0, 0);
+		var topWidth = _v0.a;
+		var topHeight = _v0.b;
+		var top = {
+			box: $author$project$Box$fromInt(
+				{height: topHeight, width: topWidth, x: bd.headerOffset, y: 0}),
+			_class: 'body-top',
+			quantity: topWidth
+		};
+		var _v1 = _Utils_Tuple2(bd.width, ((bd.quantity - topWidth) / bd.width) | 0);
+		var midWidth = _v1.a;
+		var midHeight = _v1.b;
+		var mid = {
+			box: $author$project$Box$fromInt(
+				{height: midHeight, width: midWidth, x: 0, y: topHeight}),
+			_class: 'body-mid',
+			quantity: midWidth * midHeight
+		};
+		var _v2 = _Utils_Tuple2((bd.quantity - topWidth) - (midWidth * midHeight), 1);
+		var botWidth = _v2.a;
+		var botHeight = _v2.b;
+		var bot = {
+			box: $author$project$Box$fromInt(
+				{height: botHeight, width: botWidth, x: 0, y: topHeight + midHeight}),
+			_class: 'body-bot',
+			quantity: botWidth
+		};
+		return A2(
+			$elm$core$List$map,
+			$author$project$Block$Internal$Section$addPos(bd.pos),
+			A2(
+				$elm$core$List$map,
+				$author$project$Block$Internal$Section$scale(gd.unit),
+				A2(
+					$elm$core$List$filter,
+					$author$project$Block$Internal$Section$hasSize,
+					_List_fromArray(
+						[top, mid, bot]))));
+	});
+var $author$project$Size$Size = F2(
+	function (width, height) {
+		return {height: height, width: width};
+	});
+var $author$project$Block$Internal$Section$combineSize = F2(
+	function (s1, s2) {
+		return A2(
+			$author$project$Size$Size,
+			A2($elm$core$Basics$max, s1.width, s2.width),
+			s1.height + s2.height);
+	});
+var $author$project$Block$Internal$Section$first = function (sections) {
+	return $elm$core$List$head(sections);
+};
+var $author$project$Block$Internal$Section$toBox = F2(
+	function (bd, sections) {
+		var size = A3(
+			$elm$core$List$foldl,
+			$author$project$Block$Internal$Section$combineSize,
+			$author$project$Size$none,
+			A2(
+				$elm$core$List$map,
+				function (s) {
+					return s.box.size;
+				},
+				sections));
+		var pos = A2(
+			$elm$core$Maybe$withDefault,
+			bd.pos,
+			A2(
+				$elm$core$Maybe$map,
+				function (s) {
+					return s.box.pos;
+				},
+				$author$project$Block$Internal$Section$first(sections)));
+		return A2($author$project$Box$Box, pos, size);
+	});
+var $author$project$Block$Internal$View$Model$forBlock2 = F2(
+	function (gd, bd) {
+		var sections = A2($author$project$Block$Internal$Section$forBlock, gd, bd);
 		return {
-			height: $elm$core$Basics$round(vd.size.height),
-			isAlternateLine: function (_v0) {
-				return false;
-			},
-			unit: unit,
-			width: $elm$core$Basics$round(vd.size.width),
-			x: $elm$core$Basics$round(vd.pos.x),
-			y: $elm$core$Basics$round(vd.pos.y)
+			block: bd,
+			box: A2($author$project$Block$Internal$Section$toBox, bd, sections),
+			grid: gd,
+			sections: sections
 		};
 	});
-var $author$project$Size$toPair = function (size) {
-	return _Utils_Tuple2(size.width, size.height);
-};
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
@@ -12465,10 +12599,6 @@ var $author$project$Grid$view = F2(
 				rect,
 				_Utils_ap(horizontalLines, verticalLines)));
 	});
-var $author$project$Size$Size = F2(
-	function (width, height) {
-		return {height: height, width: width};
-	});
 var $elm$svg$Svg$Attributes$dominantBaseline = _VirtualDom_attribute('dominant-baseline');
 var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
@@ -12527,70 +12657,56 @@ var $author$project$SvgEx$centeredText = F4(
 						]))
 				]));
 	});
-var $author$project$Block$Internal$Component$Body$viewTxt = F3(
-	function (_v0, vm, vd) {
-		var cols = _v0.a;
-		var rows = _v0.b;
-		var quantity = (vm.block.width * (rows - 1)) + cols;
+var $author$project$Block$Internal$Component$Body$viewTxt = F2(
+	function (vm, s) {
 		return A4(
 			$author$project$SvgEx$centeredText,
 			_List_fromArray(
 				[
-					$elm$svg$Svg$Attributes$class(vd._class + '-text')
+					$elm$svg$Svg$Attributes$class(s._class + '-text')
 				]),
-			vd.pos,
-			A2($author$project$Size$Size, vm.grid.unit, vm.grid.unit),
-			$elm$core$String$fromInt(quantity));
+			s.box.pos,
+			$author$project$Size$fromInt(
+				_Utils_Tuple2(vm.grid.unit, vm.grid.unit)),
+			$elm$core$String$fromInt(s.quantity));
 	});
 var $author$project$Block$Internal$Component$Body$viewRect = F2(
-	function (vm, vd) {
+	function (vm, s) {
+		var txt = A2($author$project$Block$Internal$Component$Body$viewTxt, vm, s);
 		var grid = A2(
-			$author$project$Grid$forViewData,
-			$elm$core$Basics$round(vm.grid.unit),
-			vd);
-		var gridElement = A2($author$project$Grid$view, _List_Nil, grid);
-		var _v0 = A2(
-			$author$project$Pair$map,
-			$elm$core$Basics$round,
-			$author$project$Size$toPair(
-				A2($author$project$Size$scale, 1 / vm.grid.unit, vd.size)));
-		var cols = _v0.a;
-		var rows = _v0.b;
-		var txt = A3(
-			$author$project$Block$Internal$Component$Body$viewTxt,
-			_Utils_Tuple2(cols, rows),
-			vm,
-			vd);
+			$author$project$Grid$view,
+			_List_Nil,
+			{
+				height: $elm$core$Basics$round(s.box.size.height),
+				isAlternateLine: function (_v0) {
+					return false;
+				},
+				unit: vm.grid.unit,
+				width: $elm$core$Basics$round(s.box.size.width),
+				x: $elm$core$Basics$round(s.box.pos.x),
+				y: $elm$core$Basics$round(s.box.pos.y)
+			});
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
 				[
-					$elm$svg$Svg$Attributes$class(vd._class)
+					$elm$svg$Svg$Attributes$class(s._class)
 				]),
 			_List_fromArray(
-				[gridElement, txt]));
+				[grid, txt]));
 	});
 var $author$project$Block$Internal$Component$Body$view = F2(
-	function (eventAttrs, vm) {
-		var viewFn = $author$project$Block$Internal$Component$Body$viewRect(vm);
-		var optional = A2(
-			$elm$core$List$map,
-			$elm$core$Maybe$map(viewFn),
-			_List_fromArray(
-				[vm.body.top, vm.body.bot]));
-		var elements = $elm_community$maybe_extra$Maybe$Extra$values(
-			A2(
-				$elm$core$List$cons,
-				$elm$core$Maybe$Just(
-					viewFn(vm.body.mid)),
-				optional));
+	function (attrs, vm) {
 		return A2(
 			$elm$svg$Svg$g,
 			A2(
 				$elm$core$List$cons,
 				$elm$svg$Svg$Attributes$class('block-body'),
-				eventAttrs),
-			elements);
+				attrs),
+			A2(
+				$elm$core$List$map,
+				$author$project$Block$Internal$Component$Body$viewRect(vm),
+				vm.sections));
 	});
 var $author$project$Size$add = F2(
 	function (s1, s2) {
@@ -13292,41 +13408,36 @@ var $author$project$Block$Internal$Component$Width$view = F2(
 	});
 var $author$project$Block$Internal$View$view = F3(
 	function (context, gd, bd) {
+		var vm2 = A2($author$project$Block$Internal$View$Model$forBlock2, gd, bd);
 		var vm = A2($author$project$Block$Internal$View$Model$forBlock, gd, bd);
-		var eventAttrsFn = A2($author$project$Block$Internal$View$eventAttrs, context.envelop, bd.key);
-		var decorators = $elm_community$maybe_extra$Maybe$Extra$values(
-			_List_fromArray(
-				[
-					A2($author$project$Block$Internal$Component$Outline$view, _List_Nil, vm),
-					A2($author$project$Block$Internal$Component$Ruler$view, _List_Nil, vm),
-					$author$project$Block$Internal$Component$Title$view(vm)
-				]));
-		var controls = $elm_community$maybe_extra$Maybe$Extra$values(
-			_List_fromArray(
-				[
-					A2(
-					$author$project$Block$Internal$Component$Width$view,
-					eventAttrsFn($author$project$Block$Internal$Component$Width),
-					vm),
-					A2(
-					$author$project$Block$Internal$Component$Quantity$view,
-					eventAttrsFn($author$project$Block$Internal$Component$Quantity),
-					vm)
-				]));
+		var attrsFn = A2($author$project$Block$Internal$View$eventAttrs, context.envelop, bd.key);
 		var body = A2(
 			$author$project$Block$Internal$Component$Body$view,
-			eventAttrsFn($author$project$Block$Internal$Component$Body),
-			vm);
+			attrsFn($author$project$Block$Internal$Component$Body),
+			vm2);
+		var elements = $elm_community$maybe_extra$Maybe$Extra$values(
+			A2(
+				$elm$core$List$map,
+				function (fn) {
+					return fn(vm);
+				},
+				_List_fromArray(
+					[
+						$author$project$Block$Internal$Component$Outline$view(_List_Nil),
+						$author$project$Block$Internal$Component$Ruler$view(_List_Nil),
+						$author$project$Block$Internal$Component$Title$view,
+						$author$project$Block$Internal$Component$Width$view(
+						attrsFn($author$project$Block$Internal$Component$Width)),
+						$author$project$Block$Internal$Component$Quantity$view(
+						attrsFn($author$project$Block$Internal$Component$Quantity))
+					])));
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
 				[
 					$elm$svg$Svg$Attributes$class('block')
 				]),
-			A2(
-				$elm$core$List$cons,
-				body,
-				_Utils_ap(decorators, controls)));
+			A2($elm$core$List$cons, body, elements));
 	});
 var $author$project$Block$view = F3(
 	function (_v0, gd, _v1) {

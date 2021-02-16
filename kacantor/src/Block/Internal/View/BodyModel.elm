@@ -19,33 +19,6 @@ type alias BodyModel =
     }
 
 
-size : BodyModel -> Size
-size body =
-    let
-        getSizeOrNone =
-            \mvd ->
-                mvd
-                    |> Maybe.map (\vd -> vd.size)
-                    |> Maybe.withDefault Size.none
-
-        s1 =
-            getSizeOrNone body.top
-
-        s2 =
-            body.mid.size
-
-        s3 =
-            getSizeOrNone body.bot
-
-        width =
-            Size.maxWidth3 s1 s2 s3
-
-        height =
-            Size.addHeight3 s1 s2 s3
-    in
-    Size.init ( width, height )
-
-
 forBlock : Grid.Data -> Block -> BodyModel
 forBlock gd bd =
     let
@@ -94,6 +67,38 @@ forBlock gd bd =
         |> fillVals
         |> scale gd
         |> addPos bd.pos
+
+
+first : BodyModel -> ViewData
+first bm =
+    bm.mid
+
+
+size : BodyModel -> Size
+size body =
+    let
+        getSizeOrNone =
+            \mvd ->
+                mvd
+                    |> Maybe.map (\vd -> vd.size)
+                    |> Maybe.withDefault Size.none
+
+        s1 =
+            getSizeOrNone body.top
+
+        s2 =
+            body.mid.size
+
+        s3 =
+            getSizeOrNone body.bot
+
+        width =
+            Size.maxWidth3 s1 s2 s3
+
+        height =
+            Size.addHeight3 s1 s2 s3
+    in
+    Size.init ( width, height )
 
 
 addPos : Pos -> BodyModel -> BodyModel
