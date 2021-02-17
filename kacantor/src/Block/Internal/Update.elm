@@ -33,7 +33,7 @@ update context gd msg model =
             ( model, context_, cmd_ )
 
         StartDrag id ->
-            ( model |> Maybe.map (startDrag id gd)
+            ( model |> Maybe.map (dragStart gd id)
             , context
             , Cmd.none
             )
@@ -76,7 +76,7 @@ startDrag id gd bd =
         drag =
             case id.part of
                 Component.Body ->
-                    Body.startDrag vm bd
+                    Body.dragStart vm bd
 
                 Component.Offset ->
                     OffsetControl.startDrag vm bd
@@ -88,6 +88,30 @@ startDrag id gd bd =
                     WidthControl.startDrag vm bd
     in
     { bd | state = Dragging id.part drag }
+
+
+dragStart : Grid.Data -> Id -> Block -> Block
+dragStart gd id bd =
+    let
+        vm =
+            ViewModel.forBlock2 gd bd
+
+        component_ =
+            case id.part of
+                Component.Body ->
+                    DragBody <| Body.dragStart2 vm
+
+                _ ->
+                    DragBody <| Body.dragStart2 vm
+
+        -- Component.Offset ->
+        --     OffsetControl.startDrag vm bd
+        -- Component.Quantity ->
+        --     QuantityControl.startDrag vm bd
+        -- Component.Width ->
+        --     WidthControl.startDrag vm bd
+    in
+    { bd | state = Dragging2 <| DragData gd bd component_ }
 
 
 dragMove : Delta -> Grid.Data -> Block -> Block
@@ -114,6 +138,29 @@ dragMove newDelta gd bd =
             in
             { bd_ | state = Dragging component drag_ }
 
+        Dragging2 data ->
+            let
+                component_ =
+                    case data.component of
+                        DragBody state ->
+                            DragBody (state |> Body.dragUpdate newDelta)
+
+                        _ ->
+                            data.component
+
+                data_ =
+                    { data | component = component_ }
+
+                bd_ =
+                    case data_.component of
+                        DragBody state ->
+                            state |> Body.dragMove2 data_.gd data_.bd
+
+                        _ ->
+                            data_.bd
+            in
+            { bd_ | state = Dragging2 data_ }
+
         _ ->
             bd
 
@@ -136,6 +183,18 @@ endDrag gd bd =
 
                         Component.Width ->
                             WidthControl.dragEnd drag gd bd
+            in
+            bd_ |> Maybe.map (\b -> { b | state = Selected })
+
+        Dragging2 data ->
+            let
+                bd_ =
+                    case data.component of
+                        DragBody state ->
+                            Body.dragEnd2 data.gd data.bd state
+
+                        _ ->
+                            Just data.bd
             in
             bd_ |> Maybe.map (\b -> { b | state = Selected })
 

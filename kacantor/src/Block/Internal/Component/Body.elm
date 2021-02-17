@@ -3,7 +3,7 @@ module Block.Internal.Component.Body exposing (..)
 import Block.Internal.Section exposing (Section)
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel, ViewModel2)
-import Delta
+import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Grid
 import List
@@ -52,13 +52,28 @@ viewTxt vm s =
 -- UPDATE
 
 
-startDrag : ViewModel -> Block -> DragState Block
-startDrag vm bd =
+dragStart : ViewModel -> Block -> DragState Block
+dragStart vm bd =
     DragState.init
         { start = vm.block.pos
         , data = bd
         , addFn = Delta.add
         }
+
+
+dragStart2 : ViewModel2 -> DragBodyState
+dragStart2 vm =
+    DragState.init22 vm.pos
+
+
+dragUpdate : Delta -> DragBodyState -> DragBodyState
+dragUpdate delta data =
+    data |> DragState.update delta Delta.add
+
+
+dragMove2 : Grid.Data -> Block -> DragBodyState -> Block
+dragMove2 _ bd data =
+    { bd | pos = data.current }
 
 
 dragMove : DragState Block -> Grid.Data -> Block -> Block
@@ -75,5 +90,18 @@ dragEnd drag gd bd =
                 , unit = toFloat gd.unit
                 }
                 drag.pos.current
+    in
+    Just { bd | pos = pos_ }
+
+
+dragEnd2 : Grid.Data -> Block -> DragBodyState -> Maybe Block
+dragEnd2 gd bd state =
+    let
+        pos_ =
+            state.current
+                |> Pos.roundNear
+                    { pos = Pos.fromInt ( gd.x, gd.y )
+                    , unit = toFloat gd.unit
+                    }
     in
     Just { bd | pos = pos_ }
