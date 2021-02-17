@@ -32,18 +32,22 @@ view context gd bd =
         body =
             vm2 |> BodyComponent.view (attrsFn Component.Body)
 
+        elems =
+            [ QuantityComponent.view (attrsFn Component.Quantity) ]
+                |> List.map (\fn -> fn vm2)
+                |> Maybe.Extra.values
+
         elements =
             [ OutlineComponent.view []
             , Ruler.view []
             , TitleComponent.view
             , WidthComponent.view (attrsFn Component.Width)
             , OffsetControl.view (attrsFn Component.Offset)
-            , QuantityComponent.view (attrsFn Component.Quantity)
             ]
                 |> List.map (\fn -> fn vm)
                 |> Maybe.Extra.values
     in
-    Svg.g [ SvgAttrs.class "block" ] (body :: elements)
+    Svg.g [ SvgAttrs.class "block" ] (body :: elems ++ elements)
 
 
 eventAttrs : (Msg -> msg) -> String -> Component -> List (Attribute msg)

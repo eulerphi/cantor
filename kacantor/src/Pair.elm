@@ -22,6 +22,11 @@ addSecond p1 p2 =
     )
 
 
+fork : (a -> b) -> (a -> c) -> a -> ( b, c )
+fork fn1 fn2 input =
+    ( fn1 input, fn2 input )
+
+
 map : (a -> b) -> ( a, a ) -> ( b, b )
 map fn pair =
     Tuple.mapBoth fn fn pair

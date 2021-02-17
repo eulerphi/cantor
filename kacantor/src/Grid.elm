@@ -1,4 +1,14 @@
-module Grid exposing (Data, Grid, calculateUnit, centeredParams, emptyParams, forBox, forViewData, view)
+module Grid exposing
+    ( Data
+    , Grid
+    , calculateUnit
+    , centeredParams
+    , emptyParams
+    , forBox
+    , forViewData
+    , toGrid
+    , view
+    )
 
 import Box exposing (Boxlike)
 import Html exposing (..)
@@ -27,14 +37,22 @@ type alias Data =
     }
 
 
-forBox : Int -> Boxlike r -> Data
+forBox : Float -> Boxlike r -> Data
 forBox unit box =
     { x = round box.pos.x
     , y = round box.pos.y
     , width = round box.size.width
     , height = round box.size.height
-    , unit = unit
+    , unit = round unit
     , isAlternateLine = \_ -> False
+    }
+
+
+toGrid : Data -> Grid
+toGrid gd =
+    { pos = Pos.fromInt ( gd.x, gd.y )
+    , size = Size.fromInt ( gd.width, gd.height )
+    , unit = toFloat gd.unit
     }
 
 

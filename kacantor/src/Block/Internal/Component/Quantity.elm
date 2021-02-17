@@ -1,91 +1,67 @@
 module Block.Internal.Component.Quantity exposing (..)
 
 import Block.Internal.Component as Component exposing (Component(..))
+import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.View.Model exposing (ViewModel, ViewModel2)
+import Box exposing (Box)
 import CircleDragControl as CircleControl
-import Delta
+import Delta exposing (Delta)
 import DragState exposing (DragState)
-import Grid
+import Grid exposing (Grid)
+import Line
+import Maybe.Extra
 import Pos exposing (Pos)
 import Size exposing (Size)
+import String
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
+import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging Component.Quantity _ ->
-            Just <| viewControl attrs vm
+        Dragging2 _ (DragQuantity state) ->
+            { active = True, pos = state.current }
+                |> viewControl attrs vm
+                |> Just
 
         Selected ->
-            Just <| viewControl attrs vm
+            vm
+                |> rootPosition
+                |> Maybe.map (\pos -> { active = False, pos = pos })
+                |> Maybe.map (viewControl attrs vm)
 
         _ ->
             Nothing
 
 
-viewControl : List (Attribute msg) -> ViewModel -> Svg msg
-viewControl attrs vm =
+viewControl :
+    List (Attribute msg)
+    -> ViewModel2
+    -> { active : Bool, pos : Pos }
+    -> Svg msg
+viewControl attrs vm { active, pos } =
     let
-        { active, pos, info } =
-            case vm.block.state of
-                Dragging Component.Quantity drag ->
-                    { active = True
-                    , pos = drag.pos.total
-                    , info = Nothing
-                    }
+        ( unit, halfUnit ) =
+            ( vm.grid.unit, vm.grid.unit / 2 )
 
-                _ ->
-                    { active = False
-                    , pos = rootPos vm
-                    , info = Nothing
-                    }
+        rect =
+            Box pos (Size unit unit)
 
-        lineWidth =
-            3
-
-        unit =
-            vm.grid.unit
-
-        halfUnit =
-            unit / 2
-
-        rectPos =
-            pos
-
-        rectSize =
-            Size unit unit
-
-        vlineP1 =
-            Pos.add rectPos <| Pos.init ( halfUnit, rectSize.height )
-
-        vlineP2 =
-            vlineP1 |> Pos.addY (2 * unit)
+        vline =
+            rect.pos
+                |> Pos.add (Pos halfUnit rect.size.height)
+                |> Line.addY (2 * unit)
 
         cpos =
-            vlineP2
+            vline.p2
     in
     Svg.g
         [ SvgAttrs.class "quantity-control" ]
-        [ Svg.rect
-            [ SvgAttrs.x <| Pos.toXString rectPos
-            , SvgAttrs.y <| Pos.toYString rectPos
-            , SvgAttrs.width <| Size.toWidthString rectSize
-            , SvgAttrs.height <| Size.toHeightString rectSize
-            , SvgAttrs.height <| Size.toHeightString rectSize
-            , SvgAttrs.fillOpacity "0"
-            ]
-            []
-        , Svg.line
-            [ SvgAttrs.x1 <| Pos.toXString vlineP1
-            , SvgAttrs.y1 <| Pos.toYString vlineP1
-            , SvgAttrs.x2 <| Pos.toXString vlineP2
-            , SvgAttrs.y2 <| Pos.toYString vlineP2
-            , SvgAttrs.strokeWidth <| String.fromFloat <| lineWidth
-            ]
-            []
+        [ SvgEx.rect [] rect
+        , SvgEx.line [] vline
         , CircleControl.view
             attrs
             { active = active
@@ -95,45 +71,52 @@ viewControl attrs vm =
         ]
 
 
-rootPos : ViewModel -> Pos
-rootPos vm =
-    let
-        root =
-            Maybe.withDefault vm.body.mid vm.body.bot
-
-        delta =
-            Delta.init
-                ( root.size.width - vm.grid.unit
-                , root.size.height - vm.grid.unit
-                )
-    in
-    Pos.addDelta delta root.pos
+rootPosition : ViewModel2 -> Maybe Pos
+rootPosition vm =
+    vm.sections
+        |> Section.last
+        |> Maybe.map (\s -> s.pos |> Pos.addDelta (Delta s.size.width s.size.height))
+        |> Maybe.map (Pos.addDelta (Delta -vm.grid.unit -vm.grid.unit))
 
 
 
 -- UPDATE
 
 
-startDrag : ViewModel -> Block -> DragState Block
-startDrag vm bd =
-    DragState.init
-        { start = rootPos vm
-        , data = bd
-        , addFn = Delta.add
-        }
+dragStart : ViewModel2 -> Maybe DragQuantityState
+dragStart vm =
+    vm |> rootPosition |> Maybe.map DragState.init22
 
 
-calculateDragQuantity : Grid.Data -> Block -> Pos -> Int
-calculateDragQuantity gd bd pos =
+dragUpdate : Delta -> DragQuantityState -> DragQuantityState
+dragUpdate delta data =
+    data |> DragState.update delta Delta.add
+
+
+dragMove : DragContext -> DragQuantityState -> Block
+dragMove { gd, bd } { current } =
+    current
+        |> calculateQuantity gd bd
+        |> updateQuantity bd
+
+
+dragEnd : DragContext -> DragQuantityState -> Maybe Block
+dragEnd ctx state =
+    dragMove ctx state
+        |> Just
+        |> Maybe.Extra.filter (\bd -> bd.quantity > 0)
+
+
+calculateQuantity : Grid -> Block -> Pos -> Int
+calculateQuantity gd bd pos =
     let
         pos_ =
-            pos
-                |> Pos.roundNear { pos = Pos.fromInt ( gd.x, gd.y ), unit = toFloat gd.unit }
+            pos |> Pos.roundNear gd
 
         ( dx, dy ) =
             pos_
                 |> Pos.deltaBetween bd.pos
-                |> Delta.div (toFloat gd.unit)
+                |> Delta.div gd.unit
                 |> Delta.map round
                 |> Tuple.mapBoth (\x -> max x -1) (\y -> max y 0)
 
@@ -143,19 +126,6 @@ calculateDragQuantity gd bd pos =
     quantity_
 
 
-dragMove : DragState Block -> Grid.Data -> Block -> Block
-dragMove drag gd bd =
-    let
-        quantity_ =
-            calculateDragQuantity gd bd drag.pos.total
-    in
+updateQuantity : Block -> Int -> Block
+updateQuantity bd quantity_ =
     { bd | quantity = quantity_ }
-
-
-dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block
-dragEnd _ _ bd =
-    if bd.quantity <= 0 then
-        Nothing
-
-    else
-        Just bd

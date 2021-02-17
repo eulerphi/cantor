@@ -92,9 +92,7 @@ map fn pos =
 
 
 roundNear :
-    { pos : Pos
-    , unit : Float
-    }
+    { r | pos : Pos, unit : Float }
     -> Pos
     -> Pos
 roundNear input pos =

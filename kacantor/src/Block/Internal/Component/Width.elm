@@ -1,12 +1,14 @@
 module Block.Internal.Component.Width exposing (..)
 
 import Block.Internal.Component as Component
+import Block.Internal.Component.Offset exposing (circlePosition)
 import Block.Internal.Config as Config
+import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.View.Model exposing (ViewModel, ViewModel2)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
-import DragState exposing (DragState)
+import DragState exposing (DragState, init22)
 import Grid
 import Pos exposing (Pos)
 import Svg exposing (Attribute, Svg)
@@ -140,6 +142,20 @@ rootPos vm =
     rootElement.pos |> Pos.addDelta delta
 
 
+barPosition : ViewModel2 -> Maybe Pos
+barPosition vm =
+    vm.sections
+        |> Section.first
+        |> Maybe.map (\s -> s.pos |> Pos.addX (s.size.width + barOffset))
+
+
+circlePosition : ViewModel2 -> Pos -> Pos
+circlePosition vm barPos =
+    barPos
+        |> Pos.addX (2 * vm.grid.unit)
+        |> Pos.addY (vm.size.height / 2)
+
+
 
 -- UPDATE
 
@@ -156,6 +172,19 @@ startDrag vm bd =
         , data = bd
         , addFn = Delta.addX
         }
+
+
+dragStart : ViewModel2 -> Maybe DragWidthState
+dragStart vm =
+    vm
+        |> barPosition
+        |> Maybe.map
+            (\pos ->
+                pos
+                    |> circlePosition vm
+                    |> DragState.init22
+                    |> DragWidthState (DragState.init22 pos)
+            )
 
 
 dragMove : DragState Block -> Grid.Data -> Block -> Block

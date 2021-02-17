@@ -7,8 +7,8 @@ import Delta exposing (Delta)
 import DragState exposing (DragState)
 import Grid
 import List
-import Pos
-import Size
+import Pos exposing (Pos)
+import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 import SvgEx
@@ -44,7 +44,7 @@ viewTxt vm s =
     SvgEx.centeredText
         [ SvgAttrs.class (s.class ++ "-text") ]
         s.pos
-        (Size.fromInt ( vm.grid.unit, vm.grid.unit ))
+        (Size vm.grid.unit vm.grid.unit)
         (String.fromInt s.quantity)
 
 
@@ -52,56 +52,29 @@ viewTxt vm s =
 -- UPDATE
 
 
-dragStart : ViewModel -> Block -> DragState Block
-dragStart vm bd =
-    DragState.init
-        { start = vm.block.pos
-        , data = bd
-        , addFn = Delta.add
-        }
-
-
-dragStart2 : ViewModel2 -> DragBodyState
-dragStart2 vm =
-    DragState.init22 vm.pos
+dragStart : ViewModel2 -> Maybe DragBodyState
+dragStart vm =
+    DragState.init22 vm.pos |> Just
 
 
 dragUpdate : Delta -> DragBodyState -> DragBodyState
-dragUpdate delta data =
-    data |> DragState.update delta Delta.add
+dragUpdate delta state =
+    state |> DragState.update delta Delta.add
 
 
-dragMove2 : Grid.Data -> Block -> DragBodyState -> Block
-dragMove2 _ bd data =
-    { bd | pos = data.current }
+dragMove : DragContext -> DragBodyState -> Block
+dragMove { bd } { current } =
+    current |> updatePos bd
 
 
-dragMove : DragState Block -> Grid.Data -> Block -> Block
-dragMove drag _ bd =
-    { bd | pos = drag.pos.current }
+dragEnd : DragContext -> DragBodyState -> Maybe Block
+dragEnd { gd, bd } { current } =
+    current
+        |> Pos.roundNear gd
+        |> updatePos bd
+        |> Just
 
 
-dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block
-dragEnd drag gd bd =
-    let
-        pos_ =
-            Pos.roundNear
-                { pos = Pos.fromInt ( gd.x, gd.y )
-                , unit = toFloat gd.unit
-                }
-                drag.pos.current
-    in
-    Just { bd | pos = pos_ }
-
-
-dragEnd2 : Grid.Data -> Block -> DragBodyState -> Maybe Block
-dragEnd2 gd bd state =
-    let
-        pos_ =
-            state.current
-                |> Pos.roundNear
-                    { pos = Pos.fromInt ( gd.x, gd.y )
-                    , unit = toFloat gd.unit
-                    }
-    in
-    Just { bd | pos = pos_ }
+updatePos : Block -> Pos -> Block
+updatePos bd pos =
+    { bd | pos = pos }

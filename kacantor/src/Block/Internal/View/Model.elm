@@ -4,7 +4,7 @@ import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.BodyModel as BodyModel exposing (BodyModel)
 import Box exposing (Box)
-import Grid
+import Grid exposing (Grid)
 import Pos exposing (Pos)
 import Size exposing (Size)
 
@@ -28,8 +28,8 @@ type alias ViewModel =
 type alias ViewModel2 =
     { pos : Pos
     , size : Size
+    , grid : Grid
     , block : Block
-    , grid : Grid.Data
     , sections : List Section
     }
 
@@ -66,7 +66,11 @@ forBlock2 gd bd =
     in
     { pos = box.pos
     , size = box.size
+    , grid =
+        { pos = Pos.fromInt ( gd.x, gd.y )
+        , size = Size.fromInt ( gd.width, gd.height )
+        , unit = toFloat gd.unit
+        }
     , block = bd
-    , grid = gd
     , sections = sections
     }
