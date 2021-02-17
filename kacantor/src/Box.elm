@@ -1,4 +1,4 @@
-module Box exposing (Box, addPos, fromInt, hasSize, scale)
+module Box exposing (Box, Boxlike, addPos, hasSize, scale, scalePos, scaleSize)
 
 import Pos exposing (Pos)
 import Size exposing (Size)
@@ -10,21 +10,33 @@ type alias Box =
     }
 
 
-addPos : Pos -> Box -> Box
+type alias Boxlike r =
+    { r
+        | pos : Pos
+        , size : Size
+    }
+
+
+addPos : Pos -> Boxlike r -> Boxlike r
 addPos pos box =
     { box | pos = Pos.add pos box.pos }
 
 
-fromInt : { x : Int, y : Int, width : Int, height : Int } -> Box
-fromInt input =
-    Box (Pos.fromInt ( input.x, input.y )) (Size.fromInt ( input.width, input.height ))
-
-
-hasSize : Box -> Bool
+hasSize : Boxlike r -> Bool
 hasSize box =
     box.size.width > 0 && box.size.height > 0
 
 
-scale : Float -> Box -> Box
+scale : Float -> Boxlike r -> Boxlike r
 scale value box =
-    Box (box.pos |> Pos.scale value) (box.size |> Size.scale value)
+    box |> scalePos value |> scaleSize value
+
+
+scalePos : Float -> Boxlike r -> Boxlike r
+scalePos value box =
+    { box | pos = box.pos |> Pos.scale value }
+
+
+scaleSize : Float -> Boxlike r -> Boxlike r
+scaleSize value box =
+    { box | size = box.size |> Size.scale value }

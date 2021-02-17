@@ -12136,6 +12136,7 @@ var $author$project$Size$toWidthString = function (size) {
 	return $elm$core$String$fromFloat(size.width);
 };
 var $author$project$Block$Internal$Component$Body = {$: 'Body'};
+var $author$project$Block$Internal$Component$Offset = {$: 'Offset'};
 var $author$project$Block$Internal$Component$Quantity = {$: 'Quantity'};
 var $author$project$Block$Internal$Component$Width = {$: 'Width'};
 var $elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
@@ -12363,20 +12364,12 @@ var $author$project$Block$Internal$View$eventAttrs = F3(
 				id,
 				A2($elm$core$Basics$composeL, envelop, $author$project$Block$Internal$Types$DragMsg)));
 	});
-var $author$project$Box$addPos = F2(
-	function (pos, box) {
-		return _Utils_update(
-			box,
-			{
-				pos: A2($author$project$Pos$add, pos, box.pos)
-			});
-	});
 var $author$project$Block$Internal$Section$addPos = F2(
 	function (pos, section) {
 		return _Utils_update(
 			section,
 			{
-				box: A2($author$project$Box$addPos, pos, section.box)
+				pos: A2($author$project$Pos$add, pos, section.pos)
 			});
 	});
 var $elm$core$List$filter = F2(
@@ -12390,38 +12383,38 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var $author$project$Box$Box = F2(
-	function (pos, size) {
-		return {pos: pos, size: size};
-	});
-var $author$project$Box$fromInt = function (input) {
-	return A2(
-		$author$project$Box$Box,
-		$author$project$Pos$fromInt(
-			_Utils_Tuple2(input.x, input.y)),
-		$author$project$Size$fromInt(
-			_Utils_Tuple2(input.width, input.height)));
-};
 var $author$project$Box$hasSize = function (box) {
 	return (box.size.width > 0) && (box.size.height > 0);
 };
 var $author$project$Block$Internal$Section$hasSize = function (section) {
-	return $author$project$Box$hasSize(section.box);
+	return $author$project$Box$hasSize(section);
 };
+var $author$project$Box$scalePos = F2(
+	function (value, box) {
+		return _Utils_update(
+			box,
+			{
+				pos: A2($author$project$Pos$scale, value, box.pos)
+			});
+	});
+var $author$project$Box$scaleSize = F2(
+	function (value, box) {
+		return _Utils_update(
+			box,
+			{
+				size: A2($author$project$Size$scale, value, box.size)
+			});
+	});
 var $author$project$Box$scale = F2(
 	function (value, box) {
 		return A2(
-			$author$project$Box$Box,
-			A2($author$project$Pos$scale, value, box.pos),
-			A2($author$project$Size$scale, value, box.size));
+			$author$project$Box$scaleSize,
+			value,
+			A2($author$project$Box$scalePos, value, box));
 	});
 var $author$project$Block$Internal$Section$scale = F2(
 	function (value, section) {
-		return _Utils_update(
-			section,
-			{
-				box: A2($author$project$Box$scale, value, section.box)
-			});
+		return A2($author$project$Box$scale, value, section);
 	});
 var $author$project$Block$Internal$Section$forBlock = F2(
 	function (gd, bd) {
@@ -12431,28 +12424,34 @@ var $author$project$Block$Internal$Section$forBlock = F2(
 		var topWidth = _v0.a;
 		var topHeight = _v0.b;
 		var top = {
-			box: $author$project$Box$fromInt(
-				{height: topHeight, width: topWidth, x: bd.headerOffset, y: 0}),
 			_class: 'body-top',
-			quantity: topWidth
+			pos: $author$project$Pos$fromInt(
+				_Utils_Tuple2(bd.headerOffset, 0)),
+			quantity: topWidth,
+			size: $author$project$Size$fromInt(
+				_Utils_Tuple2(topWidth, topHeight))
 		};
 		var _v1 = _Utils_Tuple2(bd.width, ((bd.quantity - topWidth) / bd.width) | 0);
 		var midWidth = _v1.a;
 		var midHeight = _v1.b;
 		var mid = {
-			box: $author$project$Box$fromInt(
-				{height: midHeight, width: midWidth, x: 0, y: topHeight}),
 			_class: 'body-mid',
-			quantity: midWidth * midHeight
+			pos: $author$project$Pos$fromInt(
+				_Utils_Tuple2(0, topHeight)),
+			quantity: midWidth * midHeight,
+			size: $author$project$Size$fromInt(
+				_Utils_Tuple2(midWidth, midHeight))
 		};
 		var _v2 = _Utils_Tuple2((bd.quantity - topWidth) - (midWidth * midHeight), 1);
 		var botWidth = _v2.a;
 		var botHeight = _v2.b;
 		var bot = {
-			box: $author$project$Box$fromInt(
-				{height: botHeight, width: botWidth, x: 0, y: topHeight + midHeight}),
 			_class: 'body-bot',
-			quantity: botWidth
+			pos: $author$project$Pos$fromInt(
+				_Utils_Tuple2(0, topHeight + midHeight)),
+			quantity: botWidth,
+			size: $author$project$Size$fromInt(
+				_Utils_Tuple2(botWidth, botHeight))
 		};
 		return A2(
 			$elm$core$List$map,
@@ -12465,6 +12464,10 @@ var $author$project$Block$Internal$Section$forBlock = F2(
 					$author$project$Block$Internal$Section$hasSize,
 					_List_fromArray(
 						[top, mid, bot]))));
+	});
+var $author$project$Box$Box = F2(
+	function (pos, size) {
+		return {pos: pos, size: size};
 	});
 var $author$project$Size$Size = F2(
 	function (width, height) {
@@ -12488,8 +12491,8 @@ var $author$project$Block$Internal$Section$toBox = F2(
 			$author$project$Size$none,
 			A2(
 				$elm$core$List$map,
-				function (s) {
-					return s.box.size;
+				function ($) {
+					return $.size;
 				},
 				sections));
 		var pos = A2(
@@ -12497,8 +12500,8 @@ var $author$project$Block$Internal$Section$toBox = F2(
 			bd.pos,
 			A2(
 				$elm$core$Maybe$map,
-				function (s) {
-					return s.box.pos;
+				function ($) {
+					return $.pos;
 				},
 				$author$project$Block$Internal$Section$first(sections)));
 		return A2($author$project$Box$Box, pos, size);
@@ -12506,11 +12509,20 @@ var $author$project$Block$Internal$Section$toBox = F2(
 var $author$project$Block$Internal$View$Model$forBlock2 = F2(
 	function (gd, bd) {
 		var sections = A2($author$project$Block$Internal$Section$forBlock, gd, bd);
+		var box = A2($author$project$Block$Internal$Section$toBox, bd, sections);
+		return {block: bd, grid: gd, pos: box.pos, sections: sections, size: box.size};
+	});
+var $author$project$Grid$forBox = F2(
+	function (unit, box) {
 		return {
-			block: bd,
-			box: A2($author$project$Block$Internal$Section$toBox, bd, sections),
-			grid: gd,
-			sections: sections
+			height: $elm$core$Basics$round(box.size.height),
+			isAlternateLine: function (_v0) {
+				return false;
+			},
+			unit: unit,
+			width: $elm$core$Basics$round(box.size.width),
+			x: $elm$core$Basics$round(box.pos.x),
+			y: $elm$core$Basics$round(box.pos.y)
 		};
 	});
 var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
@@ -12665,7 +12677,7 @@ var $author$project$Block$Internal$Component$Body$viewTxt = F2(
 				[
 					$elm$svg$Svg$Attributes$class(s._class + '-text')
 				]),
-			s.box.pos,
+			s.pos,
 			$author$project$Size$fromInt(
 				_Utils_Tuple2(vm.grid.unit, vm.grid.unit)),
 			$elm$core$String$fromInt(s.quantity));
@@ -12676,16 +12688,7 @@ var $author$project$Block$Internal$Component$Body$viewRect = F2(
 		var grid = A2(
 			$author$project$Grid$view,
 			_List_Nil,
-			{
-				height: $elm$core$Basics$round(s.box.size.height),
-				isAlternateLine: function (_v0) {
-					return false;
-				},
-				unit: vm.grid.unit,
-				width: $elm$core$Basics$round(s.box.size.width),
-				x: $elm$core$Basics$round(s.box.pos.x),
-				y: $elm$core$Basics$round(s.box.pos.y)
-			});
+			A2($author$project$Grid$forBox, vm.grid.unit, s));
 		return A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
@@ -12707,6 +12710,196 @@ var $author$project$Block$Internal$Component$Body$view = F2(
 				$elm$core$List$map,
 				$author$project$Block$Internal$Component$Body$viewRect(vm),
 				vm.sections));
+	});
+var $author$project$Pos$Pos = F2(
+	function (x, y) {
+		return {x: x, y: y};
+	});
+var $author$project$Pos$addY = F2(
+	function (yValue, pos) {
+		return {x: pos.x, y: pos.y + yValue};
+	});
+var $author$project$Block$Internal$Config$barLineWidth = 3;
+var $author$project$Block$Internal$Config$connectorLineWidth = 3;
+var $author$project$Block$Internal$Config$guideLineWidth = 3;
+var $elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
+var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
+var $author$project$CircleDragControl$controlRadius = function (_v0) {
+	var active = _v0.active;
+	var unit = _v0.unit;
+	return active ? (unit / 1.2) : (unit / 3);
+};
+var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
+var $author$project$CircleDragControl$gripRadius = function (_v0) {
+	var active = _v0.active;
+	var unit = _v0.unit;
+	return active ? (unit / 1.2) : (unit / 1.5);
+};
+var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var $author$project$CircleDragControl$view = F2(
+	function (attrs, input) {
+		return A2(
+			$elm$svg$Svg$g,
+			A2(
+				$elm$core$List$cons,
+				$elm$svg$Svg$Attributes$class('drag-control'),
+				attrs),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$cx(
+							$author$project$Pos$toXString(input.pos)),
+							$elm$svg$Svg$Attributes$cy(
+							$author$project$Pos$toYString(input.pos)),
+							$elm$svg$Svg$Attributes$r(
+							$elm$core$String$fromFloat(
+								$author$project$CircleDragControl$controlRadius(input)))
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$circle,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$class('grip'),
+							$elm$svg$Svg$Attributes$cx(
+							$author$project$Pos$toXString(input.pos)),
+							$elm$svg$Svg$Attributes$cy(
+							$author$project$Pos$toYString(input.pos)),
+							$elm$svg$Svg$Attributes$r(
+							$elm$core$String$fromFloat(
+								$author$project$CircleDragControl$gripRadius(input)))
+						]),
+					_List_Nil)
+				]));
+	});
+var $author$project$Block$Internal$Component$Offset$viewControl = F2(
+	function (attrs, vm) {
+		var _v0 = function () {
+			var _v1 = vm.block.state;
+			if ((_v1.$ === 'Dragging') && (_v1.a.$ === 'Offset')) {
+				var _v2 = _v1.a;
+				var drag = _v1.b;
+				return {
+					active: true,
+					cpos: A2($author$project$Pos$addDelta, drag.delta.total, drag.start2),
+					rootpos: A2($author$project$Pos$addDelta, drag.delta.current, drag.start)
+				};
+			} else {
+				var root = $author$project$Block$Internal$Component$Offset$rootPosition(vm);
+				return {
+					active: false,
+					cpos: A2($author$project$Block$Internal$Component$Offset$circlePosition, vm, root),
+					rootpos: root
+				};
+			}
+		}();
+		var active = _v0.active;
+		var rootpos = _v0.rootpos;
+		var cpos = _v0.cpos;
+		var _v3 = active ? _Utils_Tuple2(
+			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y),
+			A2($author$project$Pos$Pos, cpos.x, vm.grid.pos.y + vm.grid.size.height)) : _Utils_Tuple2(
+			A2($author$project$Pos$Pos, 0, 0),
+			A2($author$project$Pos$Pos, 0, 0));
+		var guideP1 = _v3.a;
+		var guideP2 = _v3.b;
+		var barP1 = rootpos;
+		var barP2 = A2(
+			$author$project$Pos$addDelta,
+			A2($author$project$Delta$Delta, 0, vm.grid.unit),
+			rootpos);
+		var connectorP1 = A2($author$project$Pos$addY, vm.grid.unit / 2, rootpos);
+		var connectorP2 = A2($author$project$Pos$Pos, cpos.x, connectorP1.y);
+		return A2(
+			$elm$svg$Svg$g,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$class('offset-control')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$author$project$Pos$toXString(guideP1)),
+							$elm$svg$Svg$Attributes$y1(
+							$author$project$Pos$toYString(guideP1)),
+							$elm$svg$Svg$Attributes$x2(
+							$author$project$Pos$toXString(guideP2)),
+							$elm$svg$Svg$Attributes$y2(
+							$author$project$Pos$toYString(guideP2)),
+							$elm$svg$Svg$Attributes$strokeWidth(
+							$elm$core$String$fromFloat($author$project$Block$Internal$Config$guideLineWidth)),
+							$elm$svg$Svg$Attributes$strokeDasharray('4')
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$author$project$Pos$toXString(barP1)),
+							$elm$svg$Svg$Attributes$y1(
+							$author$project$Pos$toYString(barP1)),
+							$elm$svg$Svg$Attributes$x2(
+							$author$project$Pos$toXString(barP2)),
+							$elm$svg$Svg$Attributes$y2(
+							$author$project$Pos$toYString(barP2)),
+							$elm$svg$Svg$Attributes$strokeWidth(
+							$elm$core$String$fromFloat($author$project$Block$Internal$Config$barLineWidth))
+						]),
+					_List_Nil),
+					A2(
+					$elm$svg$Svg$line,
+					_List_fromArray(
+						[
+							$elm$svg$Svg$Attributes$x1(
+							$author$project$Pos$toXString(connectorP1)),
+							$elm$svg$Svg$Attributes$y1(
+							$author$project$Pos$toYString(connectorP1)),
+							$elm$svg$Svg$Attributes$x2(
+							$author$project$Pos$toXString(connectorP2)),
+							$elm$svg$Svg$Attributes$y2(
+							$author$project$Pos$toYString(connectorP2)),
+							$elm$svg$Svg$Attributes$strokeWidth(
+							$elm$core$String$fromFloat($author$project$Block$Internal$Config$connectorLineWidth))
+						]),
+					_List_Nil),
+					A2(
+					$author$project$CircleDragControl$view,
+					attrs,
+					{active: active, pos: cpos, unit: vm.grid.unit})
+				]));
+	});
+var $author$project$Block$Internal$Component$Offset$view = F2(
+	function (attrs, vm) {
+		var _v0 = vm.block.state;
+		_v0$2:
+		while (true) {
+			switch (_v0.$) {
+				case 'Dragging':
+					if (_v0.a.$ === 'Offset') {
+						var _v1 = _v0.a;
+						return $elm$core$Maybe$Just(
+							A2($author$project$Block$Internal$Component$Offset$viewControl, attrs, vm));
+					} else {
+						break _v0$2;
+					}
+				case 'Selected':
+					return $elm$core$Maybe$Just(
+						A2($author$project$Block$Internal$Component$Offset$viewControl, attrs, vm));
+				default:
+					break _v0$2;
+			}
+		}
+		return $elm$core$Maybe$Nothing;
 	});
 var $author$project$Size$add = F2(
 	function (s1, s2) {
@@ -12764,65 +12957,7 @@ var $author$project$Block$Internal$Component$Outline$view = F2(
 				return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Pos$addY = F2(
-	function (yValue, pos) {
-		return {x: pos.x, y: pos.y + yValue};
-	});
 var $elm$svg$Svg$Attributes$fillOpacity = _VirtualDom_attribute('fill-opacity');
-var $elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
-var $elm$svg$Svg$circle = $elm$svg$Svg$trustedNode('circle');
-var $author$project$CircleDragControl$controlRadius = function (_v0) {
-	var active = _v0.active;
-	var unit = _v0.unit;
-	return active ? (unit / 1.2) : (unit / 3);
-};
-var $elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
-var $elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
-var $author$project$CircleDragControl$gripRadius = function (_v0) {
-	var active = _v0.active;
-	var unit = _v0.unit;
-	return active ? (unit / 1.2) : (unit / 1.5);
-};
-var $elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
-var $author$project$CircleDragControl$view = F2(
-	function (attrs, input) {
-		return A2(
-			$elm$svg$Svg$g,
-			A2(
-				$elm$core$List$cons,
-				$elm$svg$Svg$Attributes$class('drag-control'),
-				attrs),
-			_List_fromArray(
-				[
-					A2(
-					$elm$svg$Svg$circle,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$cx(
-							$author$project$Pos$toXString(input.pos)),
-							$elm$svg$Svg$Attributes$cy(
-							$author$project$Pos$toYString(input.pos)),
-							$elm$svg$Svg$Attributes$r(
-							$elm$core$String$fromFloat(
-								$author$project$CircleDragControl$controlRadius(input)))
-						]),
-					_List_Nil),
-					A2(
-					$elm$svg$Svg$circle,
-					_List_fromArray(
-						[
-							$elm$svg$Svg$Attributes$class('grip'),
-							$elm$svg$Svg$Attributes$cx(
-							$author$project$Pos$toXString(input.pos)),
-							$elm$svg$Svg$Attributes$cy(
-							$author$project$Pos$toYString(input.pos)),
-							$elm$svg$Svg$Attributes$r(
-							$elm$core$String$fromFloat(
-								$author$project$CircleDragControl$gripRadius(input)))
-						]),
-					_List_Nil)
-				]));
-	});
 var $author$project$Block$Internal$Component$Quantity$viewControl = F2(
 	function (attrs, vm) {
 		var unit = vm.grid.unit;
@@ -13197,10 +13332,6 @@ var $author$project$Block$Internal$Component$Ruler$view = F2(
 				return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Pos$Pos = F2(
-	function (x, y) {
-		return {x: x, y: y};
-	});
 var $author$project$Block$Internal$Component$Title$rootPosition = F2(
 	function (vm, size) {
 		return A2(
@@ -13274,8 +13405,6 @@ var $author$project$Block$Internal$Component$Title$view = function (vm) {
 	}
 };
 var $author$project$Block$Internal$Component$Width$barWidth = 3;
-var $author$project$Block$Internal$Config$guideLineWidth = 3;
-var $elm$svg$Svg$Attributes$strokeDasharray = _VirtualDom_attribute('stroke-dasharray');
 var $author$project$Block$Internal$Component$Width$viewControl = F2(
 	function (attrs, vm) {
 		var _v0 = function () {
@@ -13428,6 +13557,8 @@ var $author$project$Block$Internal$View$view = F3(
 						$author$project$Block$Internal$Component$Title$view,
 						$author$project$Block$Internal$Component$Width$view(
 						attrsFn($author$project$Block$Internal$Component$Width)),
+						$author$project$Block$Internal$Component$Offset$view(
+						attrsFn($author$project$Block$Internal$Component$Offset)),
 						$author$project$Block$Internal$Component$Quantity$view(
 						attrsFn($author$project$Block$Internal$Component$Quantity))
 					])));

@@ -1,10 +1,20 @@
-module Grid exposing (Data, calculateUnit, centeredParams, emptyParams, forViewData, view)
+module Grid exposing (Data, Grid, calculateUnit, centeredParams, emptyParams, forBox, forViewData, view)
 
+import Box exposing (Boxlike)
 import Html exposing (..)
 import List
+import Pos exposing (Pos)
+import Size exposing (Size)
 import Svg
 import Svg.Attributes as SvgAttrs
 import ViewData exposing (ViewData)
+
+
+type alias Grid =
+    { pos : Pos
+    , size : Size
+    , unit : Float
+    }
 
 
 type alias Data =
@@ -14,6 +24,17 @@ type alias Data =
     , height : Int
     , unit : Int
     , isAlternateLine : Int -> Bool
+    }
+
+
+forBox : Int -> Boxlike r -> Data
+forBox unit box =
+    { x = round box.pos.x
+    , y = round box.pos.y
+    , width = round box.size.width
+    , height = round box.size.height
+    , unit = unit
+    , isAlternateLine = \_ -> False
     }
 
 

@@ -37,8 +37,7 @@ view context gd bd =
             , Ruler.view []
             , TitleComponent.view
             , WidthComponent.view (attrsFn Component.Width)
-
-            -- , OffsetControl.view (attrsFn Component.Offset)
+            , OffsetControl.view (attrsFn Component.Offset)
             , QuantityComponent.view (attrsFn Component.Quantity)
             ]
                 |> List.map (\fn -> fn vm)

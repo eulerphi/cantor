@@ -8,7 +8,8 @@ import Size exposing (Size)
 
 
 type alias Section =
-    { box : Box
+    { pos : Pos
+    , size : Size
     , class : String
     , quantity : Int
     }
@@ -39,37 +40,28 @@ forBlock gd bd =
             )
 
         top =
-            { box =
-                Box.fromInt
-                    { x = bd.headerOffset
-                    , y = 0
-                    , width = topWidth
-                    , height = topHeight
-                    }
+            { pos =
+                Pos.fromInt ( bd.headerOffset, 0 )
+            , size =
+                Size.fromInt ( topWidth, topHeight )
             , class = "body-top"
             , quantity = topWidth
             }
 
         mid =
-            { box =
-                Box.fromInt
-                    { x = 0
-                    , y = topHeight
-                    , width = midWidth
-                    , height = midHeight
-                    }
+            { pos =
+                Pos.fromInt ( 0, topHeight )
+            , size =
+                Size.fromInt ( midWidth, midHeight )
             , class = "body-mid"
             , quantity = midWidth * midHeight
             }
 
         bot =
-            { box =
-                Box.fromInt
-                    { x = 0
-                    , y = topHeight + midHeight
-                    , width = botWidth
-                    , height = botHeight
-                    }
+            { pos =
+                Pos.fromInt ( 0, topHeight + midHeight )
+            , size =
+                Size.fromInt ( botWidth, botHeight )
             , class = "body-bot"
             , quantity = botWidth
             }
@@ -103,12 +95,12 @@ toBox bd sections =
     let
         pos =
             first sections
-                |> Maybe.map (\s -> s.box.pos)
+                |> Maybe.map .pos
                 |> Maybe.withDefault bd.pos
 
         size =
             sections
-                |> List.map (\s -> s.box.size)
+                |> List.map .size
                 |> List.foldl combineSize Size.none
     in
     Box pos size
@@ -120,7 +112,7 @@ toBox bd sections =
 
 addPos : Pos -> Section -> Section
 addPos pos section =
-    { section | box = Box.addPos pos section.box }
+    { section | pos = Pos.add pos section.pos }
 
 
 combineSize : Size -> Size -> Size
@@ -130,9 +122,9 @@ combineSize s1 s2 =
 
 hasSize : Section -> Bool
 hasSize section =
-    section.box |> Box.hasSize
+    section |> Box.hasSize
 
 
 scale : Float -> Section -> Section
 scale value section =
-    { section | box = Box.scale value section.box }
+    section |> Box.scale value

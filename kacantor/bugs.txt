@@ -1,3 +1,5 @@
+# Blocks should reposition when screen size changes
+
 # Blocks can "disappear" when resizing the screen.
 
     Repro: Use a phone in portrait orientation then rotate.

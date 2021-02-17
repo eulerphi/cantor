@@ -26,7 +26,8 @@ type alias ViewModel =
 
 
 type alias ViewModel2 =
-    { box : Box
+    { pos : Pos
+    , size : Size
     , block : Block
     , grid : Grid.Data
     , sections : List Section
@@ -59,8 +60,12 @@ forBlock2 gd bd =
     let
         sections =
             Section.forBlock gd bd
+
+        box =
+            sections |> Section.toBox bd
     in
-    { box = sections |> Section.toBox bd
+    { pos = box.pos
+    , size = box.size
     , block = bd
     , grid = gd
     , sections = sections
