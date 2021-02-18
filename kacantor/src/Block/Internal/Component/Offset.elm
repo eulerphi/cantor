@@ -121,8 +121,8 @@ dragUpdate delta { root, control } =
         (control |> DragState.update Delta.add delta)
 
 
-dragMove2 : DragContext -> DragOffsetState -> Block
-dragMove2 { gd, bd } { root } =
+dragMove : DragContext -> DragOffsetState -> Block
+dragMove { gd, bd } { root } =
     let
         dx =
             root.delta
@@ -140,6 +140,6 @@ dragMove2 { gd, bd } { root } =
     { bd | headerOffset = headerOffset_ }
 
 
-dragEnd2 : DragContext -> DragOffsetState -> Maybe Block
-dragEnd2 ctx state =
-    dragMove2 ctx state |> Just
+dragEnd : DragContext -> DragOffsetState -> Maybe Block
+dragEnd ctx state =
+    dragMove ctx state |> Just

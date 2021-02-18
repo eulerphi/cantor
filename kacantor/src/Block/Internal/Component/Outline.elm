@@ -2,14 +2,16 @@ module Block.Internal.Component.Outline exposing (..)
 
 import Block.Internal.Config as Config
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.View.Model exposing (ViewModel2)
+import Box exposing (Box)
 import Pos
 import Size
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
+import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ _ ->
@@ -22,29 +24,20 @@ view attrs vm =
             Nothing
 
 
-viewOutline : List (Attribute msg) -> ViewModel -> Svg msg
+viewOutline : List (Attribute msg) -> ViewModel2 -> Svg msg
 viewOutline attrs vm =
-    let
-        pos =
-            vm.block.pos
-                |> Pos.addDelta Config.outlinePosDelta
-
-        size =
-            vm.block.size
-                |> Size.add Config.outlineSizeDelta
-    in
     Svg.g
         (SvgAttrs.class "outline" :: attrs)
-        [ Svg.rect
-            [ SvgAttrs.x <| Pos.toXString pos
-            , SvgAttrs.y <| Pos.toYString pos
-            , SvgAttrs.width <| Size.toWidthString size
-            , SvgAttrs.height <| Size.toHeightString size
-            ]
+        [ SvgEx.rect
             []
+            (Box
+                (vm.pos
+                    |> Pos.addX -Config.outlinePadding
+                    |> Pos.addY -Config.outlinePadding
+                )
+                (vm.size
+                    |> Size.addWidth (2 * Config.outlinePadding)
+                    |> Size.addHeight (2 * Config.outlinePadding)
+                )
+            )
         ]
-
-
-offset : Float
-offset =
-    4

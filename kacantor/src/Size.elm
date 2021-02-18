@@ -17,6 +17,11 @@ init ( w, h ) =
     { width = w, height = h }
 
 
+forSquare : Float -> Size
+forSquare value =
+    Size value value
+
+
 none : Size
 none =
     init ( 0, 0 )
@@ -29,19 +34,26 @@ add s1 s2 =
     }
 
 
-addWidth : Size -> Size -> Float
-addWidth s1 s2 =
-    s1.width + s2.width
+addHeight : Float -> Size -> Size
+addHeight heightValue size =
+    Size size.width (size.height + heightValue)
 
 
-addHeight : Size -> Size -> Float
-addHeight s1 s2 =
-    s1.height + s2.height
+addWidth : Float -> Size -> Size
+addWidth widthValue size =
+    Size (size.width + widthValue) size.height
 
 
-addHeight3 : Size -> Size -> Size -> Float
-addHeight3 s1 s2 s3 =
-    s1.height + s2.height + s3.height
+
+-- addWidth : Size -> Size -> Float
+-- addWidth s1 s2 =
+--     s1.width + s2.width
+-- addHeight : Size -> Size -> Float
+-- addHeight s1 s2 =
+--     s1.height + s2.height
+-- addHeight3 : Size -> Size -> Size -> Float
+-- addHeight3 s1 s2 s3 =
+--     s1.height + s2.height + s3.height
 
 
 map : (Float -> Float) -> Size -> Size

@@ -20,7 +20,7 @@ update :
     -> Msg
     -> Maybe Block
     -> ( Maybe Block, Context msg, Cmd msg )
-update context gd msg model =
+update context gd msg bd =
     case msg of
         DragMsg subMsg ->
             let
@@ -30,28 +30,28 @@ update context gd msg model =
                         subMsg
                         context
             in
-            ( model, context_, cmd_ )
+            ( bd, context_, cmd_ )
 
         StartDrag id ->
-            ( model |> Maybe.map (dragStart gd id)
+            ( bd |> Maybe.map (dragStart gd id)
             , context
             , Cmd.none
             )
 
         DragMove delta ->
-            ( model |> Maybe.map (dragMove delta)
+            ( bd |> Maybe.map (dragMove delta)
             , context
             , Cmd.none
             )
 
         EndDrag ->
-            ( model |> Maybe.andThen endDrag
+            ( bd |> Maybe.andThen endDrag
             , context
             , Cmd.none
             )
 
         Select _ ->
-            ( model |> Maybe.map (\m -> { m | state = Selected })
+            ( bd |> Maybe.map (\m -> { m | state = Selected })
             , context
             , Cmd.none
             )
@@ -93,12 +93,9 @@ dragStart gd id bd =
                 Component.Width ->
                     vm |> WidthControl.dragStart |> Maybe.map DragWidth
     in
-    case component_ of
-        Just c ->
-            { bd | state = Dragging ctx c }
-
-        Nothing ->
-            bd
+    component_
+        |> Maybe.map (\c -> { bd | state = Dragging ctx c })
+        |> Maybe.withDefault bd
 
 
 dragMove : Delta -> Block -> Block
@@ -116,7 +113,7 @@ dragMove newDelta bd =
                         DragOffset state ->
                             state
                                 |> OffsetControl.dragUpdate newDelta
-                                |> Pair.fork DragOffset (OffsetControl.dragMove2 ctx)
+                                |> Pair.fork DragOffset (OffsetControl.dragMove ctx)
 
                         DragQuantity state ->
                             state
@@ -145,7 +142,7 @@ endDrag bd =
                             Body.dragEnd ctx state
 
                         DragOffset state ->
-                            OffsetControl.dragEnd2 ctx state
+                            OffsetControl.dragEnd ctx state
 
                         DragQuantity state ->
                             QuantityControl.dragEnd ctx state

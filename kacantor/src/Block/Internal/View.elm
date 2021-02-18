@@ -24,31 +24,23 @@ view context gd bd =
             eventAttrs context.envelop bd.key
 
         vm =
-            ViewModel.forBlock gd bd
-
-        vm2 =
             ViewModel.forBlock2 (Grid.toGrid gd) bd
 
         body =
-            vm2 |> BodyComponent.view (attrsFn Component.Body)
-
-        elems =
-            [ OffsetControl.view (attrsFn Component.Offset)
-            , QuantityComponent.view (attrsFn Component.Quantity)
-            , WidthComponent.view (attrsFn Component.Width)
-            ]
-                |> List.map (\fn -> fn vm2)
-                |> Maybe.Extra.values
+            vm |> BodyComponent.view (attrsFn Component.Body)
 
         elements =
             [ OutlineComponent.view []
+            , TitleComponent.view []
             , Ruler.view []
-            , TitleComponent.view
+            , OffsetControl.view (attrsFn Component.Offset)
+            , QuantityComponent.view (attrsFn Component.Quantity)
+            , WidthComponent.view (attrsFn Component.Width)
             ]
                 |> List.map (\fn -> fn vm)
                 |> Maybe.Extra.values
     in
-    Svg.g [ SvgAttrs.class "block" ] (body :: elements ++ elems)
+    Svg.g [ SvgAttrs.class "block" ] (body :: elements)
 
 
 eventAttrs : (Msg -> msg) -> String -> Component -> List (Attribute msg)

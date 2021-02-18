@@ -1,4 +1,4 @@
-module Block.Internal.Section exposing (Section, first, forBlock, last, toBox)
+module Block.Internal.Section exposing (Section, first, forBlock, last, midSection, toBox)
 
 import Block.Internal.Types exposing (..)
 import Box exposing (Box)
@@ -90,14 +90,16 @@ last sections =
             last xs
 
 
+midSection : List Section -> Maybe Section
+midSection sections =
+    sections
+        |> List.filter (\s -> s.class == "body-mid")
+        |> List.head
+
+
 toBox : Grid -> Block -> List Section -> Box
 toBox gd bd sections =
     let
-        pos =
-            first sections
-                |> Maybe.map .pos
-                |> Maybe.withDefault bd.pos
-
         width =
             bd.width |> toFloat |> (*) gd.unit
 
@@ -107,7 +109,7 @@ toBox gd bd sections =
                 |> List.map .height
                 |> List.foldl (+) 0
     in
-    Box pos (Size width height)
+    Box bd.pos (Size width height)
 
 
 
@@ -117,11 +119,6 @@ toBox gd bd sections =
 addPos : Pos -> Section -> Section
 addPos pos section =
     { section | pos = Pos.add pos section.pos }
-
-
-combineSize : Size -> Size -> Size
-combineSize s1 s2 =
-    Size (max s1.width s2.width) (s1.height + s2.height)
 
 
 hasSize : Section -> Bool

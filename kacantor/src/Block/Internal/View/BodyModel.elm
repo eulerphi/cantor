@@ -96,7 +96,7 @@ size body =
             Size.maxWidth3 s1 s2 s3
 
         height =
-            Size.addHeight3 s1 s2 s3
+            s1.height + s2.height + s3.height
     in
     Size.init ( width, height )
 
