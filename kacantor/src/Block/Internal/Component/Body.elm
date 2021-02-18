@@ -59,7 +59,7 @@ dragStart vm =
 
 dragUpdate : Delta -> DragBodyState -> DragBodyState
 dragUpdate delta state =
-    state |> DragState.update delta Delta.add
+    state |> DragState.update Delta.add delta
 
 
 dragMove : DragContext -> DragBodyState -> Block

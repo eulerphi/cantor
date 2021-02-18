@@ -8,13 +8,10 @@ import Block.Internal.Component.Width as WidthControl
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model as ViewModel
 import Delta exposing (Delta)
-import DragState
 import Draggable
 import Draggable.Events
 import Grid
 import Pair
-import Pos
-import Size
 
 
 update :
@@ -98,7 +95,7 @@ dragStart gd id bd =
     in
     case component_ of
         Just c ->
-            { bd | state = Dragging2 ctx c }
+            { bd | state = Dragging ctx c }
 
         Nothing ->
             bd
@@ -107,7 +104,7 @@ dragStart gd id bd =
 dragMove : Delta -> Block -> Block
 dragMove newDelta bd =
     case bd.state of
-        Dragging2 ctx component ->
+        Dragging ctx component ->
             let
                 ( component_, bd_ ) =
                     case component of
@@ -131,7 +128,7 @@ dragMove newDelta bd =
                                 |> WidthControl.dragUpdate newDelta
                                 |> Pair.fork DragWidth (WidthControl.dragMove ctx)
             in
-            { bd_ | state = Dragging2 ctx component_ }
+            { bd_ | state = Dragging ctx component_ }
 
         _ ->
             bd
@@ -140,7 +137,7 @@ dragMove newDelta bd =
 endDrag : Block -> Maybe Block
 endDrag bd =
     case bd.state of
-        Dragging2 ctx component ->
+        Dragging ctx component ->
             let
                 bd_ =
                     case component of

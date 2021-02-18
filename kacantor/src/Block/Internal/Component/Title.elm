@@ -12,13 +12,13 @@ import SvgEx
 view : ViewModel -> Maybe (Svg msg)
 view vm =
     case vm.block.state of
-        Dragging2 _ (DragOffset _) ->
+        Dragging _ (DragOffset _) ->
             Just <| viewTitle vm
 
-        Dragging2 _ (DragQuantity _) ->
+        Dragging _ (DragQuantity _) ->
             Just <| viewTitle vm
 
-        Dragging2 _ (DragWidth _) ->
+        Dragging _ (DragWidth _) ->
             Just <| viewTitle vm
 
         Selected ->

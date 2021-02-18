@@ -6,7 +6,7 @@ import Delta exposing (Delta)
 import Maybe.Extra
 import Pos exposing (Pos)
 import Size exposing (Size)
-import Svg exposing (Attribute, Svg, line)
+import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 import SvgEx
 
@@ -14,10 +14,10 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging2 _ (DragQuantity _) ->
+        Dragging _ (DragQuantity _) ->
             Just (viewOutline attrs vm)
 
-        Dragging2 _ (DragWidth _) ->
+        Dragging _ (DragWidth _) ->
             Just (viewOutline attrs vm)
 
         _ ->

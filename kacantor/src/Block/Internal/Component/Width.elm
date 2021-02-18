@@ -21,7 +21,7 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging2 _ (DragWidth { root, control }) ->
+        Dragging _ (DragWidth { root, control }) ->
             { active = True
             , rootPos = root.current
             , controlPos = control.current
@@ -122,8 +122,8 @@ dragStart vm =
 dragUpdate : Delta -> DragWidthState -> DragWidthState
 dragUpdate delta { root, control } =
     DragWidthState
-        (root |> DragState.update delta Delta.addX)
-        (control |> DragState.update delta Delta.add)
+        (root |> DragState.update Delta.addX delta)
+        (control |> DragState.update Delta.add delta)
 
 
 dragMove : DragContext -> DragWidthState -> Block

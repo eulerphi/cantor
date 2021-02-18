@@ -12,7 +12,7 @@ import Svg.Attributes as SvgAttrs
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging2 _ _ ->
+        Dragging _ _ ->
             Just (viewOutline attrs vm)
 
         Selected ->

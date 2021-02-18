@@ -21,7 +21,7 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging2 _ (DragQuantity state) ->
+        Dragging _ (DragQuantity state) ->
             { active = True, pos = state.current }
                 |> viewControl attrs vm
                 |> Just
@@ -93,7 +93,7 @@ dragStart vm =
 
 dragUpdate : Delta -> DragQuantityState -> DragQuantityState
 dragUpdate delta data =
-    data |> DragState.update delta Delta.add
+    data |> DragState.update Delta.add delta
 
 
 dragMove : DragContext -> DragQuantityState -> Block

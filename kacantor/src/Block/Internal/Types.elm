@@ -14,7 +14,7 @@ module Block.Internal.Types exposing
 
 import Block.Internal.Component exposing (..)
 import Delta exposing (Delta)
-import DragState exposing (DragState, DragState2)
+import DragState exposing (DragState)
 import Draggable
 import Grid exposing (Grid)
 import Pos exposing (Pos)
@@ -51,22 +51,22 @@ type Msg
 
 
 type alias DragBodyState =
-    DragState2
+    DragState
 
 
 type alias DragOffsetState =
-    { root : DragState2
-    , control : DragState2
+    { root : DragState
+    , control : DragState
     }
 
 
 type alias DragQuantityState =
-    DragState2
+    DragState
 
 
 type alias DragWidthState =
-    { root : DragState2
-    , control : DragState2
+    { root : DragState
+    , control : DragState
     }
 
 
@@ -85,6 +85,5 @@ type alias DragContext =
 
 type State
     = Idle
-    | Dragging Component (DragState Block)
-    | Dragging2 DragContext DragComponent
+    | Dragging DragContext DragComponent
     | Selected
