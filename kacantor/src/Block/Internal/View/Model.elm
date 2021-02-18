@@ -3,7 +3,6 @@ module Block.Internal.View.Model exposing (..)
 import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.BodyModel as BodyModel exposing (BodyModel)
-import Box exposing (Box)
 import Grid exposing (Grid)
 import Pos exposing (Pos)
 import Size exposing (Size)
@@ -55,22 +54,18 @@ forBlock gd bd =
     }
 
 
-forBlock2 : Grid.Data -> Block -> ViewModel2
+forBlock2 : Grid -> Block -> ViewModel2
 forBlock2 gd bd =
     let
         sections =
             Section.forBlock gd bd
 
         box =
-            sections |> Section.toBox bd
+            sections |> Section.toBox gd bd
     in
-    { pos = box.pos
+    { pos = bd.pos
     , size = box.size
-    , grid =
-        { pos = Pos.fromInt ( gd.x, gd.y )
-        , size = Size.fromInt ( gd.width, gd.height )
-        , unit = toFloat gd.unit
-        }
+    , grid = gd
     , block = bd
     , sections = sections
     }

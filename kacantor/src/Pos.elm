@@ -67,6 +67,20 @@ addDelta delta p1 =
     }
 
 
+updateX : Float -> Pos -> Pos
+updateX xValue pos =
+    { x = xValue
+    , y = pos.y
+    }
+
+
+updateY : Float -> Pos -> Pos
+updateY yValue pos =
+    { x = pos.x
+    , y = yValue
+    }
+
+
 addDeltaX : Pos -> Delta -> Pos
 addDeltaX p1 delta =
     { x = p1.x + delta.dx

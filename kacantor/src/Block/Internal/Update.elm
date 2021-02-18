@@ -13,6 +13,8 @@ import Draggable
 import Draggable.Events
 import Grid
 import Pair
+import Pos
+import Size
 
 
 update :
@@ -40,13 +42,13 @@ update context gd msg model =
             )
 
         DragMove delta ->
-            ( model |> Maybe.map (dragMove delta gd)
+            ( model |> Maybe.map (dragMove delta)
             , context
             , Cmd.none
             )
 
         EndDrag ->
-            ( model |> Maybe.andThen (endDrag gd)
+            ( model |> Maybe.andThen endDrag
             , context
             , Cmd.none
             )
@@ -74,29 +76,25 @@ dragStart gd id bd =
         ctx =
             DragContext (Grid.toGrid gd) bd
 
+        grid =
+            Grid.toGrid gd
+
         vm =
-            ViewModel.forBlock2 gd bd
+            ViewModel.forBlock2 grid bd
 
         component_ =
             case id.part of
                 Component.Body ->
                     vm |> Body.dragStart |> Maybe.map DragBody
 
+                Component.Offset ->
+                    vm |> OffsetControl.dragStart |> Maybe.map DragOffset
+
                 Component.Quantity ->
                     vm |> QuantityControl.dragStart |> Maybe.map DragQuantity
 
                 Component.Width ->
                     vm |> WidthControl.dragStart |> Maybe.map DragWidth
-
-                _ ->
-                    vm |> Body.dragStart |> Maybe.map DragBody
-
-        -- Component.Offset ->
-        --     OffsetControl.startDrag vm bd
-        -- Component.Quantity ->
-        --     QuantityControl.startDrag vm bd
-        -- Component.Width ->
-        --     WidthControl.startDrag vm bd
     in
     case component_ of
         Just c ->
@@ -106,25 +104,9 @@ dragStart gd id bd =
             bd
 
 
-dragMove : Delta -> Grid.Data -> Block -> Block
-dragMove newDelta gd bd =
+dragMove : Delta -> Block -> Block
+dragMove newDelta bd =
     case bd.state of
-        -- Dragging component drag ->
-        --     let
-        --         drag_ =
-        --             DragState.add newDelta drag
-        --         bd_ =
-        --             case component of
-        --                 Component.Body ->
-        --                     Body.dragMove drag_ gd bd
-        --                 Component.Offset ->
-        --                     OffsetControl.dragMove drag_ gd bd
-        --                 Component.Quantity ->
-        --                     QuantityControl.dragMove drag_ gd bd
-        --                 Component.Width ->
-        --                     WidthControl.dragMove drag_ gd bd
-        --     in
-        --     { bd_ | state = Dragging component drag_ }
         Dragging2 ctx component ->
             let
                 ( component_, bd_ ) =
@@ -134,22 +116,20 @@ dragMove newDelta gd bd =
                                 |> Body.dragUpdate newDelta
                                 |> Pair.fork DragBody (Body.dragMove ctx)
 
+                        DragOffset state ->
+                            state
+                                |> OffsetControl.dragUpdate newDelta
+                                |> Pair.fork DragOffset (OffsetControl.dragMove2 ctx)
+
                         DragQuantity state ->
                             state
                                 |> QuantityControl.dragUpdate newDelta
                                 |> Pair.fork DragQuantity (QuantityControl.dragMove ctx)
 
-                        _ ->
-                            ( component, ctx.bd )
-
-                -- bd_ =
-                --     case component_ of
-                --         DragBody state ->
-                --             state |> Body.dragMove ctx
-                --         DragQuantity state ->
-                --             state |> QuantityControl.dragMove ctx
-                --         _ ->
-                --             ctx.bd
+                        DragWidth state ->
+                            state
+                                |> WidthControl.dragUpdate newDelta
+                                |> Pair.fork DragWidth (WidthControl.dragMove ctx)
             in
             { bd_ | state = Dragging2 ctx component_ }
 
@@ -157,23 +137,9 @@ dragMove newDelta gd bd =
             bd
 
 
-endDrag : Grid.Data -> Block -> Maybe Block
-endDrag gd bd =
+endDrag : Block -> Maybe Block
+endDrag bd =
     case bd.state of
-        -- Dragging component drag ->
-        --     let
-        --         bd_ =
-        --             case component of
-        --                 Component.Body ->
-        --                     Body.dragEnd drag gd bd
-        --                 Component.Offset ->
-        --                     OffsetControl.dragEnd drag gd bd
-        --                 Component.Quantity ->
-        --                     QuantityControl.dragEnd drag gd bd
-        --                 Component.Width ->
-        --                     WidthControl.dragEnd drag gd bd
-        --     in
-        --     bd_ |> Maybe.map (\b -> { b | state = Selected })
         Dragging2 ctx component ->
             let
                 bd_ =
@@ -181,11 +147,14 @@ endDrag gd bd =
                         DragBody state ->
                             Body.dragEnd ctx state
 
+                        DragOffset state ->
+                            OffsetControl.dragEnd2 ctx state
+
                         DragQuantity state ->
                             QuantityControl.dragEnd ctx state
 
-                        _ ->
-                            Just ctx.bd
+                        DragWidth state ->
+                            WidthControl.dragEnd ctx state
             in
             bd_ |> Maybe.map (\b -> { b | state = Selected })
 

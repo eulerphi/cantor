@@ -1,19 +1,18 @@
 module Block.Internal.Component.Quantity exposing (..)
 
-import Block.Internal.Component as Component exposing (Component(..))
-import Block.Internal.Section as Section exposing (Section)
+import Block.Internal.Component exposing (Component(..))
+import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel, ViewModel2)
+import Block.Internal.View.Model exposing (ViewModel2)
 import Box exposing (Box)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
-import DragState exposing (DragState)
+import DragState
 import Grid exposing (Grid)
 import Line
 import Maybe.Extra
 import Pos exposing (Pos)
 import Size exposing (Size)
-import String
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 import SvgEx
@@ -75,8 +74,12 @@ rootPosition : ViewModel2 -> Maybe Pos
 rootPosition vm =
     vm.sections
         |> Section.last
-        |> Maybe.map (\s -> s.pos |> Pos.addDelta (Delta s.size.width s.size.height))
-        |> Maybe.map (Pos.addDelta (Delta -vm.grid.unit -vm.grid.unit))
+        |> Maybe.map
+            (\s ->
+                s.pos
+                    |> Pos.addX (s.size.width - vm.grid.unit)
+                    |> Pos.addY (s.size.height - vm.grid.unit)
+            )
 
 
 
@@ -85,7 +88,7 @@ rootPosition vm =
 
 dragStart : ViewModel2 -> Maybe DragQuantityState
 dragStart vm =
-    vm |> rootPosition |> Maybe.map DragState.init22
+    vm |> rootPosition |> Maybe.map DragState.forStart
 
 
 dragUpdate : Delta -> DragQuantityState -> DragQuantityState

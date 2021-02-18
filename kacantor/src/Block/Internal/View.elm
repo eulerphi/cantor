@@ -27,13 +27,16 @@ view context gd bd =
             ViewModel.forBlock gd bd
 
         vm2 =
-            ViewModel.forBlock2 gd bd
+            ViewModel.forBlock2 (Grid.toGrid gd) bd
 
         body =
             vm2 |> BodyComponent.view (attrsFn Component.Body)
 
         elems =
-            [ QuantityComponent.view (attrsFn Component.Quantity) ]
+            [ OffsetControl.view (attrsFn Component.Offset)
+            , QuantityComponent.view (attrsFn Component.Quantity)
+            , WidthComponent.view (attrsFn Component.Width)
+            ]
                 |> List.map (\fn -> fn vm2)
                 |> Maybe.Extra.values
 
@@ -41,13 +44,11 @@ view context gd bd =
             [ OutlineComponent.view []
             , Ruler.view []
             , TitleComponent.view
-            , WidthComponent.view (attrsFn Component.Width)
-            , OffsetControl.view (attrsFn Component.Offset)
             ]
                 |> List.map (\fn -> fn vm)
                 |> Maybe.Extra.values
     in
-    Svg.g [ SvgAttrs.class "block" ] (body :: elems ++ elements)
+    Svg.g [ SvgAttrs.class "block" ] (body :: elements ++ elems)
 
 
 eventAttrs : (Msg -> msg) -> String -> Component -> List (Attribute msg)

@@ -30,3 +30,8 @@ fork fn1 fn2 input =
 map : (a -> b) -> ( a, a ) -> ( b, b )
 map fn pair =
     Tuple.mapBoth fn fn pair
+
+
+uncurry : (a -> b -> c) -> ( a, b ) -> c
+uncurry fn ( a, b ) =
+    fn a b

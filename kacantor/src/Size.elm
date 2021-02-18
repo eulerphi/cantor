@@ -7,12 +7,6 @@ type alias Size =
     }
 
 
-type alias Size2 number =
-    { width : number
-    , height : number
-    }
-
-
 fromInt : ( Int, Int ) -> Size
 fromInt ( w, h ) =
     { width = toFloat w, height = toFloat h }

@@ -1,4 +1,4 @@
-module Line exposing (..)
+module Line exposing (Line, Linelike, addX, addY)
 
 import Pos exposing (Pos)
 

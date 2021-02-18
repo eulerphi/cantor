@@ -1,6 +1,5 @@
 module Block.Internal.Component.Title exposing (..)
 
-import Block.Internal.Config as Config
 import Block.Internal.Types exposing (..)
 import Block.Internal.View.Model exposing (ViewModel)
 import Pos exposing (Pos)
@@ -13,7 +12,13 @@ import SvgEx
 view : ViewModel -> Maybe (Svg msg)
 view vm =
     case vm.block.state of
-        Dragging _ _ ->
+        Dragging2 _ (DragOffset _) ->
+            Just <| viewTitle vm
+
+        Dragging2 _ (DragQuantity _) ->
+            Just <| viewTitle vm
+
+        Dragging2 _ (DragWidth _) ->
             Just <| viewTitle vm
 
         Selected ->

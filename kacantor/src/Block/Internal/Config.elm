@@ -5,6 +5,7 @@ module Block.Internal.Config exposing
     , connectorLineWidth
     , guideLineWidth
     , offsetPosDelta
+    , outlinePadding
     , outlinePosDelta
     , outlineSizeDelta
     )
@@ -45,6 +46,11 @@ offsetPosDelta =
             outlinePosDelta
     in
     Delta dx 0
+
+
+outlinePadding : Float
+outlinePadding =
+    4
 
 
 outlinePosDelta : Delta

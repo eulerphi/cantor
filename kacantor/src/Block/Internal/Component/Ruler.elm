@@ -14,10 +14,10 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging _ _ ->
+        Dragging2 _ (DragQuantity _) ->
             Just (viewOutline attrs vm)
 
-        Selected ->
+        Dragging2 _ (DragWidth _) ->
             Just (viewOutline attrs vm)
 
         _ ->

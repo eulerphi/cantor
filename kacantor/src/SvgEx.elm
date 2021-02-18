@@ -1,12 +1,15 @@
 module SvgEx exposing
     ( centeredText
+    , horizontalGuideline
     , line
     , rect
     , translateToPos
+    , verticalGuideline
     )
 
 import Box exposing (Boxlike)
-import Line exposing (Linelike)
+import Line exposing (Line, Linelike)
+import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
@@ -46,6 +49,28 @@ line attrs { p1, p2 } =
     Svg.line
         (lineAttrs ++ attrs)
         []
+
+
+horizontalGuideline : List (Attribute msg) -> Boxlike r -> Pos -> Svg msg
+horizontalGuideline attrs box pos =
+    pos
+        |> Pos.updateX box.pos.x
+        |> Pair.fork
+            identity
+            (Pos.addX box.size.width)
+        |> Pair.uncurry Line
+        |> line (SvgAttrs.class "guideline" :: attrs)
+
+
+verticalGuideline : List (Attribute msg) -> Boxlike r -> Pos -> Svg msg
+verticalGuideline attrs box pos =
+    pos
+        |> Pos.updateY box.pos.y
+        |> Pair.fork
+            identity
+            (Pos.addY box.size.height)
+        |> Pair.uncurry Line
+        |> line (SvgAttrs.class "guideline" :: attrs)
 
 
 rect : List (Attribute msg) -> Boxlike r -> Svg msg

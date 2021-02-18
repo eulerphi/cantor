@@ -2,9 +2,9 @@ module Block.Internal.Component.Body exposing (..)
 
 import Block.Internal.Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel, ViewModel2)
+import Block.Internal.View.Model exposing (ViewModel2)
 import Delta exposing (Delta)
-import DragState exposing (DragState)
+import DragState
 import Grid
 import List
 import Pos exposing (Pos)
@@ -54,7 +54,7 @@ viewTxt vm s =
 
 dragStart : ViewModel2 -> Maybe DragBodyState
 dragStart vm =
-    DragState.init22 vm.pos |> Just
+    DragState.forStart vm.pos |> Just
 
 
 dragUpdate : Delta -> DragBodyState -> DragBodyState

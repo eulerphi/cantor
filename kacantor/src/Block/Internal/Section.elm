@@ -2,7 +2,7 @@ module Block.Internal.Section exposing (Section, first, forBlock, last, toBox)
 
 import Block.Internal.Types exposing (..)
 import Box exposing (Box)
-import Grid
+import Grid exposing (Grid)
 import Pos exposing (Pos)
 import Size exposing (Size)
 
@@ -19,7 +19,7 @@ type alias Section =
 -- PUBLIC API
 
 
-forBlock : Grid.Data -> Block -> List Section
+forBlock : Grid -> Block -> List Section
 forBlock gd bd =
     let
         ( topWidth, topHeight ) =
@@ -68,7 +68,7 @@ forBlock gd bd =
     in
     [ top, mid, bot ]
         |> List.filter hasSize
-        |> List.map (scale <| toFloat gd.unit)
+        |> List.map (scale gd.unit)
         |> List.map (addPos bd.pos)
 
 
@@ -90,20 +90,24 @@ last sections =
             last xs
 
 
-toBox : Block -> List Section -> Box
-toBox bd sections =
+toBox : Grid -> Block -> List Section -> Box
+toBox gd bd sections =
     let
         pos =
             first sections
                 |> Maybe.map .pos
                 |> Maybe.withDefault bd.pos
 
-        size =
+        width =
+            bd.width |> toFloat |> (*) gd.unit
+
+        height =
             sections
                 |> List.map .size
-                |> List.foldl combineSize Size.none
+                |> List.map .height
+                |> List.foldl (+) 0
     in
-    Box pos size
+    Box pos (Size width height)
 
 
 

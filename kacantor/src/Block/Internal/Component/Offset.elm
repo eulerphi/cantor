@@ -1,170 +1,145 @@
 module Block.Internal.Component.Offset exposing (..)
 
-import Block.Internal.Component as Component
 import Block.Internal.Config as Config
+import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.View.Model exposing (ViewModel2)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
-import DragState exposing (DragState)
-import Grid
+import DragState
+import Line exposing (Line)
 import MathEx
+import Pair
 import Pos exposing (Pos)
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
+import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging Component.Offset _ ->
-            Just <| viewControl attrs vm
+        Dragging2 _ (DragOffset { root, control }) ->
+            { active = True
+            , rootPos = root.current
+            , controlPos = control.current
+            }
+                |> viewControl attrs vm
+                |> Just
 
         Selected ->
-            Just <| viewControl attrs vm
+            vm
+                |> rootPosition
+                |> Maybe.map
+                    (\pos ->
+                        { active = False
+                        , rootPos = pos
+                        , controlPos = pos |> circlePosition vm
+                        }
+                    )
+                |> Maybe.map (viewControl attrs vm)
 
         _ ->
             Nothing
 
 
-viewControl : List (Attribute msg) -> ViewModel -> Svg msg
-viewControl attrs vm =
+viewControl :
+    List (Attribute msg)
+    -> ViewModel2
+    -> { active : Bool, rootPos : Pos, controlPos : Pos }
+    -> Svg msg
+viewControl attrs vm { active, rootPos, controlPos } =
     let
-        { active, rootpos, cpos } =
-            case vm.block.state of
-                Dragging Component.Offset drag ->
-                    { active = True
-                    , rootpos = drag.start |> Pos.addDelta drag.delta.current
-                    , cpos = drag.start2 |> Pos.addDelta drag.delta.total
-                    }
+        vline =
+            rootPos |> Line.addY vm.grid.unit
 
-                _ ->
-                    let
-                        root =
-                            rootPosition vm
-                    in
-                    { active = False
-                    , rootpos = root
-                    , cpos = root |> circlePosition vm
-                    }
+        hline =
+            rootPos
+                |> Pos.addY (vm.grid.unit / 2)
+                |> Pair.fork
+                    identity
+                    (Pos.updateX controlPos.x)
+                |> Pair.uncurry Line
 
-        barP1 =
-            rootpos
-
-        barP2 =
-            rootpos |> Pos.addDelta (Delta 0 vm.grid.unit)
-
-        connectorP1 =
-            rootpos |> Pos.addY (vm.grid.unit / 2)
-
-        connectorP2 =
-            Pos cpos.x connectorP1.y
-
-        ( guideP1, guideP2 ) =
+        guidelines =
             if active then
-                ( Pos cpos.x vm.grid.pos.y
-                , Pos cpos.x (vm.grid.pos.y + vm.grid.size.height)
-                )
+                [ controlPos |> SvgEx.verticalGuideline [] vm.grid ]
 
             else
-                ( Pos 0 0, Pos 0 0 )
+                []
     in
     Svg.g
-        [ SvgAttrs.class "offset-control" ]
-        [ Svg.line
-            [ SvgAttrs.x1 <| Pos.toXString guideP1
-            , SvgAttrs.y1 <| Pos.toYString guideP1
-            , SvgAttrs.x2 <| Pos.toXString guideP2
-            , SvgAttrs.y2 <| Pos.toYString guideP2
-            , SvgAttrs.strokeWidth <| String.fromFloat <| Config.guideLineWidth
-            , SvgAttrs.strokeDasharray "4"
-            ]
-            []
-        , Svg.line
-            [ SvgAttrs.x1 <| Pos.toXString barP1
-            , SvgAttrs.y1 <| Pos.toYString barP1
-            , SvgAttrs.x2 <| Pos.toXString barP2
-            , SvgAttrs.y2 <| Pos.toYString barP2
-            , SvgAttrs.strokeWidth <| String.fromFloat <| Config.barLineWidth
-            ]
-            []
-        , Svg.line
-            [ SvgAttrs.x1 <| Pos.toXString connectorP1
-            , SvgAttrs.y1 <| Pos.toYString connectorP1
-            , SvgAttrs.x2 <| Pos.toXString connectorP2
-            , SvgAttrs.y2 <| Pos.toYString connectorP2
-            , SvgAttrs.strokeWidth <| String.fromFloat <| Config.connectorLineWidth
-            ]
-            []
-        , CircleControl.view
-            attrs
-            { active = active
-            , pos = cpos
-            , unit = vm.grid.unit
-            }
-        ]
+        (SvgAttrs.class "offset-control" :: attrs)
+        (guidelines
+            ++ [ SvgEx.line [] vline
+               , SvgEx.line [] hline
+               , CircleControl.view
+                    attrs
+                    { active = active
+                    , pos = controlPos
+                    , unit = vm.grid.unit
+                    }
+               ]
+        )
 
 
-circlePositionXOffset : ViewModel -> Float
-circlePositionXOffset vm =
-    2 * vm.grid.unit
-
-
-circlePosition : ViewModel -> Pos -> Pos
+circlePosition : ViewModel2 -> Pos -> Pos
 circlePosition vm rootpos =
-    rootpos |> Pos.addDelta (Delta -(circlePositionXOffset vm) (vm.grid.unit / 2))
+    rootpos
+        |> Pos.addX -(2 * vm.grid.unit)
+        |> Pos.addY (vm.grid.unit / 2)
 
 
-rootPosition : ViewModel -> Pos
+rootPosition : ViewModel2 -> Maybe Pos
 rootPosition vm =
-    let
-        root =
-            Maybe.withDefault vm.body.mid vm.body.top
-    in
-    Pos.addDelta Config.offsetPosDelta root.pos
+    vm.sections
+        |> Section.first
+        |> Maybe.map .pos
+        |> Maybe.map (Pos.addX -Config.outlinePadding)
 
 
 
 -- UPDATE
 
 
-startDrag : ViewModel -> Block -> DragState Block
-startDrag vm bd =
+dragStart : ViewModel2 -> Maybe DragOffsetState
+dragStart vm =
+    vm
+        |> rootPosition
+        |> Maybe.map
+            (Pair.fork
+                DragState.forStart
+                (DragState.forStart << circlePosition vm)
+            )
+        |> Maybe.map (Pair.uncurry DragOffsetState)
+
+
+dragUpdate : Delta -> DragOffsetState -> DragOffsetState
+dragUpdate delta { root, control } =
+    DragOffsetState
+        (root |> DragState.update delta Delta.addX)
+        (control |> DragState.update delta Delta.add)
+
+
+dragMove2 : DragContext -> DragOffsetState -> Block
+dragMove2 { gd, bd } { root } =
     let
-        rootpos =
-            rootPosition vm
+        dx =
+            root.delta
+                |> Delta.roundNear gd.unit
+                |> Delta.div gd.unit
+                |> .dx
+                |> round
 
-        cpos =
-            rootpos |> circlePosition vm
-    in
-    DragState.init2
-        { start = rootPosition vm
-        , start2 = cpos
-        , data = bd
-        , addFn = Delta.addX
-        }
-
-
-dragMove : DragState Block -> Grid.Data -> Block -> Block
-dragMove drag gd bd =
-    let
-        { dx } =
-            drag.delta.current
-                |> Delta.roundNear (toFloat gd.unit)
-                |> Delta.div (toFloat gd.unit)
-
-        minOffset =
-            0
-
-        maxOffset =
-            bd.width - 1
+        ( minOffset, maxOffset ) =
+            ( 0, bd.width - 1 )
 
         headerOffset_ =
-            MathEx.minmax minOffset maxOffset (drag.data.headerOffset + round dx)
+            MathEx.minmax minOffset maxOffset (bd.headerOffset + dx)
     in
     { bd | headerOffset = headerOffset_ }
 
 
-dragEnd : DragState Block -> Grid.Data -> Block -> Maybe Block
-dragEnd _ _ bd =
-    Just bd
+dragEnd2 : DragContext -> DragOffsetState -> Maybe Block
+dragEnd2 ctx state =
+    dragMove2 ctx state |> Just

@@ -9,6 +9,10 @@
     stroke:none
 }
 
+.guideline {
+    stroke-dasharray: 4;
+}
+
 /* ADD BlOCK BTN */
 #add-block-btn {
     stroke: rgb(101,197,219);
@@ -121,6 +125,10 @@
     stroke: rgb(85,209,229);
 }
 
+.block .offset-control line {
+    stroke-width: 3;
+}
+
 .block .outline {
     fill: none;
     stroke: rgb(156, 151, 151);
@@ -147,6 +155,10 @@
 .block .width-control {
     fill: rgb(85,209,229);
     stroke: rgb(85,209,229);
+}
+
+.block .width-control line {
+    stroke-width: 3;
 }
 
 .block .quantity-control {

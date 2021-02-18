@@ -24,8 +24,8 @@ type alias DragState2 =
     }
 
 
-init22 : Pos -> DragState2
-init22 start =
+forStart : Pos -> DragState2
+forStart start =
     DragState2 start Delta.none start
 
 
@@ -33,7 +33,7 @@ update : Delta -> AddFunction -> DragState2 -> DragState2
 update delta addFn state =
     let
         delta_ =
-            state.delta |> addFn delta
+            delta |> addFn state.delta
 
         current_ =
             state.start |> Pos.addDelta delta_
