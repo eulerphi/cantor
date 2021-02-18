@@ -77,7 +77,7 @@ dragStart gd id bd =
             Grid.toGrid gd
 
         vm =
-            ViewModel.forBlock2 grid bd
+            ViewModel.forBlock grid bd
 
         component_ =
             case id.part of

@@ -9,22 +9,6 @@ import Size exposing (Size)
 
 
 type alias ViewModel =
-    { body : BodyModel
-    , block :
-        { pos : Pos
-        , size : Size
-        , state : State
-        , width : Int
-        }
-    , grid :
-        { pos : Pos
-        , size : Size
-        , unit : Float
-        }
-    }
-
-
-type alias ViewModel2 =
     { pos : Pos
     , size : Size
     , grid : Grid
@@ -33,29 +17,8 @@ type alias ViewModel2 =
     }
 
 
-forBlock : Grid.Data -> Block -> ViewModel
+forBlock : Grid -> Block -> ViewModel
 forBlock gd bd =
-    let
-        body =
-            BodyModel.forBlock gd bd
-    in
-    { body = body
-    , block =
-        { pos = bd.pos
-        , size = BodyModel.size body
-        , state = bd.state
-        , width = bd.width
-        }
-    , grid =
-        { pos = Pos.fromInt ( gd.x, gd.y )
-        , size = Size.fromInt ( gd.width, gd.height )
-        , unit = toFloat gd.unit
-        }
-    }
-
-
-forBlock2 : Grid -> Block -> ViewModel2
-forBlock2 gd bd =
     let
         sections =
             Section.forBlock gd bd

@@ -3,7 +3,7 @@ module Block.Internal.Component.Quantity exposing (..)
 import Block.Internal.Component exposing (Component(..))
 import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel2)
+import Block.Internal.View.Model exposing (ViewModel)
 import Box exposing (Box)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
@@ -18,7 +18,7 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (DragQuantity state) ->
@@ -38,7 +38,7 @@ view attrs vm =
 
 viewControl :
     List (Attribute msg)
-    -> ViewModel2
+    -> ViewModel
     -> { active : Bool, pos : Pos }
     -> Svg msg
 viewControl attrs vm { active, pos } =
@@ -70,7 +70,7 @@ viewControl attrs vm { active, pos } =
         ]
 
 
-rootPosition : ViewModel2 -> Maybe Pos
+rootPosition : ViewModel -> Maybe Pos
 rootPosition vm =
     vm.sections
         |> Section.last
@@ -86,7 +86,7 @@ rootPosition vm =
 -- UPDATE
 
 
-dragStart : ViewModel2 -> Maybe DragQuantityState
+dragStart : ViewModel -> Maybe DragQuantityState
 dragStart vm =
     vm |> rootPosition |> Maybe.map DragState.forStart
 

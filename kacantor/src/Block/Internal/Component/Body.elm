@@ -2,7 +2,7 @@ module Block.Internal.Component.Body exposing (..)
 
 import Block.Internal.Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel2)
+import Block.Internal.View.Model exposing (ViewModel)
 import Delta exposing (Delta)
 import DragState
 import Grid
@@ -18,14 +18,14 @@ import SvgEx
 -- VIEW
 
 
-view : List (Attribute msg) -> ViewModel2 -> Svg msg
+view : List (Attribute msg) -> ViewModel -> Svg msg
 view attrs vm =
     Svg.g
         (SvgAttrs.class "block-body" :: attrs)
         (vm.sections |> List.map (viewRect vm))
 
 
-viewRect : ViewModel2 -> Section -> Svg msg
+viewRect : ViewModel -> Section -> Svg msg
 viewRect vm s =
     let
         grid =
@@ -39,7 +39,7 @@ viewRect vm s =
         [ grid, txt ]
 
 
-viewTxt : ViewModel2 -> Section -> Svg msg
+viewTxt : ViewModel -> Section -> Svg msg
 viewTxt vm s =
     SvgEx.centeredText
         [ SvgAttrs.class (s.class ++ "-text") ]
@@ -52,7 +52,7 @@ viewTxt vm s =
 -- UPDATE
 
 
-dragStart : ViewModel2 -> Maybe DragBodyState
+dragStart : ViewModel -> Maybe DragBodyState
 dragStart vm =
     DragState.forStart vm.pos |> Just
 

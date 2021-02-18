@@ -1,7 +1,7 @@
 module Block.Internal.Component.Title exposing (..)
 
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel2)
+import Block.Internal.View.Model exposing (ViewModel)
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
@@ -9,7 +9,7 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (DragOffset _) ->
@@ -28,7 +28,7 @@ view attrs vm =
             Nothing
 
 
-viewTitle : ViewModel2 -> Svg msg
+viewTitle : ViewModel -> Svg msg
 viewTitle vm =
     Svg.g [] []
 
@@ -70,12 +70,12 @@ viewTitle vm =
 --     ]
 
 
-titleSize : ViewModel2 -> String -> Size
+titleSize : ViewModel -> String -> Size
 titleSize vm _ =
     Size (3 * vm.grid.unit / 2) (3 * vm.grid.unit / 2)
 
 
-rootPosition : ViewModel2 -> Size -> Pos
+rootPosition : ViewModel -> Size -> Pos
 rootPosition vm size =
     vm.block.pos
         |> Pos.addX -(size.width + vm.grid.unit / 2)

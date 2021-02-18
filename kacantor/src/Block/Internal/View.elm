@@ -24,7 +24,7 @@ view context gd bd =
             eventAttrs context.envelop bd.key
 
         vm =
-            ViewModel.forBlock2 (Grid.toGrid gd) bd
+            ViewModel.forBlock (Grid.toGrid gd) bd
 
         body =
             vm |> BodyComponent.view (attrsFn Component.Body)

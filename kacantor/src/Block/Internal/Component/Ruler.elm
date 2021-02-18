@@ -2,7 +2,7 @@ module Block.Internal.Component.Ruler exposing (..)
 
 import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel2)
+import Block.Internal.View.Model exposing (ViewModel)
 import Line exposing (Line)
 import Maybe.Extra
 import Pos exposing (Pos)
@@ -12,7 +12,7 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (DragQuantity _) ->
@@ -25,7 +25,7 @@ view attrs vm =
             Nothing
 
 
-viewRulers : List (Attribute msg) -> ViewModel2 -> Svg msg
+viewRulers : List (Attribute msg) -> ViewModel -> Svg msg
 viewRulers attrs vm =
     let
         widthRuler =
@@ -42,7 +42,7 @@ viewRulers attrs vm =
         (widthRuler :: heightRuler)
 
 
-viewWidthRuler : ViewModel2 -> Svg msg
+viewWidthRuler : ViewModel -> Svg msg
 viewWidthRuler vm =
     let
         ( halfUnit, quarterUnit ) =
@@ -90,7 +90,7 @@ viewWidthRuler vm =
         }
 
 
-viewHeightRuler : ViewModel2 -> Section -> Svg msg
+viewHeightRuler : ViewModel -> Section -> Svg msg
 viewHeightRuler vm mid =
     let
         ( halfUnit, quarterUnit ) =

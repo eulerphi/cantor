@@ -3,7 +3,7 @@ module Block.Internal.Component.Offset exposing (..)
 import Block.Internal.Config as Config
 import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel2)
+import Block.Internal.View.Model exposing (ViewModel)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
 import DragState
@@ -16,7 +16,7 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (DragOffset { root, control }) ->
@@ -45,7 +45,7 @@ view attrs vm =
 
 viewControl :
     List (Attribute msg)
-    -> ViewModel2
+    -> ViewModel
     -> { active : Bool, rootPos : Pos, controlPos : Pos }
     -> Svg msg
 viewControl attrs vm { active, rootPos, controlPos } =
@@ -83,14 +83,14 @@ viewControl attrs vm { active, rootPos, controlPos } =
         )
 
 
-circlePosition : ViewModel2 -> Pos -> Pos
+circlePosition : ViewModel -> Pos -> Pos
 circlePosition vm rootpos =
     rootpos
         |> Pos.addX -(2 * vm.grid.unit)
         |> Pos.addY (vm.grid.unit / 2)
 
 
-rootPosition : ViewModel2 -> Maybe Pos
+rootPosition : ViewModel -> Maybe Pos
 rootPosition vm =
     vm.sections
         |> Section.first
@@ -102,7 +102,7 @@ rootPosition vm =
 -- UPDATE
 
 
-dragStart : ViewModel2 -> Maybe DragOffsetState
+dragStart : ViewModel -> Maybe DragOffsetState
 dragStart vm =
     vm
         |> rootPosition
