@@ -77,6 +77,11 @@ add s1 s2 =
     }
 
 
+area : Sizelike r number -> number
+area size =
+    size.width * size.height
+
+
 sub : Size -> Size -> Size
 sub s1 s2 =
     Size (s1.width - s2.width) (s1.height - s2.height)

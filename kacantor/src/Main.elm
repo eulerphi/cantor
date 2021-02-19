@@ -5,8 +5,7 @@ import Block.Group as Group exposing (Group)
 import Browser
 import CircleButton
 import Grid exposing (Grid)
-import Html exposing (div)
-import Html.Attributes as HtmlAttrs
+import Html exposing (Html)
 import Pair
 import Pos exposing (Pos)
 import Size
@@ -42,7 +41,7 @@ init devicePixelRatio =
     let
         m =
             { blocks = Group.init BlockMsg []
-            , grid = Grid.initEmpty
+            , grid = Grid.emptyGrid
             , gridOpts = Grid.Options isAlternateLine isAlternateLine
             , key = 0
             , viewCtx =
@@ -50,7 +49,7 @@ init devicePixelRatio =
                     { devicePixelRatio = devicePixelRatio
                     , elementId = "root"
                     , envelope = ViewCtxMsg
-                    , padding = 20
+                    , padding = 10
                     }
             }
     in
@@ -73,30 +72,27 @@ subscriptions m =
 -- VIEW
 
 
-view : Model -> Html.Html Msg
+view : Model -> Html Msg
 view m =
-    div
-        [ HtmlAttrs.id "root" ]
-        [ Svg.svg
-            [ SvgAttrs.width <| Size.toWidthString m.viewCtx.size
-            , SvgAttrs.height <| Size.toHeightString m.viewCtx.size
+    Svg.svg
+        [ SvgAttrs.width <| Size.toWidthString m.viewCtx.size
+        , SvgAttrs.height <| Size.toHeightString m.viewCtx.size
+        ]
+        [ Grid.viewWithOptions
+            [ SvgAttrs.id "grid"
+            , SvgEvts.onClick ClearSelection
             ]
-            [ Grid.viewWithOptions
-                [ SvgAttrs.id "grid"
-                , SvgEvts.onClick ClearSelection
-                ]
-                m.gridOpts
-                m.grid
-            , Svg.g
-                [ SvgAttrs.id "blocks" ]
-                (Group.view m.grid m.blocks)
-            , CircleButton.view
-                [ SvgAttrs.id "add-block-btn"
-                , SvgEvts.onClick AddBlock
-                ]
-                m.grid
-                "+"
+            m.gridOpts
+            m.grid
+        , Svg.g
+            [ SvgAttrs.id "blocks" ]
+            (Group.view m.grid m.blocks)
+        , CircleButton.view
+            [ SvgAttrs.id "add-block-btn"
+            , SvgEvts.onClick AddBlock
             ]
+            m.grid
+            "+"
         ]
 
 
@@ -120,18 +116,19 @@ update msg m =
                 key_ =
                     m.key + 1
 
-                { x, y } =
+                pos =
                     m.grid.size
                         |> Size.map (\v -> v / 2)
                         |> Size.toPair
                         |> Pair.uncurry Pos
                         |> Pos.roundNear m.grid
+                        |> Pos.addX -(3 * m.grid.unit)
 
                 newBlock =
                     Block.init
                         { key = String.fromInt key_
-                        , pos = ( round x, round y )
-                        , quantity = 10
+                        , pos = pos
+                        , quantity = 5
                         , width = 10
                         }
 

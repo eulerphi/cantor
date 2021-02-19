@@ -1,9 +1,9 @@
 module Grid exposing
     ( Grid
     , Options
+    , emptyGrid
     , forBox
     , forViewContext
-    , initEmpty
     , view
     , viewWithOptions
     )
@@ -19,6 +19,10 @@ import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 import SvgEx
 import ViewContext exposing (ViewContext)
+
+
+
+-- TYPES
 
 
 type alias Grid =
@@ -38,9 +42,8 @@ type alias IsAlternateLineFunction =
     Int -> Bool
 
 
-emptyOptions : Options
-emptyOptions =
-    Options (\_ -> False) (\_ -> False)
+
+-- INIT
 
 
 forBox : Float -> Boxlike r -> Grid
@@ -72,9 +75,18 @@ forViewContext minUnits vc =
     Grid pos size unit
 
 
-initEmpty : Grid
-initEmpty =
+emptyGrid : Grid
+emptyGrid =
     Grid Pos.origin Size.none 0
+
+
+emptyOptions : Options
+emptyOptions =
+    Options (\_ -> False) (\_ -> False)
+
+
+
+-- VIEW
 
 
 view : List (Attribute msg) -> Grid -> Svg msg
@@ -116,6 +128,10 @@ viewWithOptions attrs opts grid =
     Svg.g
         (SvgAttrs.class "grid" :: attrs)
         (rect :: hlines ++ vlines)
+
+
+
+-- PRIVATE
 
 
 viewLine :

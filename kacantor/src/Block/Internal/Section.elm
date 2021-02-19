@@ -4,13 +4,15 @@ import Block.Internal.Types exposing (..)
 import Box exposing (Box)
 import Grid exposing (Grid)
 import Pos exposing (Pos)
-import Size exposing (Size)
+import Size exposing (IntSize, Size)
 
 
 type alias Section =
     { pos : Pos
     , size : Size
+    , sizeInUnits : IntSize
     , class : String
+    , isMid : Bool
     , quantity : Int
     }
 
@@ -22,6 +24,13 @@ type alias Section =
 forBlock : Grid -> Block -> List Section
 forBlock gd bd =
     let
+        topSize =
+            if bd.headerOffset > 0 then
+                IntSize (min bd.quantity (bd.width - bd.headerOffset)) 1
+
+            else
+                Size.noneInt
+
         ( topWidth, topHeight ) =
             if bd.headerOffset > 0 then
                 ( min bd.quantity (bd.width - bd.headerOffset), 1 )
@@ -29,10 +38,18 @@ forBlock gd bd =
             else
                 ( 0, 0 )
 
+        midSize =
+            IntSize bd.width <| (bd.quantity - topSize.width) // bd.width
+
         ( midWidth, midHeight ) =
             ( bd.width
             , (bd.quantity - topWidth) // bd.width
             )
+
+        botSize =
+            IntSize
+                (bd.quantity - topSize.width - (midSize.width * midSize.height))
+                1
 
         ( botWidth, botHeight ) =
             ( bd.quantity - topWidth - (midWidth * midHeight)
@@ -42,28 +59,31 @@ forBlock gd bd =
         top =
             { pos =
                 Pos.fromInt ( bd.headerOffset, 0 )
-            , size =
-                Size.fromInt ( topWidth, topHeight )
+            , size = topSize |> Size.toFloat
+            , sizeInUnits = topSize
             , class = "body-top"
-            , quantity = topWidth
+            , isMid = False
+            , quantity = topSize |> Size.area
             }
 
         mid =
             { pos =
                 Pos.fromInt ( 0, topHeight )
-            , size =
-                Size.fromInt ( midWidth, midHeight )
+            , size = midSize |> Size.toFloat
+            , sizeInUnits = midSize
             , class = "body-mid"
-            , quantity = midWidth * midHeight
+            , isMid = True
+            , quantity = midSize |> Size.area
             }
 
         bot =
             { pos =
                 Pos.fromInt ( 0, topHeight + midHeight )
-            , size =
-                Size.fromInt ( botWidth, botHeight )
+            , size = botSize |> Size.toFloat
+            , sizeInUnits = botSize
             , class = "body-bot"
-            , quantity = botWidth
+            , isMid = False
+            , quantity = botSize |> Size.area
             }
     in
     [ top, mid, bot ]

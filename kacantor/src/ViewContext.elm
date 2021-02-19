@@ -1,6 +1,7 @@
 module ViewContext exposing
     ( Msg
     , ViewContext
+    , ViewContextLike
     , init
     , initCmd
     , subscriptions
@@ -22,9 +23,17 @@ type alias ViewContext msg =
     }
 
 
+type alias ViewContextLike r =
+    { r
+        | devicePixelRatio : Float
+        , padding : Float
+        , size : Size
+    }
+
+
 type Msg
     = NoOp
-    | ElementChanged Browser.Dom.Element
+    | ViewportChanged Browser.Dom.Viewport
     | WindowResized
 
 
@@ -71,7 +80,7 @@ update msg vc =
         NoOp ->
             ( vc, Cmd.none )
 
-        ElementChanged e ->
+        ViewportChanged e ->
             ( vc |> updateOnSizeChanged e, Cmd.none )
 
         WindowResized ->
@@ -84,23 +93,14 @@ update msg vc =
 
 getElementCmd : ViewContext msg -> Cmd msg
 getElementCmd vc =
-    Task.attempt
-        (\r ->
-            case r of
-                Ok e ->
-                    e |> ElementChanged |> vc.envelope
-
-                Err _ ->
-                    NoOp |> vc.envelope
-        )
-        (Browser.Dom.getElement vc.elementId)
+    Task.perform (vc.envelope << ViewportChanged) Browser.Dom.getViewport
 
 
-updateOnSizeChanged : Browser.Dom.Element -> ViewContext msg -> ViewContext msg
-updateOnSizeChanged e vc =
+updateOnSizeChanged : Browser.Dom.Viewport -> ViewContext msg -> ViewContext msg
+updateOnSizeChanged { viewport } vc =
     { vc
         | size =
-            Size e.viewport.width e.viewport.height
+            Size viewport.width viewport.height
                 |> Size.addWidth -(2 * vc.padding)
                 |> Size.addHeight -(2 * vc.padding)
     }

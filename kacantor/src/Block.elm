@@ -16,7 +16,7 @@ import Block.Internal.View as View
 import Draggable
 import Grid exposing (Grid)
 import Html exposing (..)
-import Pos
+import Pos exposing (Pos)
 import Svg
 
 
@@ -42,7 +42,7 @@ type Msg
 
 init :
     { key : String
-    , pos : ( Int, Int )
+    , pos : Pos
     , quantity : Int
     , width : Int
     }
@@ -51,7 +51,7 @@ init input =
     Block
         { key = input.key
         , state = Types.Idle
-        , pos = Pos.fromInt input.pos
+        , pos = input.pos
         , quantity = input.quantity
         , headerOffset = 0
         , width = input.width
