@@ -3,7 +3,7 @@ module Block.Internal.Component.Quantity exposing (..)
 import Block.Internal.Component exposing (Component(..))
 import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel)
 import Box exposing (Box)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)

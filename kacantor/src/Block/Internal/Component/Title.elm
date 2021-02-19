@@ -1,7 +1,7 @@
 module Block.Internal.Component.Title exposing (..)
 
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel)
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)

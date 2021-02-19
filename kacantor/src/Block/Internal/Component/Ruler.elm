@@ -2,7 +2,7 @@ module Block.Internal.Component.Ruler exposing (..)
 
 import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel)
 import Line exposing (Line)
 import Maybe.Extra
 import Pos exposing (Pos)

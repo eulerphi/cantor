@@ -3,7 +3,7 @@ module Block.Internal.Component.Offset exposing (..)
 import Block.Internal.Config as Config
 import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
 import DragState

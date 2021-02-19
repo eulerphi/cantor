@@ -2,7 +2,7 @@ module Block.Internal.Component.Outline exposing (..)
 
 import Block.Internal.Config as Config
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel)
 import Box exposing (Box)
 import Pos
 import Size

@@ -2,7 +2,7 @@ module Block.Internal.Component.Body exposing (..)
 
 import Block.Internal.Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel)
 import Delta exposing (Delta)
 import DragState
 import Grid

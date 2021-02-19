@@ -2,7 +2,7 @@ module Block.Internal.Component.Width exposing (..)
 
 import Block.Internal.Component.Offset exposing (circlePosition)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
 import DragState

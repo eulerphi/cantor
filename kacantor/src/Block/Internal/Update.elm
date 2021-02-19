@@ -6,7 +6,7 @@ import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Quantity as QuantityControl
 import Block.Internal.Component.Width as WidthControl
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.Model as ViewModel
+import Block.Internal.ViewModel as ViewModel
 import Delta exposing (Delta)
 import Draggable
 import Draggable.Events

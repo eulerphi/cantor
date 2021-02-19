@@ -1,4 +1,4 @@
-module Block.Internal.View.Model exposing (..)
+module Block.Internal.ViewModel exposing (..)
 
 import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
