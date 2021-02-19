@@ -18,7 +18,7 @@ view attrs gd txt =
 
         ( btnPos, btnRadius ) =
             ( gd.pos |> Pos.addDelta (Delta doubleUnit (gd.size.height - doubleUnit))
-            , gd.unit
+            , threeFourthsUnit
             )
 
         ( btnTxtPos, btnTxtSize ) =

@@ -1,5 +1,7 @@
 module Size exposing (..)
 
+import Pair
+
 
 type alias Size =
     { width : Float
@@ -7,9 +9,45 @@ type alias Size =
     }
 
 
+type alias IntSize =
+    { width : Int
+    , height : Int
+    }
+
+
+type alias Sizelike r number =
+    { r
+        | width : number
+        , height : number
+    }
+
+
+floor : Size -> IntSize
+floor size =
+    size
+        |> toPair
+        |> Pair.map Basics.floor
+        |> Pair.uncurry IntSize
+
+
+toFloat : IntSize -> Size
+toFloat size =
+    size
+        |> toPair
+        |> Pair.map Basics.toFloat
+        |> Pair.uncurry Size
+
+
+inUnits : Float -> Size -> IntSize
+inUnits unit size =
+    size
+        |> div unit
+        |> floor
+
+
 fromInt : ( Int, Int ) -> Size
 fromInt ( w, h ) =
-    { width = toFloat w, height = toFloat h }
+    { width = Basics.toFloat w, height = Basics.toFloat h }
 
 
 init : ( Float, Float ) -> Size
@@ -25,6 +63,11 @@ forSquare value =
 none : Size
 none =
     init ( 0, 0 )
+
+
+noneInt : IntSize
+noneInt =
+    IntSize 0 0
 
 
 add : Size -> Size -> Size
@@ -76,7 +119,7 @@ minDimension size =
     min size.width size.height
 
 
-toPair : Size -> ( Float, Float )
+toPair : Sizelike r number -> ( number, number )
 toPair size =
     ( size.width, size.height )
 
@@ -93,7 +136,7 @@ scale unit size =
 
 scaleByInt : Int -> Size -> Size
 scaleByInt unit size =
-    scale (toFloat unit) size
+    scale (Basics.toFloat unit) size
 
 
 toWidthString : Size -> String

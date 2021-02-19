@@ -9,7 +9,6 @@ module ViewContext exposing
 
 import Browser.Dom
 import Browser.Events
-import Pos exposing (Pos)
 import Size exposing (Size)
 import Task
 

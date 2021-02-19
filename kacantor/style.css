@@ -40,20 +40,22 @@
 
 /* GRID */
 
-#grid .grid-rect {
+#grid rect {
     stroke: rgb(229, 229, 229);
     fill: rgb(255, 255, 255);
 }
 
-#grid .grid-hline,
-#grid .grid-vline {
+#grid .hline ,
+#grid .vline {
     stroke: rgb(247,248,248)
 }
 
-#grid .grid-hline-alternate,
-#grid .grid-vline-alternate {
+#grid .hline-alternate,
+#grid .vline-alternate {
     stroke: rgb(229,229,229)
 }
+
+/* TITLE  */
 
 .title rect {
     fill:rgb(156, 151, 151);
@@ -74,19 +76,19 @@
 
 /* BLOCK: HEADER / FOOTER */
 
-.block .body-top .grid-rect,
-.block .body-bot .grid-rect {
+.block .body-top .grid rect,
+.block .body-bot .grid rect {
     stroke: rgb(174,138,180);
     fill: rgb(188,26,105);
 }
 
-.block .body-top .grid-hline,
-.block .body-bot .grid-hline {
+.block .body-top .grid .hline,
+.block .body-bot .grid .hline {
     stroke: rgb(221,140,180);
 }
 
-.block .body-top .grid-vline,
-.block .body-bot .grid-vline {
+.block .body-top .grid .vline,
+.block .body-bot .grid .vline {
     stroke: rgb(174,138,180);
 }
 
@@ -99,16 +101,16 @@
 
 /* BLOCK: BODY */
 
-.block .body-mid .grid-rect {
+.block .body-mid .grid rect {
     stroke: rgb(101,197,219);
     fill: rgba(25, 157, 194);
 }
 
-.block .body-mid .grid-hline {
+.block .body-mid .grid .hline {
     stroke: rgb(37,166,201);
 }
 
-.block .body-mid .grid-vline {
+.block .body-mid .grid .vline {
     stroke: rgb(37,166,201);
 }
 

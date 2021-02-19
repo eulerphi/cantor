@@ -1,22 +1,23 @@
 module Grid exposing
-    ( Data
-    , Grid
-    , emptyParams
+    ( Grid
+    , Options
     , forBox
     , forViewContext
-    , toGrid
+    , initEmpty
     , view
-    , view2
+    , viewWithOptions
     )
 
 import Box exposing (Boxlike)
 import Html exposing (..)
+import Line exposing (Line)
 import List
 import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
-import Svg
+import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
+import SvgEx
 import ViewContext exposing (ViewContext)
 
 
@@ -27,33 +28,24 @@ type alias Grid =
     }
 
 
-type alias Data =
-    { x : Int
-    , y : Int
-    , width : Int
-    , height : Int
-    , unit : Int
-    , isAlternateLine : Int -> Bool
+type alias Options =
+    { isAlternateVerticalLine : IsAlternateLineFunction
+    , isAlternateHorizontalLine : IsAlternateLineFunction
     }
 
 
-forBox : Float -> Boxlike r -> Data
+type alias IsAlternateLineFunction =
+    Int -> Bool
+
+
+emptyOptions : Options
+emptyOptions =
+    Options (\_ -> False) (\_ -> False)
+
+
+forBox : Float -> Boxlike r -> Grid
 forBox unit box =
-    { x = round box.pos.x
-    , y = round box.pos.y
-    , width = round box.size.width
-    , height = round box.size.height
-    , unit = round unit
-    , isAlternateLine = \_ -> False
-    }
-
-
-toGrid : Data -> Grid
-toGrid gd =
-    { pos = Pos.fromInt ( gd.x, gd.y )
-    , size = Size.fromInt ( gd.width, gd.height )
-    , unit = toFloat gd.unit
-    }
+    Grid box.pos box.size unit
 
 
 forViewContext : Float -> ViewContext msg -> Grid
@@ -66,8 +58,8 @@ forViewContext minUnits vc =
 
         size =
             vc.size
-                |> Size.div unit
-                |> Size.map (toFloat << floor)
+                |> Size.inUnits unit
+                |> Size.toFloat
                 |> Size.scale unit
 
         pos =
@@ -80,94 +72,73 @@ forViewContext minUnits vc =
     Grid pos size unit
 
 
-emptyParams : Grid
-emptyParams =
+initEmpty : Grid
+initEmpty =
     Grid Pos.origin Size.none 0
 
 
-view2 : List (Svg.Attribute msg) -> Grid -> Svg.Svg msg
-view2 attrs grid =
-    view attrs (forBox grid.unit grid)
+view : List (Attribute msg) -> Grid -> Svg msg
+view attrs grid =
+    viewWithOptions attrs emptyOptions grid
 
 
-view : List (Svg.Attribute msg) -> Data -> Svg.Svg msg
-view attrs params =
+viewWithOptions : List (Attribute msg) -> Options -> Grid -> Svg msg
+viewWithOptions attrs opts grid =
     let
         rect =
-            Svg.rect
-                [ SvgAttrs.x <| String.fromInt <| params.x
-                , SvgAttrs.y <| String.fromInt <| params.y
-                , SvgAttrs.width <| String.fromInt <| params.width
-                , SvgAttrs.height <| String.fromInt <| params.height
-                , SvgAttrs.class "grid-rect"
-                ]
-                []
+            SvgEx.rect [] grid
 
-        horizontalLines =
-            List.range 1 (params.height // params.unit - 1)
-                |> List.map (hline params)
+        vlineParams =
+            { class = "vline"
+            , isAlternate = opts.isAlternateVerticalLine
+            , toLineFn = Line.addY grid.size.height
+            , toPosFn = \x -> grid.pos |> Pos.addX x
+            , unit = grid.unit
+            }
 
-        verticalLines =
-            List.range 1 (params.width // params.unit - 1)
-                |> List.map (vline params)
+        hlineParams =
+            { class = "hline"
+            , isAlternate = opts.isAlternateHorizontalLine
+            , toLineFn = Line.addX grid.size.width
+            , toPosFn = \y -> grid.pos |> Pos.addY y
+            , unit = grid.unit
+            }
+
+        ( hlines, vlines ) =
+            grid.size
+                |> Size.inUnits grid.unit
+                |> Size.toPair
+                |> Pair.map (\d -> List.range 1 (d - 1))
+                |> Tuple.mapBoth
+                    (List.map (viewLine vlineParams))
+                    (List.map (viewLine hlineParams))
     in
     Svg.g
-        attrs
-        (rect :: horizontalLines ++ verticalLines)
+        (SvgAttrs.class "grid" :: attrs)
+        (rect :: hlines ++ vlines)
 
 
-lineClass : Bool -> String -> String
-lineClass isAlternateLine baseClass =
-    if isAlternateLine then
-        baseClass ++ "-alternate"
-
-    else
-        baseClass
-
-
-vline : Data -> Int -> Svg.Svg msg
-vline p index =
+viewLine :
+    { class : String
+    , isAlternate : IsAlternateLineFunction
+    , toLineFn : Pos -> Line
+    , toPosFn : Float -> Pos
+    , unit : Float
+    }
+    -> Int
+    -> Svg msg
+viewLine { class, isAlternate, toLineFn, toPosFn, unit } idx =
     let
-        offset =
-            index * p.unit
+        class_ =
+            if isAlternate idx then
+                class ++ "-alternate"
 
-        p1 =
-            ( p.x + offset, p.y )
-
-        p2 =
-            ( p.x + offset, p.y + p.height )
-
-        class =
-            lineClass (p.isAlternateLine index) "grid-vline"
+            else
+                class
     in
-    line p1 p2 class
-
-
-hline : Data -> Int -> Svg.Svg msg
-hline p index =
-    let
-        offset =
-            index * p.unit
-
-        p1 =
-            ( p.x, p.y + offset )
-
-        p2 =
-            ( p.x + p.width, p.y + offset )
-
-        class =
-            lineClass (p.isAlternateLine index) "grid-hline"
-    in
-    line p1 p2 class
-
-
-line : ( Int, Int ) -> ( Int, Int ) -> String -> Svg.Svg msg
-line p1 p2 class =
-    Svg.line
-        [ SvgAttrs.x1 <| String.fromInt <| Tuple.first p1
-        , SvgAttrs.y1 <| String.fromInt <| Tuple.second p1
-        , SvgAttrs.x2 <| String.fromInt <| Tuple.first p2
-        , SvgAttrs.y2 <| String.fromInt <| Tuple.second p2
-        , SvgAttrs.class class
-        ]
-        []
+    idx
+        |> toFloat
+        |> (*) unit
+        |> toPosFn
+        |> toLineFn
+        |> SvgEx.line [ SvgAttrs.class class_ ]

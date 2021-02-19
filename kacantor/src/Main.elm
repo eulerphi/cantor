@@ -22,11 +22,9 @@ import ViewContext exposing (ViewContext)
 
 type alias Model =
     { blocks : Group Msg
-    , devicePixelRatio : Float
     , grid : Grid
+    , gridOpts : Grid.Options
     , key : Int
-    , margin : Int
-    , size : ( Int, Int )
     , viewCtx : ViewContext Msg
     }
 
@@ -44,11 +42,9 @@ init devicePixelRatio =
     let
         m =
             { blocks = Group.init BlockMsg []
-            , devicePixelRatio = devicePixelRatio
-            , grid = Grid.emptyParams
+            , grid = Grid.initEmpty
+            , gridOpts = Grid.Options isAlternateLine isAlternateLine
             , key = 0
-            , margin = 20
-            , size = ( 0, 0 )
             , viewCtx =
                 ViewContext.init
                     { devicePixelRatio = devicePixelRatio
@@ -85,10 +81,11 @@ view m =
             [ SvgAttrs.width <| Size.toWidthString m.viewCtx.size
             , SvgAttrs.height <| Size.toHeightString m.viewCtx.size
             ]
-            [ Grid.view2
+            [ Grid.viewWithOptions
                 [ SvgAttrs.id "grid"
                 , SvgEvts.onClick ClearSelection
                 ]
+                m.gridOpts
                 m.grid
             , Svg.g
                 [ SvgAttrs.id "blocks" ]
@@ -109,7 +106,7 @@ view m =
 
 isAlternateLine : Int -> Bool
 isAlternateLine idx =
-    modBy 5 idx == 0
+    modBy 2 idx == 0
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
