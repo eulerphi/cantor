@@ -10,7 +10,7 @@ module Block.Group exposing
 
 import Block exposing (Block(..), Context, Msg(..))
 import Block.Internal.Types as Types
-import Grid
+import Grid exposing (Grid)
 import Maybe.Extra as MaybeEx
 import Svg
 
@@ -35,7 +35,7 @@ subscriptions group =
     Block.subscriptions group.context
 
 
-update : Grid.Data -> Msg -> Group msg -> ( Group msg, Cmd msg )
+update : Grid -> Msg -> Group msg -> ( Group msg, Cmd msg )
 update gd msg model =
     case msg of
         Msg (Types.StartDrag id) ->
@@ -82,7 +82,7 @@ clearSelection group =
     { group | active = Nothing, rest = group.rest ++ active_ }
 
 
-view : Grid.Data -> Group msg -> List (Svg.Svg msg)
+view : Grid -> Group msg -> List (Svg.Svg msg)
 view gd group =
     let
         viewBlock =

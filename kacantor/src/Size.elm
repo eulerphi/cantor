@@ -34,6 +34,16 @@ add s1 s2 =
     }
 
 
+sub : Size -> Size -> Size
+sub s1 s2 =
+    Size (s1.width - s2.width) (s1.height - s2.height)
+
+
+div : Float -> Size -> Size
+div divisor size =
+    Size (size.width / divisor) (size.height / divisor)
+
+
 addHeight : Float -> Size -> Size
 addHeight heightValue size =
     Size size.width (size.height + heightValue)
@@ -59,6 +69,11 @@ addWidth widthValue size =
 map : (Float -> Float) -> Size -> Size
 map fn size =
     { width = fn size.width, height = fn size.height }
+
+
+minDimension : Size -> Float
+minDimension size =
+    min size.width size.height
 
 
 toPair : Size -> ( Float, Float )

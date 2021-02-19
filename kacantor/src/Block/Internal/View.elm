@@ -11,20 +11,20 @@ import Block.Internal.Component.Width as WidthComponent
 import Block.Internal.Types exposing (..)
 import Block.Internal.ViewModel as ViewModel
 import Draggable
-import Grid
+import Grid exposing (Grid)
 import Maybe.Extra
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 
 
-view : Context msg -> Grid.Data -> Block -> Svg msg
+view : Context msg -> Grid -> Block -> Svg msg
 view context gd bd =
     let
         attrsFn =
             eventAttrs context.envelop bd.key
 
         vm =
-            ViewModel.forBlock (Grid.toGrid gd) bd
+            ViewModel.forBlock gd bd
 
         body =
             vm |> BodyComponent.view (attrsFn Component.Body)

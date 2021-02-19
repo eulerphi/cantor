@@ -2,7 +2,7 @@ module CircleButton exposing (..)
 
 import Box exposing (Box)
 import Delta exposing (Delta)
-import Grid
+import Grid exposing (Grid)
 import Pos
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
@@ -10,21 +10,15 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> Grid.Data -> String -> Svg msg
+view : List (Attribute msg) -> Grid -> String -> Svg msg
 view attrs gd txt =
     let
-        ( gridPos, gridSize, unit ) =
-            ( Pos.fromInt ( gd.x, gd.y )
-            , Size.fromInt ( gd.width, gd.height )
-            , toFloat gd.unit
-            )
-
         ( doubleUnit, threeHalfsUnit, threeFourthsUnit ) =
-            ( 2 * unit, 3 * unit / 2, 3 * unit / 4 )
+            ( 2 * gd.unit, 3 * gd.unit / 2, 3 * gd.unit / 4 )
 
         ( btnPos, btnRadius ) =
-            ( gridPos |> Pos.addDelta (Delta doubleUnit (gridSize.height - doubleUnit))
-            , unit
+            ( gd.pos |> Pos.addDelta (Delta doubleUnit (gd.size.height - doubleUnit))
+            , gd.unit
             )
 
         ( btnTxtPos, btnTxtSize ) =

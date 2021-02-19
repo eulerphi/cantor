@@ -14,7 +14,7 @@ import Block.Internal.Types as Types
 import Block.Internal.Update as Update
 import Block.Internal.View as View
 import Draggable
-import Grid
+import Grid exposing (Grid)
 import Html exposing (..)
 import Pos
 import Svg
@@ -81,7 +81,7 @@ subscriptions (Context ctx) =
 
 update :
     Context msg
-    -> Grid.Data
+    -> Grid
     -> Msg
     -> Maybe Block
     -> ( Maybe Block, Context msg, Cmd msg )
@@ -110,7 +110,7 @@ clearSelection (Block bd) =
 
 view :
     Context msg
-    -> Grid.Data
+    -> Grid
     -> Block
     -> Svg.Svg msg
 view (Context ctx) gd (Block bd) =

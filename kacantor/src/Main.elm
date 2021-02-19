@@ -3,19 +3,17 @@ module Main exposing (..)
 import Block
 import Block.Group as Group exposing (Group)
 import Browser
-import Browser.Dom
-import Browser.Events
 import CircleButton
-import Grid
+import Grid exposing (Grid)
 import Html exposing (div)
 import Html.Attributes as HtmlAttrs
 import Pair
-import Pos
+import Pos exposing (Pos)
 import Size
 import Svg
 import Svg.Attributes as SvgAttrs
 import Svg.Events as SvgEvts
-import Task
+import ViewContext exposing (ViewContext)
 
 
 
@@ -25,10 +23,11 @@ import Task
 type alias Model =
     { blocks : Group Msg
     , devicePixelRatio : Float
-    , grid : Grid.Data
+    , grid : Grid
     , key : Int
     , margin : Int
     , size : ( Int, Int )
+    , viewCtx : ViewContext Msg
     }
 
 
@@ -36,9 +35,8 @@ type Msg
     = NoOp
     | AddBlock
     | ClearSelection
-    | SizeChanged ( Int, Int )
-    | WindowResized
     | BlockMsg Block.Msg
+    | ViewCtxMsg ViewContext.Msg
 
 
 init : Float -> ( Model, Cmd Msg )
@@ -51,9 +49,16 @@ init devicePixelRatio =
             , key = 0
             , margin = 20
             , size = ( 0, 0 )
+            , viewCtx =
+                ViewContext.init
+                    { devicePixelRatio = devicePixelRatio
+                    , elementId = "root"
+                    , envelope = ViewCtxMsg
+                    , padding = 20
+                    }
             }
     in
-    ( m, changeSizeTask m )
+    ( m, ViewContext.initCmd m.viewCtx )
 
 
 
@@ -63,8 +68,8 @@ init devicePixelRatio =
 subscriptions : Model -> Sub Msg
 subscriptions m =
     Sub.batch
-        [ Browser.Events.onResize (\_ _ -> WindowResized)
-        , Block.subscriptions m.blocks.context
+        [ Block.subscriptions m.blocks.context
+        , ViewContext.subscriptions m.viewCtx
         ]
 
 
@@ -74,17 +79,13 @@ subscriptions m =
 
 view : Model -> Html.Html Msg
 view m =
-    let
-        windowSize =
-            Size.fromInt m.size
-    in
     div
         [ HtmlAttrs.id "root" ]
         [ Svg.svg
-            [ SvgAttrs.width <| Size.toWidthString windowSize
-            , SvgAttrs.height <| Size.toHeightString windowSize
+            [ SvgAttrs.width <| Size.toWidthString m.viewCtx.size
+            , SvgAttrs.height <| Size.toHeightString m.viewCtx.size
             ]
-            [ Grid.view
+            [ Grid.view2
                 [ SvgAttrs.id "grid"
                 , SvgEvts.onClick ClearSelection
                 ]
@@ -106,31 +107,6 @@ view m =
 -- UPDATE
 
 
-changeSize : Model -> Browser.Dom.Element -> Msg
-changeSize m e =
-    let
-        size =
-            ( e.viewport.width, e.viewport.height )
-                |> Pair.map (\x -> round x)
-                |> Pair.map (\x -> x - (2 * m.margin))
-    in
-    SizeChanged size
-
-
-changeSizeTask : Model -> Cmd Msg
-changeSizeTask m =
-    Task.attempt
-        (\r ->
-            case r of
-                Ok e ->
-                    changeSize m e
-
-                Err _ ->
-                    NoOp
-        )
-        (Browser.Dom.getElement "root")
-
-
 isAlternateLine : Int -> Bool
 isAlternateLine idx =
     modBy 5 idx == 0
@@ -147,16 +123,12 @@ update msg m =
                 key_ =
                     m.key + 1
 
-                ( gridPos, gridUnit ) =
-                    ( Pos.fromInt ( m.grid.x, m.grid.y )
-                    , toFloat m.grid.unit
-                    )
-
                 { x, y } =
-                    m.size
-                        |> Pair.map (\v -> v // 2)
-                        |> Pos.fromInt
-                        |> Pos.roundNear { pos = gridPos, unit = gridUnit }
+                    m.grid.size
+                        |> Size.map (\v -> v / 2)
+                        |> Size.toPair
+                        |> Pair.uncurry Pos
+                        |> Pos.roundNear m.grid
 
                 newBlock =
                     Block.init
@@ -178,24 +150,19 @@ update msg m =
             in
             ( { m | blocks = blocks_ }, Cmd.none )
 
-        SizeChanged wh ->
-            let
-                g =
-                    Grid.centeredParams wh (Grid.calculateUnit wh 25)
-            in
-            ( { m | grid = { g | isAlternateLine = isAlternateLine }, size = wh }
-            , Cmd.none
-            )
-
-        WindowResized ->
-            ( m, changeSizeTask m )
-
         BlockMsg subMsg ->
             let
                 ( blocks_, cmd_ ) =
                     Group.update m.grid subMsg m.blocks
             in
             ( { m | blocks = blocks_ }, cmd_ )
+
+        ViewCtxMsg subMsg ->
+            let
+                ( vc_, cmd_ ) =
+                    ViewContext.update subMsg m.viewCtx
+            in
+            ( { m | grid = Grid.forViewContext 25 vc_, viewCtx = vc_ }, cmd_ )
 
 
 

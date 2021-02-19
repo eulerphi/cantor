@@ -1,21 +1,23 @@
 module Grid exposing
     ( Data
     , Grid
-    , calculateUnit
-    , centeredParams
     , emptyParams
     , forBox
+    , forViewContext
     , toGrid
     , view
+    , view2
     )
 
 import Box exposing (Boxlike)
 import Html exposing (..)
 import List
+import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg
 import Svg.Attributes as SvgAttrs
+import ViewContext exposing (ViewContext)
 
 
 type alias Grid =
@@ -54,50 +56,38 @@ toGrid gd =
     }
 
 
-emptyParams : Data
-emptyParams =
-    { x = 0
-    , y = 0
-    , width = 0
-    , height = 0
-    , unit = 0
-    , isAlternateLine = \_ -> False
-    }
-
-
-centeredParams : ( Int, Int ) -> Int -> Data
-centeredParams wh unit =
+forViewContext : Float -> ViewContext msg -> Grid
+forViewContext minUnits vc =
     let
-        svgWidth =
-            Tuple.first wh
+        unit =
+            ((vc.size |> Size.minDimension) / minUnits)
+                |> round
+                |> toFloat
 
-        svgHeight =
-            Tuple.second wh
+        size =
+            vc.size
+                |> Size.div unit
+                |> Size.map (toFloat << floor)
+                |> Size.scale unit
 
-        gridWidth =
-            (svgWidth // unit) * unit
-
-        gridHeight =
-            (svgHeight // unit) * unit
-
-        x =
-            (svgWidth - gridWidth) // 2
-
-        y =
-            (svgHeight - gridHeight) // 2
+        pos =
+            size
+                |> Size.sub vc.size
+                |> Size.div 2
+                |> Size.toPair
+                |> Pair.uncurry Pos
     in
-    { x = x
-    , y = y
-    , width = gridWidth
-    , height = gridHeight
-    , unit = unit
-    , isAlternateLine = \_ -> False
-    }
+    Grid pos size unit
 
 
-calculateUnit : ( Int, Int ) -> Int -> Int
-calculateUnit wh minUnits =
-    min (Tuple.first wh) (Tuple.second wh) // minUnits
+emptyParams : Grid
+emptyParams =
+    Grid Pos.origin Size.none 0
+
+
+view2 : List (Svg.Attribute msg) -> Grid -> Svg.Svg msg
+view2 attrs grid =
+    view attrs (forBox grid.unit grid)
 
 
 view : List (Svg.Attribute msg) -> Data -> Svg.Svg msg

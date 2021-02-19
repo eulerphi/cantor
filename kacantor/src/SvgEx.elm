@@ -12,7 +12,7 @@ import Box exposing (Boxlike)
 import Line exposing (Line, Linelike)
 import Pair
 import Pos exposing (Pos)
-import Size exposing (Size)
+import Size
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 

@@ -10,13 +10,13 @@ import Block.Internal.ViewModel as ViewModel
 import Delta exposing (Delta)
 import Draggable
 import Draggable.Events
-import Grid
+import Grid exposing (Grid)
 import Pair
 
 
 update :
     Context msg
-    -> Grid.Data
+    -> Grid
     -> Msg
     -> Maybe Block
     -> ( Maybe Block, Context msg, Cmd msg )
@@ -67,17 +67,14 @@ dragConfig envelop =
         ]
 
 
-dragStart : Grid.Data -> Id -> Block -> Block
+dragStart : Grid -> Id -> Block -> Block
 dragStart gd id bd =
     let
         ctx =
-            DragContext (Grid.toGrid gd) bd
-
-        grid =
-            Grid.toGrid gd
+            DragContext gd bd
 
         vm =
-            ViewModel.forBlock grid bd
+            ViewModel.forBlock gd bd
 
         component_ =
             case id.part of
