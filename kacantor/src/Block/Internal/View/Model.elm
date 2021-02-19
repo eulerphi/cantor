@@ -2,7 +2,6 @@ module Block.Internal.View.Model exposing (..)
 
 import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.View.BodyModel as BodyModel exposing (BodyModel)
 import Grid exposing (Grid)
 import Pos exposing (Pos)
 import Size exposing (Size)
