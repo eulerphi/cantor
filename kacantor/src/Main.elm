@@ -133,7 +133,7 @@ changeSizeTask m =
 
 isAlternateLine : Int -> Bool
 isAlternateLine idx =
-    idx == 2 || modBy 5 (idx - 2) == 0
+    modBy 5 idx == 0
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

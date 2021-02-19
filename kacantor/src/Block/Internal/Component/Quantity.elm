@@ -126,7 +126,7 @@ calculateQuantity gd bd pos =
         quantity_ =
             (dy * bd.width) + min (dx + 1) bd.width - bd.headerOffset
     in
-    quantity_
+    max 0 quantity_
 
 
 updateQuantity : Block -> Int -> Block

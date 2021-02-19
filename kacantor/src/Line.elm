@@ -1,4 +1,4 @@
-module Line exposing (Line, Linelike, addX, addY)
+module Line exposing (Line, Linelike, addX, addXY, addY)
 
 import Pos exposing (Pos)
 
@@ -19,6 +19,11 @@ type alias Linelike r =
 addX : Float -> Pos -> Line
 addX x pos =
     pos |> Pos.addX x |> Line pos
+
+
+addXY : Float -> Float -> Pos -> Line
+addXY x y pos =
+    pos |> Pos.addX x |> Pos.addY y |> Line pos
 
 
 addY : Float -> Pos -> Line

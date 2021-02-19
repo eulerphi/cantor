@@ -1,8 +1,9 @@
 module SvgEx exposing
-    ( centeredText
-    , horizontalGuideline
+    ( horizontalGuideline
     , line
     , rect
+    , textWithBackground
+    , text_
     , translateToPos
     , verticalGuideline
     )
@@ -16,22 +17,44 @@ import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 
 
-centeredText : List (Attribute msg) -> Pos -> Size -> String -> Svg msg
-centeredText attrs pos size text =
+text_ : List (Attribute msg) -> Boxlike r -> String -> Svg msg
+text_ attrs box text =
     Svg.g
-        (translateToPos pos :: attrs)
+        (translateToPos box.pos :: attrs)
         [ Svg.svg
-            [ SvgAttrs.width <| Size.toWidthString size
-            , SvgAttrs.height <| Size.toHeightString size
+            [ SvgAttrs.width <| Size.toWidthString box.size
+            , SvgAttrs.height <| Size.toHeightString box.size
             ]
             [ Svg.text_
                 [ SvgAttrs.x "50%"
                 , SvgAttrs.y "50%"
-                , SvgAttrs.fill "black"
                 , SvgAttrs.dominantBaseline "middle"
                 , SvgAttrs.textAnchor "middle"
                 ]
                 [ Svg.text text ]
+            ]
+        ]
+
+
+textWithBackground : List (Attribute msg) -> Boxlike r -> String -> Svg msg
+textWithBackground attrs box text =
+    Svg.g
+        attrs
+        [ rect [] box
+        , Svg.g
+            (translateToPos box.pos :: attrs)
+            [ Svg.svg
+                [ SvgAttrs.width <| Size.toWidthString box.size
+                , SvgAttrs.height <| Size.toHeightString box.size
+                ]
+                [ Svg.text_
+                    [ SvgAttrs.x "50%"
+                    , SvgAttrs.y "50%"
+                    , SvgAttrs.dominantBaseline "middle"
+                    , SvgAttrs.textAnchor "middle"
+                    ]
+                    [ Svg.text text ]
+                ]
             ]
         ]
 

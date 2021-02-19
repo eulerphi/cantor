@@ -1,5 +1,6 @@
 module CircleButton exposing (..)
 
+import Box exposing (Box)
 import Delta exposing (Delta)
 import Grid
 import Pos
@@ -39,9 +40,8 @@ view attrs gd txt =
             , SvgAttrs.r <| String.fromFloat btnRadius
             ]
             []
-        , SvgEx.centeredText
+        , SvgEx.text_
             []
-            btnTxtPos
-            btnTxtSize
+            (Box btnTxtPos btnTxtSize)
             txt
         ]

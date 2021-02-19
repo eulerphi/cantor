@@ -3,6 +3,7 @@ module Block.Internal.Component.Body exposing (..)
 import Block.Internal.Section exposing (Section)
 import Block.Internal.Types exposing (..)
 import Block.Internal.ViewModel exposing (ViewModel)
+import Box exposing (Box)
 import Delta exposing (Delta)
 import DragState
 import Grid
@@ -41,10 +42,9 @@ viewRect vm s =
 
 viewTxt : ViewModel -> Section -> Svg msg
 viewTxt vm s =
-    SvgEx.centeredText
+    SvgEx.text_
         [ SvgAttrs.class (s.class ++ "-text") ]
-        s.pos
-        (Size vm.grid.unit vm.grid.unit)
+        (Box s.pos (Size vm.grid.unit vm.grid.unit))
         (String.fromInt s.quantity)
 
 

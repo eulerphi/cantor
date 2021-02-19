@@ -5,7 +5,6 @@ module Grid exposing
     , centeredParams
     , emptyParams
     , forBox
-    , forViewData
     , toGrid
     , view
     )
@@ -17,7 +16,6 @@ import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg
 import Svg.Attributes as SvgAttrs
-import ViewData exposing (ViewData)
 
 
 type alias Grid =
@@ -53,17 +51,6 @@ toGrid gd =
     { pos = Pos.fromInt ( gd.x, gd.y )
     , size = Size.fromInt ( gd.width, gd.height )
     , unit = toFloat gd.unit
-    }
-
-
-forViewData : Int -> ViewData -> Data
-forViewData unit vd =
-    { x = round vd.pos.x
-    , y = round vd.pos.y
-    , width = round vd.size.width
-    , height = round vd.size.height
-    , unit = unit
-    , isAlternateLine = \_ -> False
     }
 
 

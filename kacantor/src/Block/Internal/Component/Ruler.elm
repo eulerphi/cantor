@@ -156,10 +156,5 @@ viewRuler input =
         [ SvgEx.line [] input.line
         , SvgEx.line [] input.hash1
         , SvgEx.line [] input.hash2
-        , SvgEx.rect [] input.txt
-        , SvgEx.centeredText
-            []
-            input.txt.pos
-            input.txt.size
-            input.txt.val
+        , SvgEx.textWithBackground [] input.txt input.txt.val
         ]
