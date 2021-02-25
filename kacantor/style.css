@@ -4,6 +4,7 @@
     /* margin: 20px; */
 }
 
+
 .invisible {
     fill: none;
     stroke:none
@@ -56,6 +57,46 @@
 }
 
 /* TITLE  */
+
+.block-title foreignObject{
+    fill: none;
+    pointer-events: none;
+}
+
+.block-title .container {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+}
+.block-title span {
+    border-radius: 15px;
+    color: white;
+    padding: 4px 8px;
+    pointer-events: none;
+}
+
+.block-title span.body-mid {
+    background-color: rgb(101,197,219);
+}
+
+.block-title span.body-top,
+.block-title span.body-bot {
+    background-color: rgb(188,26,105);
+}
+
+.block-title span.sum {
+    background-color: rgb(156, 151, 151);
+}
+
+.block-title span.active {
+    background-color: rgb(192, 74, 221);
+}
+
+.block-title span.operator {
+    color: black;
+    font-weight: bolder;
+}
 
 .title rect {
     fill:rgb(156, 151, 151);

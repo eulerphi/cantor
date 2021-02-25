@@ -2,10 +2,12 @@ module Main exposing (..)
 
 import Block
 import Block.Group as Group exposing (Group)
+import Block.Title as Title
 import Browser
 import CircleButton
 import Grid exposing (Grid)
 import Html exposing (Html)
+import Maybe.Extra
 import Pair
 import Pos exposing (Pos)
 import Size
@@ -74,26 +76,34 @@ subscriptions m =
 
 view : Model -> Html Msg
 view m =
+    let
+        elems =
+            [ Grid.viewWithOptions
+                [ SvgAttrs.id "grid"
+                , SvgEvts.onClick ClearSelection
+                ]
+                m.gridOpts
+                m.grid
+            , Svg.g
+                [ SvgAttrs.id "blocks" ]
+                (Group.view m.grid m.blocks)
+            , CircleButton.view
+                [ SvgAttrs.id "add-block-btn"
+                , SvgEvts.onClick AddBlock
+                ]
+                m.grid
+                "+"
+            ]
+
+        title =
+            Title.view m.grid m.blocks.active
+                |> Maybe.Extra.toList
+    in
     Svg.svg
         [ SvgAttrs.width <| Size.toWidthString m.viewCtx.size
         , SvgAttrs.height <| Size.toHeightString m.viewCtx.size
         ]
-        [ Grid.viewWithOptions
-            [ SvgAttrs.id "grid"
-            , SvgEvts.onClick ClearSelection
-            ]
-            m.gridOpts
-            m.grid
-        , Svg.g
-            [ SvgAttrs.id "blocks" ]
-            (Group.view m.grid m.blocks)
-        , CircleButton.view
-            [ SvgAttrs.id "add-block-btn"
-            , SvgEvts.onClick AddBlock
-            ]
-            m.grid
-            "+"
-        ]
+        (elems ++ title)
 
 
 

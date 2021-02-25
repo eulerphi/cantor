@@ -1,5 +1,6 @@
 module SvgEx exposing
-    ( horizontalGuideline
+    ( foreignObject
+    , horizontalGuideline
     , line
     , rect
     , textWithBackground
@@ -9,12 +10,30 @@ module SvgEx exposing
     )
 
 import Box exposing (Boxlike)
+import Html exposing (Html)
 import Line exposing (Line, Linelike)
 import Pair
 import Pos exposing (Pos)
 import Size
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
+
+
+foreignObject :
+    List (Attribute msg)
+    -> Boxlike r
+    -> List (Html msg)
+    -> Svg msg
+foreignObject attrs box content =
+    Svg.foreignObject
+        ([ SvgAttrs.x <| Pos.toXString box.pos
+         , SvgAttrs.y <| Pos.toYString box.pos
+         , SvgAttrs.width <| Size.toWidthString box.size
+         , SvgAttrs.height <| Size.toHeightString box.size
+         ]
+            ++ attrs
+        )
+        content
 
 
 text_ : List (Attribute msg) -> Boxlike r -> String -> Svg msg

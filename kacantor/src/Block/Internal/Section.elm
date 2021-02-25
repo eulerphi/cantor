@@ -1,8 +1,9 @@
-module Block.Internal.Section exposing (Section, first, forBlock, last, midSection, toBox)
+module Block.Internal.Section exposing (Section, first, forBlock, last, midSection, titleText, toBox)
 
 import Block.Internal.Types exposing (..)
 import Box exposing (Box)
 import Grid exposing (Grid)
+import Pair
 import Pos exposing (Pos)
 import Size exposing (IntSize, Size)
 
@@ -31,30 +32,13 @@ forBlock gd bd =
             else
                 Size.noneInt
 
-        ( topWidth, topHeight ) =
-            if bd.headerOffset > 0 then
-                ( min bd.quantity (bd.width - bd.headerOffset), 1 )
-
-            else
-                ( 0, 0 )
-
         midSize =
             IntSize bd.width <| (bd.quantity - topSize.width) // bd.width
-
-        ( midWidth, midHeight ) =
-            ( bd.width
-            , (bd.quantity - topWidth) // bd.width
-            )
 
         botSize =
             IntSize
                 (bd.quantity - topSize.width - (midSize.width * midSize.height))
                 1
-
-        ( botWidth, botHeight ) =
-            ( bd.quantity - topWidth - (midWidth * midHeight)
-            , 1
-            )
 
         top =
             { pos =
@@ -68,7 +52,7 @@ forBlock gd bd =
 
         mid =
             { pos =
-                Pos.fromInt ( 0, topHeight )
+                Pos.fromInt ( 0, topSize.height )
             , size = midSize |> Size.toFloat
             , sizeInUnits = midSize
             , class = "body-mid"
@@ -78,7 +62,7 @@ forBlock gd bd =
 
         bot =
             { pos =
-                Pos.fromInt ( 0, topHeight + midHeight )
+                Pos.fromInt ( 0, topSize.height + midSize.height )
             , size = botSize |> Size.toFloat
             , sizeInUnits = botSize
             , class = "body-bot"
@@ -113,8 +97,21 @@ last sections =
 midSection : List Section -> Maybe Section
 midSection sections =
     sections
-        |> List.filter (\s -> s.class == "body-mid")
+        |> List.filter (\s -> s.isMid)
         |> List.head
+
+
+titleText : Section -> String
+titleText section =
+    if section.isMid then
+        section.sizeInUnits
+            |> Size.toPair
+            |> Pair.map String.fromInt
+            |> (\( w, h ) -> h ++ " x " ++ w)
+
+    else
+        section.quantity
+            |> String.fromInt
 
 
 toBox : Grid -> Block -> List Section -> Box

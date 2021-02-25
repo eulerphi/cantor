@@ -6,7 +6,6 @@ import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Outline as OutlineComponent
 import Block.Internal.Component.Quantity as QuantityComponent
 import Block.Internal.Component.Ruler as Ruler
-import Block.Internal.Component.Title as TitleComponent
 import Block.Internal.Component.Width as WidthComponent
 import Block.Internal.Types exposing (..)
 import Block.Internal.ViewModel as ViewModel
@@ -31,7 +30,6 @@ view context gd bd =
 
         elements =
             [ OutlineComponent.view []
-            , TitleComponent.view []
             , Ruler.view []
             , OffsetControl.view (attrsFn Component.Offset)
             , QuantityComponent.view (attrsFn Component.Quantity)

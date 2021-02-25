@@ -1,6 +1,7 @@
 module Size exposing (..)
 
 import Pair
+import StringEx
 
 
 type alias Size =
@@ -102,18 +103,6 @@ addWidth widthValue size =
     Size (size.width + widthValue) size.height
 
 
-
--- addWidth : Size -> Size -> Float
--- addWidth s1 s2 =
---     s1.width + s2.width
--- addHeight : Size -> Size -> Float
--- addHeight s1 s2 =
---     s1.height + s2.height
--- addHeight3 : Size -> Size -> Size -> Float
--- addHeight3 s1 s2 s3 =
---     s1.height + s2.height + s3.height
-
-
 map : (Float -> Float) -> Size -> Size
 map fn size =
     { width = fn size.width, height = fn size.height }
@@ -149,6 +138,26 @@ toWidthString size =
     String.fromFloat size.width
 
 
+toPixelWidthString : Size -> String
+toPixelWidthString size =
+    size |> toWidthString |> StringEx.prepend "px"
+
+
 toHeightString : Size -> String
 toHeightString size =
     String.fromFloat size.height
+
+
+toPixelHeightString : Size -> String
+toPixelHeightString size =
+    size |> toHeightString |> StringEx.prepend "px"
+
+
+updateHeight : Float -> Size -> Size
+updateHeight height size =
+    Size size.width height
+
+
+updateWidth : Float -> Size -> Size
+updateWidth width size =
+    Size width size.height

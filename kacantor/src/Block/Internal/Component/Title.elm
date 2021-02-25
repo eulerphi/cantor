@@ -6,7 +6,6 @@ import Block.Internal.ViewModel exposing (ViewModel)
 import Box exposing (Box)
 import Line
 import MathEx
-import Pair
 import Pos
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
