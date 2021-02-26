@@ -123,6 +123,11 @@
     fill: rgb(188,26,105);
 }
 
+.block .temps .body-top .grid rect,
+.block .temps .body-bot .grid rect {
+    fill: none;
+}
+
 .block .body-top .grid .hline,
 .block .body-bot .grid .hline {
     stroke: rgb(221,140,180);
@@ -140,11 +145,21 @@
     fill: rgb(255, 255, 255);
 }
 
+.block .temps .body-top text,
+.block .temps .body-bot text {
+    stroke: rgb(188,26,105);
+    fill: rgb(188,26,105);
+}
+
 /* BLOCK: BODY */
 
 .block .body-mid .grid rect {
     stroke: rgb(101,197,219);
     fill: rgba(25, 157, 194);
+}
+
+.block .temps .body-mid .grid rect {
+    fill: none;
 }
 
 .block .body-mid .grid .hline {
@@ -159,6 +174,11 @@
     pointer-events: none;
     stroke: rgb(255, 255, 255);
     fill: rgb(255, 255, 255);
+}
+
+.block .temps .body-mid text {
+    fill: rgba(25, 157, 194);
+    stroke: rgba(25, 157, 194);
 }
 
 /* CONTROLS */

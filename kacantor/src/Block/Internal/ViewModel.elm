@@ -13,21 +13,25 @@ type alias ViewModel =
     , grid : Grid
     , block : Block
     , sections : List Section
+    , tempBodySections : List Section
+    , tempChangeSections : List Section
     }
 
 
 forBlock : Grid -> Block -> ViewModel
 forBlock gd bd =
     let
-        sections =
-            Section.forBlock gd bd
+        ( sections, temps ) =
+            Section.forBlockFoo gd bd
 
         box =
-            sections |> Section.toBox gd bd
+            (sections ++ temps) |> Section.toBox gd bd
     in
     { pos = bd.pos
     , size = box.size
     , grid = gd
     , block = bd
-    , sections = sections
+    , sections = Section.forBlock gd bd
+    , tempBodySections = sections
+    , tempChangeSections = temps
     }

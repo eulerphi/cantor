@@ -77,6 +77,11 @@ type DragComponent
     | DragWidth DragWidthState
 
 
+
+-- Merge DragContext and DragComponent by introducing a
+-- DragContextlike extensible record ??
+
+
 type alias DragContext =
     { gd : Grid
     , bd : Block

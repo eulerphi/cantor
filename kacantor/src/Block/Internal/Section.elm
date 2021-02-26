@@ -1,8 +1,18 @@
-module Block.Internal.Section exposing (Section, first, forBlock, last, midSection, titleText, toBox)
+module Block.Internal.Section exposing
+    ( Section
+    , first
+    , forBlock
+    , forBlockFoo
+    , last
+    , midSection
+    , titleText
+    , toBox
+    )
 
 import Block.Internal.Types exposing (..)
 import Box exposing (Box)
 import Grid exposing (Grid)
+import Maybe
 import Pair
 import Pos exposing (Pos)
 import Size exposing (IntSize, Size)
@@ -14,6 +24,7 @@ type alias Section =
     , sizeInUnits : IntSize
     , class : String
     , isMid : Bool
+    , offset : Int
     , quantity : Int
     }
 
@@ -24,6 +35,64 @@ type alias Section =
 
 forBlock : Grid -> Block -> List Section
 forBlock gd bd =
+    forBlockInternal gd bd
+
+
+forBlockFoo : Grid -> Block -> ( List Section, List Section )
+forBlockFoo gd bd =
+    case bd.state of
+        Dragging ctx (DragQuantity _) ->
+            let
+                ( newQuantity, oldQuantity ) =
+                    ( bd.quantity, ctx.bd.quantity )
+
+                delta =
+                    newQuantity - oldQuantity
+
+                sections =
+                    { bd | quantity = min oldQuantity (oldQuantity + delta) }
+                        |> forBlockInternal gd
+
+                temps =
+                    { bd
+                        | quantity = abs delta
+                        , pos =
+                            sections
+                                |> last
+                                |> Maybe.map
+                                    (\s ->
+                                        if s.sizeInUnits.width == bd.width then
+                                            s.pos
+                                                |> Pos.addY s.size.height
+                                                |> Pos.updateX bd.pos.x
+
+                                        else
+                                            s.pos |> Pos.updateX bd.pos.x
+                                    )
+                                |> Maybe.withDefault bd.pos
+                        , headerOffset =
+                            sections
+                                |> last
+                                |> Maybe.map
+                                    (\s ->
+                                        if s.sizeInUnits.width == bd.width then
+                                            0
+
+                                        else
+                                            s.sizeInUnits.width + s.offset
+                                    )
+                                |> Maybe.withDefault bd.headerOffset
+                    }
+                        |> forBlockInternal gd
+            in
+            ( sections, temps )
+
+        _ ->
+            ( forBlockInternal gd bd, [] )
+
+
+forBlockInternal : Grid -> Block -> List Section
+forBlockInternal gd bd =
     let
         topSize =
             if bd.headerOffset > 0 then
@@ -48,6 +117,7 @@ forBlock gd bd =
             , class = "body-top"
             , isMid = False
             , quantity = topSize |> Size.area
+            , offset = bd.headerOffset
             }
 
         mid =
@@ -58,6 +128,7 @@ forBlock gd bd =
             , class = "body-mid"
             , isMid = True
             , quantity = midSize |> Size.area
+            , offset = 0
             }
 
         bot =
@@ -68,6 +139,7 @@ forBlock gd bd =
             , class = "body-bot"
             , isMid = False
             , quantity = botSize |> Size.area
+            , offset = 0
             }
     in
     [ top, mid, bot ]
@@ -122,9 +194,9 @@ toBox gd bd sections =
 
         height =
             sections
-                |> List.map .size
-                |> List.map .height
-                |> List.foldl (+) 0
+                |> last
+                |> Maybe.map (\s -> s.pos.y + s.size.height - bd.pos.y)
+                |> Maybe.withDefault 0
     in
     Box bd.pos (Size width height)
 
