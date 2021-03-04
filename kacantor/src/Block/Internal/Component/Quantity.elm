@@ -61,11 +61,12 @@ viewControl attrs vm { active, pos } =
         [ SvgAttrs.class "quantity-control" ]
         [ SvgEx.rect [] rect
         , SvgEx.line [] vline
-        , CircleControl.view
+        , CircleControl.view2
             attrs
             { active = active
             , pos = cpos
             , unit = vm.grid.unit
+            , txt = "±"
             }
         ]
 

@@ -27,18 +27,17 @@ view attrs vm =
                 |> viewControl attrs vm
                 |> Just
 
-        Selected ->
-            vm
-                |> rootPosition
-                |> Maybe.map
-                    (\pos ->
-                        { active = False
-                        , rootPos = pos
-                        , controlPos = pos |> circlePosition vm
-                        }
-                    )
-                |> Maybe.map (viewControl attrs vm)
-
+        -- Selected ->
+        --     vm
+        --         |> rootPosition
+        --         |> Maybe.map
+        --             (\pos ->
+        --                 { active = False
+        --                 , rootPos = pos
+        --                 , controlPos = pos |> circlePosition vm
+        --                 }
+        --             )
+        --         |> Maybe.map (viewControl attrs vm)
         _ ->
             Nothing
 

@@ -2,6 +2,8 @@ module Block.Internal.View exposing (view)
 
 import Block.Internal.Component as Component exposing (Component)
 import Block.Internal.Component.Body as BodyComponent
+import Block.Internal.Component.Multiplicand as Multiplicand
+import Block.Internal.Component.Multiplier as Multiple
 import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Outline as OutlineComponent
 import Block.Internal.Component.Quantity as QuantityComponent
@@ -35,10 +37,14 @@ view context gd bd =
 
         elements =
             [ OutlineComponent.view []
-            , Ruler.view []
+            , Multiple.view []
+            , Multiplicand.view []
+
+            -- , Ruler.view []
             , OffsetControl.view (attrsFn Component.Offset)
             , QuantityComponent.view (attrsFn Component.Quantity)
-            , WidthComponent.view (attrsFn Component.Width)
+
+            -- , WidthComponent.view (attrsFn Component.Width)
             ]
                 |> List.map (\fn -> fn vm)
                 |> Maybe.Extra.values

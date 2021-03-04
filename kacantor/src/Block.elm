@@ -101,7 +101,7 @@ update (Context ctx) gd (Msg msg) block =
 
 clearSelection : Block -> Block
 clearSelection (Block bd) =
-    Block { bd | state = Types.Idle }
+    Block (bd |> Update.clearSelection)
 
 
 

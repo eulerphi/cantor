@@ -30,6 +30,12 @@ type alias Block =
     }
 
 
+type BodyType
+    = Top
+    | Mid
+    | Bot
+
+
 type alias Context msg =
     { drag : Draggable.State Id
     , envelop : Msg -> msg

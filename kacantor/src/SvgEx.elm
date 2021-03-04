@@ -49,6 +49,7 @@ text_ attrs box text =
                 , SvgAttrs.y "50%"
                 , SvgAttrs.dominantBaseline "middle"
                 , SvgAttrs.textAnchor "middle"
+                , SvgAttrs.class "no-select"
                 ]
                 [ Svg.text text ]
             ]

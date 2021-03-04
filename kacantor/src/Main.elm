@@ -112,7 +112,7 @@ view m =
 
 isAlternateLine : Int -> Bool
 isAlternateLine idx =
-    modBy 2 idx == 0
+    modBy 5 idx == 0
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -138,7 +138,7 @@ update msg m =
                     Block.init
                         { key = String.fromInt key_
                         , pos = pos
-                        , quantity = 5
+                        , quantity = 35
                         , width = 10
                         }
 

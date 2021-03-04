@@ -1,4 +1,4 @@
-module Block.Internal.Update exposing (update)
+module Block.Internal.Update exposing (clearSelection, update)
 
 import Block.Internal.Component as Component
 import Block.Internal.Component.Body as Body
@@ -12,6 +12,20 @@ import Draggable
 import Draggable.Events
 import Grid exposing (Grid)
 import Pair
+
+
+clearSelection : Block -> Block
+clearSelection bd =
+    let
+        state_ =
+            case bd.state of
+                Dragging _ _ ->
+                    Selected
+
+                _ ->
+                    Idle
+    in
+    { bd | state = state_ }
 
 
 update :
@@ -69,30 +83,35 @@ dragConfig envelop =
 
 dragStart : Grid -> Id -> Block -> Block
 dragStart gd id bd =
-    let
-        ctx =
-            DragContext gd bd
+    case bd.state of
+        Dragging _ _ ->
+            bd
 
-        vm =
-            ViewModel.forBlock gd bd
+        _ ->
+            let
+                ctx =
+                    DragContext gd bd
 
-        component_ =
-            case id.part of
-                Component.Body ->
-                    vm |> Body.dragStart |> Maybe.map DragBody
+                vm =
+                    ViewModel.forBlock gd bd
 
-                Component.Offset ->
-                    vm |> OffsetControl.dragStart |> Maybe.map DragOffset
+                component_ =
+                    case id.part of
+                        Component.Body ->
+                            vm |> Body.dragStart |> Maybe.map DragBody
 
-                Component.Quantity ->
-                    vm |> QuantityControl.dragStart |> Maybe.map DragQuantity
+                        Component.Offset ->
+                            vm |> OffsetControl.dragStart |> Maybe.map DragOffset
 
-                Component.Width ->
-                    vm |> WidthControl.dragStart |> Maybe.map DragWidth
-    in
-    component_
-        |> Maybe.map (\c -> { bd | state = Dragging ctx c })
-        |> Maybe.withDefault bd
+                        Component.Quantity ->
+                            vm |> QuantityControl.dragStart |> Maybe.map DragQuantity
+
+                        Component.Width ->
+                            vm |> WidthControl.dragStart |> Maybe.map DragWidth
+            in
+            component_
+                |> Maybe.map (\c -> { bd | state = Dragging ctx c })
+                |> Maybe.withDefault bd
 
 
 dragMove : Delta -> Block -> Block
@@ -149,5 +168,6 @@ endDrag bd =
             in
             bd_ |> Maybe.map (\b -> { b | state = Selected })
 
+        -- bd_
         _ ->
             Just bd

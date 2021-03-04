@@ -50,7 +50,7 @@ viewTitle vm =
 getTitleHtml : ViewModel -> List (Html msg)
 getTitleHtml vm =
     case vm.block.state of
-        Dragging { bd } (DragQuantity _) ->
+        Dragging { bd } (DragWidth _) ->
             let
                 ( newQuantity, oldQuantity ) =
                     ( vm.block.quantity, bd.quantity )
@@ -78,6 +78,15 @@ getTitleHtml vm =
         _ ->
             let
                 lhs =
+                    [ Html.span
+                        [ HtmlAttrs.class "sum" ]
+                        [ Html.text <| String.fromInt <| vm.block.quantity ]
+                    , Html.span
+                        [ HtmlAttrs.class "operator" ]
+                        [ Html.text " = " ]
+                    ]
+
+                rhs =
                     vm.sections
                         |> List.map
                             (\s ->
@@ -87,15 +96,6 @@ getTitleHtml vm =
                             )
                         |> List.intersperse
                             (Html.span [ HtmlAttrs.class "operator" ] [ Html.text " + " ])
-
-                rhs =
-                    [ Html.span
-                        [ HtmlAttrs.class "operator" ]
-                        [ Html.text " = " ]
-                    , Html.span
-                        [ HtmlAttrs.class "sum" ]
-                        [ Html.text <| String.fromInt <| vm.block.quantity ]
-                    ]
             in
             lhs ++ rhs
 

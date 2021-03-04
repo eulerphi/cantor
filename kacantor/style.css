@@ -14,6 +14,11 @@
     stroke-dasharray: 4;
 }
 
+.no-select {
+    pointer-events: none;
+    user-select: none;
+}
+
 /* ADD BlOCK BTN */
 #add-block-btn {
     stroke: rgb(101,197,219);
@@ -28,10 +33,10 @@
 }
 
 /* DRAG CONTROL */
-.drag-control {
+/* .drag-control {
     stroke: rgb(101,197,219);
     fill: rgba(101, 197, 219);
-}
+} */
 
 .drag-control .grip {
     stroke: rgba(101, 197, 219, 0);
@@ -125,7 +130,7 @@
 
 .block .temps .body-top .grid rect,
 .block .temps .body-bot .grid rect {
-    fill: none;
+    fill: #EF8DBD;
 }
 
 .block .body-top .grid .hline,
@@ -159,7 +164,7 @@
 }
 
 .block .temps .body-mid .grid rect {
-    fill: none;
+    fill: #c4ecf7
 }
 
 .block .body-mid .grid .hline {
@@ -199,6 +204,36 @@
     stroke-width: 2;
 }
 
+.block .multiplicand {
+    /* fill: rgb(255, 255, 255);
+    stroke: rgb(255, 255, 255); */
+    fill: rgb(85,209,229);
+    stroke: rgb(85,209,229);
+    stroke-width: 2;
+}
+.block .multiplicand text {
+    fill: rgb(255, 255, 255);
+    font-size: 12px;
+    pointer-events: none;
+    stroke: rgb(255, 255, 255);
+    stroke-width: 1;
+}
+
+.block .multiple {
+    /* fill: rgb(255, 255, 255);
+    stroke: rgb(255, 255, 255); */
+    fill: #c23e19;
+    stroke: #c23e19;
+    stroke-width: 2;
+}
+.block .multiple text {
+    fill: rgb(255, 255, 255);
+    font-size: 12px;
+    pointer-events: none;
+    stroke: rgb(255, 255, 255);
+    stroke-width: 1;
+}
+
 .block .ruler {
     /* fill: rgb(255, 255, 255);
     stroke: rgb(255, 255, 255); */
@@ -233,4 +268,9 @@
     fill: none;
     stroke-width: 2;
     stroke-dasharray: 4;
+}
+
+.block .quantity-control text {
+    fill: rgb(255, 255, 255);
+    stroke: rgb(255, 255, 255);
 }

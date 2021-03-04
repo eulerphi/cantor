@@ -21,6 +21,9 @@ view attrs vm =
         Dragging _ (DragWidth _) ->
             Just (viewRulers attrs vm)
 
+        Selected ->
+            Just (viewRulers attrs vm)
+
         _ ->
             Nothing
 
@@ -39,7 +42,11 @@ viewRulers attrs vm =
     in
     Svg.g
         (SvgAttrs.class "ruler" :: attrs)
-        (widthRuler :: heightRuler)
+        [ widthRuler ]
+
+
+
+-- (widthRuler :: heightRuler)
 
 
 viewWidthRuler : ViewModel -> Svg msg
@@ -51,6 +58,7 @@ viewWidthRuler vm =
         line =
             vm.pos
                 |> Pos.addY -halfUnit
+                |> Pos.addY -4
                 |> Line.addX vm.size.width
 
         hash1 =

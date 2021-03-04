@@ -77,9 +77,23 @@ clearSelection group =
         active_ =
             group.active
                 |> Maybe.map Block.clearSelection
-                |> MaybeEx.toList
+
+        isIdle =
+            active_
+                |> Maybe.map (\(Block b) -> b.state == Types.Idle)
+                |> Maybe.withDefault False
     in
-    { group | active = Nothing, rest = group.rest ++ active_ }
+    if isIdle then
+        { group
+            | active = Nothing
+            , rest = group.rest ++ (active_ |> MaybeEx.toList)
+        }
+
+    else
+        { group
+            | active = active_
+            , rest = group.rest
+        }
 
 
 view : Grid -> Group msg -> List (Svg.Svg msg)
