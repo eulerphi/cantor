@@ -2,7 +2,7 @@ module Block.Title exposing (view)
 
 import Block exposing (Block(..), Msg(..))
 import Block.Internal.Section as Section
-import Block.Internal.Types exposing (DragComponent(..), State(..))
+import Block.Internal.Types exposing (ComponentDragState(..), State(..))
 import Block.Internal.ViewModel as ViewModel exposing (ViewModel)
 import Box exposing (Box)
 import Grid exposing (Grid)
@@ -50,7 +50,7 @@ viewTitle vm =
 getTitleHtml : ViewModel -> List (Html msg)
 getTitleHtml vm =
     case vm.block.state of
-        Dragging { bd } (DragWidth _) ->
+        Dragging { bd } (WidthDrag _) ->
             let
                 ( newQuantity, oldQuantity ) =
                     ( vm.block.quantity, bd.quantity )

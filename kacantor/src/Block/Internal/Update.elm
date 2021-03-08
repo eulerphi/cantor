@@ -2,6 +2,8 @@ module Block.Internal.Update exposing (clearSelection, update)
 
 import Block.Internal.Component as Component
 import Block.Internal.Component.Body as Body
+import Block.Internal.Component.Multiplicand as MultiplicandControl
+import Block.Internal.Component.Multiplier as MultiplierControl
 import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Quantity as QuantityControl
 import Block.Internal.Component.Width as WidthControl
@@ -98,16 +100,22 @@ dragStart gd id bd =
                 component_ =
                     case id.part of
                         Component.Body ->
-                            vm |> Body.dragStart |> Maybe.map DragBody
+                            vm |> Body.dragStart |> Maybe.map BodyDrag
+
+                        Component.Multiplicand ->
+                            vm |> MultiplicandControl.dragStart |> Maybe.map MultiplicandDrag
+
+                        Component.Multiplier ->
+                            vm |> MultiplierControl.dragStart |> Maybe.map MultiplierDrag
 
                         Component.Offset ->
-                            vm |> OffsetControl.dragStart |> Maybe.map DragOffset
+                            vm |> OffsetControl.dragStart |> Maybe.map OffsetDrag
 
                         Component.Quantity ->
-                            vm |> QuantityControl.dragStart |> Maybe.map DragQuantity
+                            vm |> QuantityControl.dragStart |> Maybe.map QuantityDrag
 
                         Component.Width ->
-                            vm |> WidthControl.dragStart |> Maybe.map DragWidth
+                            vm |> WidthControl.dragStart |> Maybe.map WidthDrag
             in
             component_
                 |> Maybe.map (\c -> { bd | state = Dragging ctx c })
@@ -121,25 +129,39 @@ dragMove newDelta bd =
             let
                 ( component_, bd_ ) =
                     case component of
-                        DragBody state ->
+                        BodyDrag state ->
                             state
                                 |> Body.dragUpdate newDelta
-                                |> Pair.fork DragBody (Body.dragMove ctx)
+                                |> Pair.fork BodyDrag (Body.dragMove ctx)
 
-                        DragOffset state ->
+                        MultiplicandDrag state ->
+                            state
+                                |> MultiplicandControl.dragUpdate newDelta
+                                |> Pair.fork
+                                    MultiplicandDrag
+                                    (MultiplicandControl.dragMove ctx)
+
+                        MultiplierDrag state ->
+                            state
+                                |> MultiplierControl.dragUpdate newDelta
+                                |> Pair.fork
+                                    MultiplierDrag
+                                    (MultiplierControl.dragMove ctx)
+
+                        OffsetDrag state ->
                             state
                                 |> OffsetControl.dragUpdate newDelta
-                                |> Pair.fork DragOffset (OffsetControl.dragMove ctx)
+                                |> Pair.fork OffsetDrag (OffsetControl.dragMove ctx)
 
-                        DragQuantity state ->
+                        QuantityDrag state ->
                             state
                                 |> QuantityControl.dragUpdate newDelta
-                                |> Pair.fork DragQuantity (QuantityControl.dragMove ctx)
+                                |> Pair.fork QuantityDrag (QuantityControl.dragMove ctx)
 
-                        DragWidth state ->
+                        WidthDrag state ->
                             state
                                 |> WidthControl.dragUpdate newDelta
-                                |> Pair.fork DragWidth (WidthControl.dragMove ctx)
+                                |> Pair.fork WidthDrag (WidthControl.dragMove ctx)
             in
             { bd_ | state = Dragging ctx component_ }
 
@@ -154,20 +176,25 @@ endDrag bd =
             let
                 bd_ =
                     case component of
-                        DragBody state ->
+                        BodyDrag state ->
                             Body.dragEnd ctx state
 
-                        DragOffset state ->
+                        MultiplicandDrag state ->
+                            MultiplicandControl.dragEnd ctx state
+
+                        MultiplierDrag state ->
+                            MultiplierControl.dragEnd ctx state
+
+                        OffsetDrag state ->
                             OffsetControl.dragEnd ctx state
 
-                        DragQuantity state ->
+                        QuantityDrag state ->
                             QuantityControl.dragEnd ctx state
 
-                        DragWidth state ->
+                        WidthDrag state ->
                             WidthControl.dragEnd ctx state
             in
             bd_ |> Maybe.map (\b -> { b | state = Selected })
 
-        -- bd_
         _ ->
             Just bd

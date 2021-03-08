@@ -12,6 +12,7 @@
 
 .guideline {
     stroke-dasharray: 4;
+    opacity: 50%;
 }
 
 .no-select {
@@ -204,14 +205,14 @@
     stroke-width: 2;
 }
 
-.block .multiplicand {
+.block .multiplicand-control {
     /* fill: rgb(255, 255, 255);
     stroke: rgb(255, 255, 255); */
     fill: rgb(85,209,229);
     stroke: rgb(85,209,229);
     stroke-width: 2;
 }
-.block .multiplicand text {
+.block .multiplicand-control text {
     fill: rgb(255, 255, 255);
     font-size: 12px;
     pointer-events: none;
@@ -219,14 +220,14 @@
     stroke-width: 1;
 }
 
-.block .multiple {
+.block .multiplier {
     /* fill: rgb(255, 255, 255);
     stroke: rgb(255, 255, 255); */
     fill: #c23e19;
     stroke: #c23e19;
     stroke-width: 2;
 }
-.block .multiple text {
+.block .multiplier text {
     fill: rgb(255, 255, 255);
     font-size: 12px;
     pointer-events: none;

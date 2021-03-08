@@ -41,7 +41,7 @@ forBlock gd bd =
 forBlockFoo : Grid -> Block -> ( List Section, List Section )
 forBlockFoo gd bd =
     case bd.state of
-        Dragging ctx (DragQuantity _) ->
+        Dragging ctx (QuantityDrag _) ->
             let
                 ( newQuantity, oldQuantity ) =
                     ( bd.quantity, ctx.bd.quantity )

@@ -1,15 +1,18 @@
 module Block.Internal.Component.Multiplicand exposing (..)
 
+import Block.Internal.Component.Offset exposing (circlePosition)
 import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
 import Block.Internal.ViewModel exposing (ViewModel)
 import Box exposing (Box)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
-import DragState
+import DragState exposing (DragState)
 import Grid exposing (Grid)
 import Line exposing (Line)
 import Maybe.Extra
+import OffsetAnchor exposing (OffsetAnchor)
+import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
@@ -19,98 +22,107 @@ import SvgEx
 
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
-    let
-        viewFn =
-            viewWidthRuler vm
-                |> (\el -> Svg.g (SvgAttrs.class "multiplicand" :: attrs) [ el ])
-                |> Just
-    in
     case vm.block.state of
-        Dragging _ _ ->
-            viewFn
+        Dragging _ (MultiplicandDrag state) ->
+            { active = True
+            , rpos = rootPosition vm
+            , cpos = state.current
+            }
+                |> viewControl attrs vm
+                |> Just
 
         Selected ->
-            viewFn
+            rootPosition vm
+                |> Pair.fork
+                    identity
+                    (circlePosition vm)
+                |> (\( rpos, cpos ) -> { active = False, rpos = rpos, cpos = cpos })
+                |> viewControl attrs vm
+                |> Just
 
         _ ->
             Nothing
 
 
-viewWidthRuler : ViewModel -> Svg msg
-viewWidthRuler vm =
+viewControl :
+    List (Attribute msg)
+    -> ViewModel
+    -> { active : Bool, rpos : Pos, cpos : Pos }
+    -> Svg msg
+viewControl attrs vm { active, rpos, cpos } =
     let
-        ( halfUnit, quarterUnit ) =
-            ( vm.grid.unit / 2, vm.grid.unit / 4 )
-
-        line =
-            vm.pos
-                |> Pos.addY -(3 * vm.grid.unit / 4)
-                |> Line.addX (vm.grid.size.width - vm.pos.x)
-
-        hash1 =
-            Line
-                (line.p1 |> Pos.addY quarterUnit)
-                (line.p1 |> Pos.addY -quarterUnit)
-
-        hash2 =
-            Line
-                (line.p2 |> Pos.addY quarterUnit)
-                (line.p2 |> Pos.addY -quarterUnit)
+        quarterUnit =
+            vm.grid.unit / 4
 
         txt =
             (vm.size.width / vm.grid.unit)
                 |> round
                 |> String.fromInt
-
-        txtSize =
-            Size.forSquare halfUnit
-
-        txtPos =
-            line.p1
-                |> Pos.addX (vm.size.width / 2)
-                |> Pos.addX -(txtSize.width / 2)
-                |> Pos.addY -(txtSize.height / 2)
-    in
-    viewRuler
-        { class = "height-ruler"
-        , hash1 = hash1
-        , line = line
-        , cpos = line.p1 |> Pos.addX vm.size.width
-        , txt =
-            { val = txt
-            , pos = txtPos
-            , size = txtSize
-            }
-        }
-
-
-viewRuler :
-    { class : String
-    , line : Line
-    , hash1 : Line
-    , cpos : Pos
-    , txt :
-        { val : String
-        , pos : Pos
-        , size : Size
-        }
-    }
-    -> Svg msg
-viewRuler input =
-    let
-        es =
-            [ SvgEx.line [ SvgAttrs.strokeDasharray "6", SvgAttrs.opacity "30%" ] input.line
-            , SvgEx.line [] input.hash1
-            , CircleControl.view2 [] { active = False, pos = input.cpos, unit = 33, txt = input.txt.val }
-            ]
-
-        txt =
-            if input.txt.val /= "0" then
-                [ SvgEx.textWithBackground [] input.txt input.txt.val ]
-
-            else
-                []
     in
     Svg.g
-        [ SvgAttrs.class input.class ]
-        es
+        [ SvgAttrs.class "multiplicand-control" ]
+        [ SvgEx.line
+            []
+            (Line rpos cpos)
+        , SvgEx.line
+            [ SvgAttrs.class "guideline" ]
+            (rpos |> Line.toX (OffsetAnchor.toX OffsetAnchor.Right vm.grid))
+        , SvgEx.line
+            []
+            (rpos |> Line.centeredY quarterUnit)
+        , CircleControl.view2
+            attrs
+            { active = active
+            , pos = cpos
+            , unit = vm.grid.unit
+            , txt = txt
+            }
+        ]
+
+
+rootPosition : ViewModel -> Pos
+rootPosition vm =
+    vm.pos |> Pos.addY -(3 * vm.grid.unit / 4)
+
+
+circlePosition : ViewModel -> Pos -> Pos
+circlePosition vm rpos =
+    rpos |> Pos.addX vm.size.width
+
+
+dragStart : ViewModel -> Maybe DragState
+dragStart vm =
+    vm
+        |> rootPosition
+        |> circlePosition vm
+        |> DragState.forStart
+        |> Just
+
+
+dragUpdate : Delta -> DragState -> DragState
+dragUpdate delta drag =
+    drag |> DragState.update Delta.addX delta
+
+
+dragMove : DragContext -> DragState -> Block
+dragMove { gd, bd } state =
+    let
+        dx =
+            state.delta
+                |> Delta.roundNear gd.unit
+                |> Delta.div gd.unit
+                |> .dx
+                |> round
+
+        width_ =
+            max 1 (bd.width + dx)
+
+        headerOffset_ =
+            min bd.headerOffset (width_ - 1)
+    in
+    { bd | headerOffset = headerOffset_, width = width_ }
+
+
+dragEnd : DragContext -> DragState -> Maybe Block
+dragEnd ctx state =
+    dragMove ctx state |> Just

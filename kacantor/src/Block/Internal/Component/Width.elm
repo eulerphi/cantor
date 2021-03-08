@@ -21,7 +21,7 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging _ (DragWidth { root, control }) ->
+        Dragging _ (WidthDrag { root, control }) ->
             { active = True
             , rootPos = root.current
             , controlPos = control.current

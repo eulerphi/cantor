@@ -1,8 +1,8 @@
 module Block.Internal.Types exposing
     ( Block
+    , ComponentDragState(..)
     , Context
     , DragBodyState
-    , DragComponent(..)
     , DragContext
     , DragOffsetState
     , DragQuantityState
@@ -76,16 +76,13 @@ type alias DragWidthState =
     }
 
 
-type DragComponent
-    = DragBody DragBodyState
-    | DragOffset DragOffsetState
-    | DragQuantity DragQuantityState
-    | DragWidth DragWidthState
-
-
-
--- Merge DragContext and DragComponent by introducing a
--- DragContextlike extensible record ??
+type ComponentDragState
+    = BodyDrag DragBodyState
+    | MultiplicandDrag DragState
+    | MultiplierDrag DragState
+    | OffsetDrag DragOffsetState
+    | QuantityDrag DragQuantityState
+    | WidthDrag DragWidthState
 
 
 type alias DragContext =
@@ -96,5 +93,5 @@ type alias DragContext =
 
 type State
     = Idle
-    | Dragging DragContext DragComponent
+    | Dragging DragContext ComponentDragState
     | Selected

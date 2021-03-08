@@ -1,4 +1,4 @@
-module Block.Internal.Component.Quantity exposing (..)
+module Block.Internal.Component.Remainder exposing (..)
 
 import Block.Internal.Component exposing (Component(..))
 import Block.Internal.Section as Section
@@ -58,7 +58,7 @@ viewControl attrs vm { active, pos } =
             vline.p2
     in
     Svg.g
-        [ SvgAttrs.class "quantity-control" ]
+        [ SvgAttrs.class "remainder-control" ]
         [ SvgEx.rect [] rect
         , SvgEx.line [] vline
         , CircleControl.view2
@@ -100,7 +100,7 @@ dragUpdate delta data =
 dragMove : DragContext -> DragQuantityState -> Block
 dragMove { gd, bd } { current } =
     current
-        |> calculateQuantity gd bd
+        |> calculateRemainder gd bd
         |> updateQuantity bd
 
 
@@ -111,8 +111,8 @@ dragEnd ctx state =
         |> Maybe.Extra.filter (\bd -> bd.quantity > 0)
 
 
-calculateQuantity : Grid -> Block -> Pos -> Int
-calculateQuantity gd bd pos =
+calculateRemainder : Grid -> Block -> Pos -> Int
+calculateRemainder gd bd pos =
     let
         pos_ =
             pos |> Pos.roundNear gd
