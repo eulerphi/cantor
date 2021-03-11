@@ -82,6 +82,7 @@ type ComponentDragState
     | MultiplierDrag DragState
     | OffsetDrag DragOffsetState
     | QuantityDrag DragQuantityState
+    | RemainderDrag DragState
     | WidthDrag DragWidthState
 
 

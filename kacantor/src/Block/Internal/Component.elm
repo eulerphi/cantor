@@ -7,4 +7,5 @@ type Component
     | Multiplier
     | Offset
     | Quantity
+    | Remainder
     | Width

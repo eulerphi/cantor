@@ -6,7 +6,7 @@ import Block.Internal.Component.Multiplicand as Multiplicand
 import Block.Internal.Component.Multiplier as Multiplier
 import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Outline as OutlineComponent
-import Block.Internal.Component.Quantity as QuantityComponent
+import Block.Internal.Component.Remainder as Remainder
 import Block.Internal.Component.Ruler as Ruler
 import Block.Internal.Component.Width as WidthComponent
 import Block.Internal.Types exposing (..)
@@ -40,7 +40,7 @@ view context gd bd =
             , Multiplicand.view (attrsFn Component.Multiplicand)
             , Multiplier.view (attrsFn Component.Multiplier)
             , OffsetControl.view (attrsFn Component.Offset)
-            , QuantityComponent.view (attrsFn Component.Quantity)
+            , Remainder.view (attrsFn Component.Remainder)
             ]
                 |> List.map (\fn -> fn vm)
                 |> Maybe.Extra.values

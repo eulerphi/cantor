@@ -189,7 +189,7 @@ viewRuler input =
 
 rootPosition : ViewModel -> Pos
 rootPosition vm =
-    vm.pos |> Pos.addX -(3 * vm.grid.unit / 4)
+    vm.pos |> Pos.addX -(vm.grid.unit / 2)
 
 
 circlePosition : ViewModel -> Pos -> Pos

@@ -1,11 +1,12 @@
 module Block.Internal.Update exposing (clearSelection, update)
 
-import Block.Internal.Component as Component
+import Block.Internal.Component as Component exposing (Component(..))
 import Block.Internal.Component.Body as Body
 import Block.Internal.Component.Multiplicand as MultiplicandControl
 import Block.Internal.Component.Multiplier as MultiplierControl
 import Block.Internal.Component.Offset as OffsetControl
 import Block.Internal.Component.Quantity as QuantityControl
+import Block.Internal.Component.Remainder as Remainder
 import Block.Internal.Component.Width as WidthControl
 import Block.Internal.Types exposing (..)
 import Block.Internal.ViewModel as ViewModel
@@ -114,6 +115,9 @@ dragStart gd id bd =
                         Component.Quantity ->
                             vm |> QuantityControl.dragStart |> Maybe.map QuantityDrag
 
+                        Component.Remainder ->
+                            vm |> Remainder.dragStart |> Maybe.map RemainderDrag
+
                         Component.Width ->
                             vm |> WidthControl.dragStart |> Maybe.map WidthDrag
             in
@@ -158,6 +162,11 @@ dragMove newDelta bd =
                                 |> QuantityControl.dragUpdate newDelta
                                 |> Pair.fork QuantityDrag (QuantityControl.dragMove ctx)
 
+                        RemainderDrag state ->
+                            state
+                                |> Remainder.dragUpdate newDelta
+                                |> Pair.fork RemainderDrag (Remainder.dragMove ctx)
+
                         WidthDrag state ->
                             state
                                 |> WidthControl.dragUpdate newDelta
@@ -190,6 +199,9 @@ endDrag bd =
 
                         QuantityDrag state ->
                             QuantityControl.dragEnd ctx state
+
+                        RemainderDrag state ->
+                            Remainder.dragEnd ctx state
 
                         WidthDrag state ->
                             WidthControl.dragEnd ctx state

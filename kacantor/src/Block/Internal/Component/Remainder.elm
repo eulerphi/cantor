@@ -11,6 +11,7 @@ import DragState
 import Grid exposing (Grid)
 import Line
 import Maybe.Extra
+import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
@@ -21,7 +22,7 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging _ (QuantityDrag state) ->
+        Dragging _ (RemainderDrag state) ->
             { active = True, pos = state.current }
                 |> viewControl attrs vm
                 |> Just
@@ -58,7 +59,7 @@ viewControl attrs vm { active, pos } =
             vline.p2
     in
     Svg.g
-        [ SvgAttrs.class "remainder-control" ]
+        [ SvgAttrs.class "remainder" ]
         [ SvgEx.rect [] rect
         , SvgEx.line [] vline
         , CircleControl.view2
@@ -100,7 +101,7 @@ dragUpdate delta data =
 dragMove : DragContext -> DragQuantityState -> Block
 dragMove { gd, bd } { current } =
     current
-        |> calculateRemainder gd bd
+        |> calculateQuantity gd bd
         |> updateQuantity bd
 
 
@@ -111,21 +112,33 @@ dragEnd ctx state =
         |> Maybe.Extra.filter (\bd -> bd.quantity > 0)
 
 
-calculateRemainder : Grid -> Block -> Pos -> Int
-calculateRemainder gd bd pos =
+calculateQuantity : Grid -> Block -> Pos -> Int
+calculateQuantity gd bd pos =
     let
         pos_ =
             pos |> Pos.roundNear gd
 
-        ( dx, dy ) =
+        ( dx, _ ) =
             pos_
                 |> Pos.deltaBetween bd.pos
                 |> Delta.div gd.unit
                 |> Delta.map round
                 |> Tuple.mapBoth (\x -> max x -1) (\y -> max y 0)
 
+        ( remainder, remainder_ ) =
+            ( modBy bd.width bd.quantity
+            , min (dx + 1) bd.width
+            )
+
+        product =
+            if remainder == 0 then
+                bd.quantity - bd.width
+
+            else
+                bd.quantity - remainder
+
         quantity_ =
-            (dy * bd.width) + min (dx + 1) bd.width - bd.headerOffset
+            product + remainder_
     in
     max 0 quantity_
 

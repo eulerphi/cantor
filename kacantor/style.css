@@ -223,8 +223,8 @@
 .block .multiplier {
     /* fill: rgb(255, 255, 255);
     stroke: rgb(255, 255, 255); */
-    fill: #c23e19;
-    stroke: #c23e19;
+    fill: rgb(85,209,229);
+    stroke: rgb(85,209,229);
     stroke-width: 2;
 }
 .block .multiplier text {
@@ -258,6 +258,22 @@
 
 .block .width-control line {
     stroke-width: 3;
+}
+
+.block .remainder {
+    fill: #c23e19;
+    stroke: #c23e19;
+}
+
+.block .remainder rect {
+    fill: none;
+    stroke-width: 3;
+    stroke-dasharray: 8;
+}
+
+.block .remainder text {
+    fill: rgb(255, 255, 255);
+    stroke: rgb(255, 255, 255);
 }
 
 .block .quantity-control {

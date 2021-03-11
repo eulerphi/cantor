@@ -82,7 +82,7 @@ viewControl attrs vm { active, rpos, cpos } =
 
 rootPosition : ViewModel -> Pos
 rootPosition vm =
-    vm.pos |> Pos.addY -(3 * vm.grid.unit / 4)
+    vm.pos |> Pos.addY -(vm.grid.unit / 2)
 
 
 circlePosition : ViewModel -> Pos -> Pos
