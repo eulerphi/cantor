@@ -5,14 +5,18 @@ module Block.Internal.Section exposing
     , forBlockFoo
     , last
     , midSection
+    , remainderPos
     , titleText
     , toBox
     )
 
+import Block.Internal.Component exposing (Component(..))
 import Block.Internal.Types exposing (..)
 import Box exposing (Box)
 import Grid exposing (Grid)
 import Maybe
+import Maybe.Extra as MaybeEx
+import OffsetAnchor exposing (OffsetAnchor)
 import Pair
 import Pos exposing (Pos)
 import Size exposing (IntSize, Size)
@@ -199,6 +203,20 @@ toBox gd bd sections =
                 |> Maybe.withDefault 0
     in
     Box bd.pos (Size width height)
+
+
+rectPos : OffsetAnchor -> List Section -> Pos
+rectPos anchor sections =
+    Pos.origin
+
+
+remainderPos : OffsetAnchor -> List Section -> Pos
+remainderPos anchor sections =
+    last sections
+        -- |> MaybeEx.orElse (midSection sections)
+        |> Maybe.map Box.asBox
+        |> Maybe.withDefault Box.none
+        |> OffsetAnchor.toPos anchor
 
 
 

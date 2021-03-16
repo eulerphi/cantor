@@ -265,10 +265,8 @@
     stroke: #c23e19;
 }
 
-.block .remainder rect {
-    fill: none;
+.block .remainder line {
     stroke-width: 3;
-    stroke-dasharray: 8;
 }
 
 .block .remainder text {

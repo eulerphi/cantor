@@ -47,13 +47,13 @@ toY : VerticalAnchor -> Boxlike r -> Float
 toY anchor box =
     case anchor of
         Top ->
-            box.pos.x
+            box.pos.y
 
         VCenter ->
-            box.pos.x + box.size.height / 2
+            box.pos.y + box.size.height / 2
 
         Bottom ->
-            box.pos.x + box.size.height
+            box.pos.y + box.size.height
 
         Y yValue ->
             yValue

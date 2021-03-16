@@ -1,6 +1,7 @@
 module Block.Internal.Component.Remainder exposing (..)
 
 import Block.Internal.Component exposing (Component(..))
+import Block.Internal.Config as Config
 import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
 import Block.Internal.ViewModel exposing (ViewModel)
@@ -10,7 +11,9 @@ import Delta exposing (Delta)
 import DragState
 import Grid exposing (Grid)
 import Line
+import MathEx
 import Maybe.Extra
+import OffsetAnchor exposing (HorizontalAnchor(..), OffsetAnchor(..), VerticalAnchor(..))
 import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
@@ -47,27 +50,27 @@ viewControl attrs vm { active, pos } =
         ( unit, halfUnit ) =
             ( vm.grid.unit, vm.grid.unit / 2 )
 
-        rect =
-            Box pos (Size unit unit)
-
         vline =
-            rect.pos
-                |> Pos.add (Pos halfUnit rect.size.height)
-                |> Line.addY (2 * unit)
+            pos |> Line.addY unit
+
+        hline =
+            pos
+                |> Pos.addY halfUnit
+                |> Line.addX unit
 
         cpos =
-            vline.p2
+            hline.p2
     in
     Svg.g
         [ SvgAttrs.class "remainder" ]
-        [ SvgEx.rect [] rect
-        , SvgEx.line [] vline
+        [ SvgEx.line [] vline
+        , SvgEx.line [] hline
         , CircleControl.view2
             attrs
             { active = active
             , pos = cpos
             , unit = vm.grid.unit
-            , txt = "±"
+            , txt = ""
             }
         ]
 
@@ -75,13 +78,10 @@ viewControl attrs vm { active, pos } =
 rootPosition : ViewModel -> Maybe Pos
 rootPosition vm =
     vm.sections
-        |> Section.last
-        |> Maybe.map
-            (\s ->
-                s.pos
-                    |> Pos.addX (s.size.width - vm.grid.unit)
-                    |> Pos.addY (s.size.height - vm.grid.unit)
-            )
+        |> Section.remainderPos (OffsetAnchor Right Bottom)
+        |> Pos.addY -vm.grid.unit
+        |> Pos.addX Config.outlinePadding
+        |> Just
 
 
 
@@ -99,10 +99,33 @@ dragUpdate delta data =
 
 
 dragMove : DragContext -> DragQuantityState -> Block
-dragMove { gd, bd } { current } =
-    current
-        |> calculateQuantity gd bd
-        |> updateQuantity bd
+dragMove { gd, bd } { delta } =
+    let
+        dx =
+            delta
+                |> Delta.roundNear gd.unit
+                |> Delta.div gd.unit
+                |> .dx
+                |> round
+
+        ( q, r ) =
+            let
+                remainder =
+                    modBy bd.width bd.quantity
+            in
+            if remainder == 0 then
+                ( bd.quantity - bd.width, bd.width )
+
+            else
+                ( bd.quantity - remainder, remainder )
+
+        remainder_ =
+            r + dx |> MathEx.minmax 1 bd.width
+
+        quantity_ =
+            q + remainder_
+    in
+    { bd | quantity = quantity_ }
 
 
 dragEnd : DragContext -> DragQuantityState -> Maybe Block

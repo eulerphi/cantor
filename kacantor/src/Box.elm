@@ -1,4 +1,16 @@
-module Box exposing (Box, Boxlike, addPos, hasSize, pad, scale, scalePos, scaleSize, updatePos)
+module Box exposing
+    ( Box
+    , Boxlike
+    , addPos
+    , asBox
+    , hasSize
+    , none
+    , pad
+    , scale
+    , scalePos
+    , scaleSize
+    , updatePos
+    )
 
 import Pos exposing (Pos)
 import Size exposing (Size)
@@ -22,9 +34,19 @@ addPos pos box =
     { box | pos = Pos.add pos box.pos }
 
 
+asBox : Boxlike r -> Box
+asBox box =
+    Box box.pos box.size
+
+
 hasSize : Boxlike r -> Bool
 hasSize box =
     box.size.width > 0 && box.size.height > 0
+
+
+none : Box
+none =
+    Box Pos.origin Size.none
 
 
 pad : Float -> Boxlike r -> Boxlike r
