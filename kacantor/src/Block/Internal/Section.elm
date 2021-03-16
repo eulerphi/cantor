@@ -1,5 +1,6 @@
 module Block.Internal.Section exposing
     ( Section
+    , Section2
     , first
     , forBlock
     , forBlockFoo
@@ -20,6 +21,9 @@ import OffsetAnchor exposing (OffsetAnchor)
 import Pair
 import Pos exposing (Pos)
 import Size exposing (IntSize, Size)
+import Svg exposing (Attribute, Svg)
+import Svg.Attributes as SvgAttrs
+import SvgEx
 
 
 type alias Section =
@@ -33,8 +37,37 @@ type alias Section =
     }
 
 
+type alias Section2 =
+    { pos : Pos
+    , size : Size
+    , children : Children
+    , class : Class
+    , unit : Float
+    }
+
+
+type Class
+    = Product
+    | ProductAdd
+    | ProductSub
+    | Remainder
+
+
+type Children
+    = List Section2
+
+
 
 -- PUBLIC API
+
+
+view : Grid -> Section2 -> Svg msg
+view gd s =
+    Svg.g [] []
+
+
+
+-- If has children, then just a group of the children. Otherwise render the section.
 
 
 forBlock : Grid -> Block -> List Section

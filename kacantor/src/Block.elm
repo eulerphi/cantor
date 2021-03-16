@@ -48,6 +48,13 @@ init :
     }
     -> Block
 init input =
+    let
+        height =
+            input.quantity // input.width
+
+        remainder =
+            input.quantity - (height * input.width)
+    in
     Block
         { key = input.key
         , state = Types.Idle
@@ -55,6 +62,8 @@ init input =
         , quantity = input.quantity
         , headerOffset = 0
         , width = input.width
+        , height = height
+        , remainder = remainder
         }
 
 
