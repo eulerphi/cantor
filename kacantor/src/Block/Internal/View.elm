@@ -1,7 +1,7 @@
 module Block.Internal.View exposing (view)
 
 import Block.Internal.Component as Component exposing (Component)
-import Block.Internal.Component.Body as BodyComponent
+import Block.Internal.Component.Body as Body
 import Block.Internal.Component.Multiplicand as Multiplicand
 import Block.Internal.Component.Multiplier as Multiplier
 import Block.Internal.Component.Offset as OffsetControl
@@ -25,27 +25,27 @@ view context gd bd =
             eventAttrs context.envelop bd.key
 
         vm =
-            ViewModel.forBlock gd bd
+            ViewModel.forBlock2 gd bd
 
-        body =
-            { vm | sections = vm.tempBodySections }
-                |> BodyComponent.view (attrsFn Component.Body)
-
-        temps =
-            { vm | sections = vm.tempChangeSections }
-                |> BodyComponent.view [ SvgAttrs.class "temps" ]
-
-        elements =
-            [ OutlineComponent.view []
-            , Multiplicand.view (attrsFn Component.Multiplicand)
-            , Multiplier.view (attrsFn Component.Multiplier)
-            , OffsetControl.view (attrsFn Component.Offset)
-            , Remainder.view (attrsFn Component.Remainder)
-            ]
-                |> List.map (\fn -> fn vm)
-                |> Maybe.Extra.values
+        -- body =
+        --     { vm | sections = vm.tempBodySections }
+        --         |> BodyComponent.view (attrsFn Component.Body)
+        -- temps =
+        --     { vm | sections = vm.tempChangeSections }
+        --         |> BodyComponent.view [ SvgAttrs.class "temps" ]
+        -- elements =
+        --     [ OutlineComponent.view []
+        --     , Multiplicand.view (attrsFn Component.Multiplicand)
+        --     , Multiplier.view (attrsFn Component.Multiplier)
+        --     , OffsetControl.view (attrsFn Component.Offset)
+        --     , Remainder.view (attrsFn Component.Remainder)
+        --     ]
+        --         |> List.map (\fn -> fn vm)
+        --         |> Maybe.Extra.values
     in
-    Svg.g [ SvgAttrs.class "block" ] ([ body, temps ] ++ elements)
+    Svg.g
+        [ SvgAttrs.class "block" ]
+        [ vm |> Body.view2 (attrsFn Component.Body) ]
 
 
 eventAttrs : (Msg -> msg) -> String -> Component -> List (Attribute msg)

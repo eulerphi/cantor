@@ -1,13 +1,14 @@
 module Block.Internal.Component.Body exposing (..)
 
-import Block.Internal.Section exposing (Section)
+import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.ViewModel exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel, ViewModel2)
 import Box exposing (Box)
 import Delta exposing (Delta)
 import DragState
 import Grid
 import List
+import Maybe.Extra
 import Pos exposing (Pos)
 import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
@@ -24,6 +25,19 @@ view attrs vm =
     Svg.g
         (SvgAttrs.class "block-body" :: attrs)
         (vm.sections |> List.map (viewRect vm))
+
+
+view2 : List (Attribute msg) -> ViewModel2 -> Svg msg
+view2 attrs vm =
+    let
+        elems =
+            [ vm.product, vm.remainder ]
+                |> Maybe.Extra.values
+                |> List.map (Section.view [])
+    in
+    Svg.g
+        (SvgAttrs.class "block-body" :: attrs)
+        elems
 
 
 viewRect : ViewModel -> Section -> Svg msg

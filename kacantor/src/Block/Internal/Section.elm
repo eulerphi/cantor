@@ -3,18 +3,21 @@ module Block.Internal.Section exposing
     , Section2
     , first
     , forBlock
+    , forBlock2
     , forBlockFoo
     , last
     , midSection
     , remainderPos
     , titleText
     , toBox
+    , view
     )
 
 import Block.Internal.Component exposing (Component(..))
 import Block.Internal.Types exposing (..)
 import Box exposing (Box)
 import Grid exposing (Grid)
+import List
 import Maybe
 import Maybe.Extra as MaybeEx
 import OffsetAnchor exposing (OffsetAnchor)
@@ -54,20 +57,69 @@ type Class
 
 
 type Children
-    = List Section2
+    = Children (List Section2)
 
 
 
 -- PUBLIC API
 
 
-view : Grid -> Section2 -> Svg msg
-view gd s =
-    Svg.g [] []
+view : List (Attribute msg) -> Section2 -> Svg msg
+view attrs s =
+    let
+        attrs_ =
+            (s |> classString |> SvgAttrs.class) :: attrs
+
+        elems =
+            [ Grid.view [] (Grid.forBox s.unit s)
+            , SvgEx.text_
+                []
+                (Box s.pos (Size.forSquare s.unit))
+                (s |> quantity2 |> String.fromInt)
+            ]
+                ++ (s |> children |> List.map (view []))
+    in
+    Svg.g attrs_ elems
 
 
+forBlock2 :
+    Grid
+    -> Block
+    -> { product : Maybe Section2, remainder : Maybe Section2 }
+forBlock2 gd bd =
+    let
+        product =
+            { pos = bd.pos
+            , size = bd.size |> Size.toFloat |> Size.scale gd.unit
+            , children = Children []
+            , class = Product
+            , unit = gd.unit
+            }
 
--- If has children, then just a group of the children. Otherwise render the section.
+        remainder =
+            { pos = bd.pos |> Pos.addY product.size.height
+            , size =
+                IntSize bd.remainder 1
+                    |> Size.toFloat
+                    |> Size.scale gd.unit
+            , children = Children []
+            , class = Remainder
+            , unit = gd.unit
+            }
+    in
+    { product =
+        if bd.size.height > 0 then
+            Just product
+
+        else
+            Nothing
+    , remainder =
+        if bd.remainder > 0 then
+            Just remainder
+
+        else
+            Nothing
+    }
 
 
 forBlock : Grid -> Block -> List Section
@@ -261,9 +313,46 @@ addPos pos section =
     { section | pos = Pos.add pos section.pos }
 
 
+children : Section2 -> List Section2
+children s =
+    case s.children of
+        Children kids ->
+            kids
+
+
+classString : Section2 -> String
+classString s =
+    case s.class of
+        Product ->
+            "product"
+
+        ProductAdd ->
+            "product-add"
+
+        ProductSub ->
+            "product-sub"
+
+        Remainder ->
+            "remainder"
+
+
 hasSize : Section -> Bool
 hasSize section =
     section |> Box.hasSize
+
+
+quantity2 : Section2 -> Int
+quantity2 s =
+    let
+        sign =
+            case s.class of
+                ProductSub ->
+                    -1
+
+                _ ->
+                    1
+    in
+    s.size |> Size.inUnits s.unit |> Size.area |> (*) sign
 
 
 scale : Float -> Section -> Section

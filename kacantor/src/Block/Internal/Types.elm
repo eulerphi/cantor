@@ -18,6 +18,7 @@ import DragState exposing (DragState)
 import Draggable
 import Grid exposing (Grid)
 import Pos exposing (Pos)
+import Size exposing (IntSize)
 
 
 type alias Block =
@@ -27,7 +28,7 @@ type alias Block =
     , quantity : Int
     , headerOffset : Int
     , width : Int
-    , height : Int
+    , size : IntSize
     , remainder : Int
     }
 

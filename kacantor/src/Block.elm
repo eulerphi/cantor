@@ -17,6 +17,7 @@ import Draggable
 import Grid exposing (Grid)
 import Html exposing (..)
 import Pos exposing (Pos)
+import Size exposing (IntSize)
 import Svg
 
 
@@ -62,7 +63,7 @@ init input =
         , quantity = input.quantity
         , headerOffset = 0
         , width = input.width
-        , height = height
+        , size = IntSize input.width height
         , remainder = remainder
         }
 

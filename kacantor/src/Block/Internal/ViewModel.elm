@@ -12,11 +12,17 @@ type alias ViewModel =
     , size : Size
     , grid : Grid
     , block : Block
-    , product : Maybe Section2
-    , remainder : Maybe Section2
     , sections : List Section
     , tempBodySections : List Section
     , tempChangeSections : List Section
+    }
+
+
+type alias ViewModel2 =
+    { pos : Pos
+    , size : Size
+    , product : Maybe Section2
+    , remainder : Maybe Section2
     }
 
 
@@ -33,9 +39,20 @@ forBlock gd bd =
     , size = box.size
     , grid = gd
     , block = bd
-    , product = Nothing
-    , remainder = Nothing
     , sections = Section.forBlock gd bd
     , tempBodySections = sections
     , tempChangeSections = temps
+    }
+
+
+forBlock2 : Grid -> Block -> ViewModel2
+forBlock2 gd bd =
+    let
+        { product, remainder } =
+            Section.forBlock2 gd bd
+    in
+    { pos = Pos.origin
+    , size = Size.none
+    , product = product
+    , remainder = remainder
     }

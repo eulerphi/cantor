@@ -157,9 +157,43 @@
     fill: rgb(188,26,105);
 }
 
+.block-body .product rect {
+    stroke: rgb(101,197,219);
+    fill: rgba(25, 157, 194);
+}
+
+.block-body .product line {
+    stroke: rgb(37,166,201);
+}
+
+.block-body text {
+    pointer-events: none;
+    stroke: rgb(255, 255, 255);
+    fill: rgb(255, 255, 255);
+}
+
+
+.block-body .remainder rect {
+    stroke: rgb(174,138,180);
+    fill: rgb(188,26,105);
+}
+
+.block-body .remainder .hline {
+    stroke: rgb(221,140,180);
+}
+
+.block-body .remainder .vline {
+    stroke: rgb(174,138,180);
+}
+
 /* BLOCK: BODY */
 
 .block .body-mid .grid rect {
+    stroke: rgb(101,197,219);
+    fill: rgba(25, 157, 194);
+}
+
+.block-body .product rect {
     stroke: rgb(101,197,219);
     fill: rgba(25, 157, 194);
 }
@@ -260,16 +294,16 @@
     stroke-width: 3;
 }
 
-.block .remainder {
+.block .remainder-control {
     fill: #c23e19;
     stroke: #c23e19;
 }
 
-.block .remainder line {
+.block .remainder-control line {
     stroke-width: 3;
 }
 
-.block .remainder text {
+.block .remainder-control text {
     fill: rgb(255, 255, 255);
     stroke: rgb(255, 255, 255);
 }
