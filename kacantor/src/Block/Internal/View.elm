@@ -27,6 +27,14 @@ view context gd bd =
         vm =
             ViewModel.forBlock2 gd bd
 
+        body =
+            vm |> Body.view2 (attrsFn Component.Body)
+
+        elements =
+            [ OutlineComponent.view [] ]
+                |> List.map (\fn -> fn vm)
+                |> Maybe.Extra.values
+
         -- body =
         --     { vm | sections = vm.tempBodySections }
         --         |> BodyComponent.view (attrsFn Component.Body)
@@ -45,7 +53,7 @@ view context gd bd =
     in
     Svg.g
         [ SvgAttrs.class "block" ]
-        [ vm |> Body.view2 (attrsFn Component.Body) ]
+        (body :: elements)
 
 
 eventAttrs : (Msg -> msg) -> String -> Component -> List (Attribute msg)

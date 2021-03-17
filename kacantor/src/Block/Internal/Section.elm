@@ -1,6 +1,7 @@
 module Block.Internal.Section exposing
     ( Section
     , Section2
+    , Sections
     , first
     , forBlock
     , forBlock2
@@ -10,6 +11,8 @@ module Block.Internal.Section exposing
     , remainderPos
     , titleText
     , toBox
+    , toBox2
+    , toList
     , view
     )
 
@@ -49,8 +52,15 @@ type alias Section2 =
     }
 
 
+type alias Sections =
+    { product : Maybe Section2
+    , remainder : Maybe Section2
+    }
+
+
 type Class
-    = Product
+    = Foo
+    | Product
     | ProductAdd
     | ProductSub
     | Remainder
@@ -62,6 +72,11 @@ type Children
 
 
 -- PUBLIC API
+
+
+toList : Sections -> List Section2
+toList ss =
+    [ ss.product, ss.remainder ] |> MaybeEx.values
 
 
 view : List (Attribute msg) -> Section2 -> Svg msg
@@ -82,17 +97,35 @@ view attrs s =
     Svg.g attrs_ elems
 
 
-forBlock2 :
-    Grid
-    -> Block
-    -> { product : Maybe Section2, remainder : Maybe Section2 }
+toBox2 : Grid -> Block -> Box
+toBox2 gd bd =
+    let
+        w =
+            bd.size.width
+
+        h =
+            if bd.remainder > 0 then
+                bd.size.height + 1
+
+            else
+                bd.size.height
+
+        size =
+            IntSize w h
+                |> Size.toFloat
+                |> Size.scale gd.unit
+    in
+    Box bd.pos size
+
+
+forBlock2 : Grid -> Block -> Sections
 forBlock2 gd bd =
     let
         product =
             { pos = bd.pos
             , size = bd.size |> Size.toFloat |> Size.scale gd.unit
             , children = Children []
-            , class = Product
+            , class = toClass bd Product
             , unit = gd.unit
             }
 
@@ -103,7 +136,7 @@ forBlock2 gd bd =
                     |> Size.toFloat
                     |> Size.scale gd.unit
             , children = Children []
-            , class = Remainder
+            , class = toClass bd Remainder
             , unit = gd.unit
             }
     in
@@ -323,6 +356,9 @@ children s =
 classString : Section2 -> String
 classString s =
     case s.class of
+        Foo ->
+            "idle"
+
         Product ->
             "product"
 
@@ -334,6 +370,16 @@ classString s =
 
         Remainder ->
             "remainder"
+
+
+toClass : Block -> Class -> Class
+toClass bd class =
+    case bd.state of
+        Idle ->
+            Foo
+
+        _ ->
+            class
 
 
 hasSize : Section -> Bool

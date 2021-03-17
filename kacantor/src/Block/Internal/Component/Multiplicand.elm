@@ -1,6 +1,5 @@
 module Block.Internal.Component.Multiplicand exposing (..)
 
-import Block.Internal.Component.Offset exposing (circlePosition)
 import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
 import Block.Internal.ViewModel exposing (ViewModel)

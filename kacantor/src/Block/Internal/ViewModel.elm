@@ -1,6 +1,6 @@
 module Block.Internal.ViewModel exposing (..)
 
-import Block.Internal.Section as Section exposing (Section, Section2)
+import Block.Internal.Section as Section exposing (Section, Section2, Sections)
 import Block.Internal.Types exposing (..)
 import Grid exposing (Grid)
 import Pos exposing (Pos)
@@ -21,8 +21,9 @@ type alias ViewModel =
 type alias ViewModel2 =
     { pos : Pos
     , size : Size
-    , product : Maybe Section2
-    , remainder : Maybe Section2
+    , grid : Grid
+    , block : Block
+    , sections : Sections
     }
 
 
@@ -48,11 +49,15 @@ forBlock gd bd =
 forBlock2 : Grid -> Block -> ViewModel2
 forBlock2 gd bd =
     let
-        { product, remainder } =
+        box =
+            Section.toBox2 gd bd
+
+        sections =
             Section.forBlock2 gd bd
     in
-    { pos = Pos.origin
-    , size = Size.none
-    , product = product
-    , remainder = remainder
+    { pos = box.pos
+    , size = box.size
+    , grid = gd
+    , block = bd
+    , sections = sections
     }

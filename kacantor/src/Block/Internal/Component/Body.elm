@@ -31,13 +31,11 @@ view2 : List (Attribute msg) -> ViewModel2 -> Svg msg
 view2 attrs vm =
     let
         elems =
-            [ vm.product, vm.remainder ]
-                |> Maybe.Extra.values
+            vm.sections
+                |> Section.toList
                 |> List.map (Section.view [])
     in
-    Svg.g
-        (SvgAttrs.class "block-body" :: attrs)
-        elems
+    Svg.g (SvgAttrs.class "block-body" :: attrs) elems
 
 
 viewRect : ViewModel -> Section -> Svg msg

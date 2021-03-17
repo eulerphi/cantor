@@ -172,6 +172,11 @@
     fill: rgb(255, 255, 255);
 }
 
+.block-body .idle rect {
+    stroke: rgb(156, 151, 151);
+    fill: rgb(156, 151, 151);
+}
+
 
 .block-body .remainder rect {
     stroke: rgb(174,138,180);

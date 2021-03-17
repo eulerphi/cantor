@@ -53,6 +53,13 @@ addX xValue pos =
     }
 
 
+addXY : Float -> Pos -> Pos
+addXY xyValue pos =
+    { x = pos.x + xyValue
+    , y = pos.y + xyValue
+    }
+
+
 addY : Float -> Pos -> Pos
 addY yValue pos =
     { x = pos.x
