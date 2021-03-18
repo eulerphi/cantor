@@ -1,8 +1,8 @@
 module Block.Internal.Component.Ruler exposing (..)
 
-import Block.Internal.Section as Section exposing (Section)
+import Block.Internal.Section as Section exposing (Section2)
 import Block.Internal.Types exposing (..)
-import Block.Internal.ViewModel exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel2)
 import Line exposing (Line)
 import Maybe.Extra
 import Pos exposing (Pos)
@@ -12,7 +12,7 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (QuantityDrag _) ->
@@ -28,28 +28,23 @@ view attrs vm =
             Nothing
 
 
-viewRulers : List (Attribute msg) -> ViewModel -> Svg msg
+viewRulers : List (Attribute msg) -> ViewModel2 -> Svg msg
 viewRulers attrs vm =
     let
         widthRuler =
             viewWidthRuler vm
 
         heightRuler =
-            vm.sections
-                |> Section.midSection
+            vm.sections.product
                 |> Maybe.map (viewHeightRuler vm)
                 |> Maybe.Extra.toList
     in
     Svg.g
         (SvgAttrs.class "ruler" :: attrs)
-        [ widthRuler ]
+        (widthRuler :: heightRuler)
 
 
-
--- (widthRuler :: heightRuler)
-
-
-viewWidthRuler : ViewModel -> Svg msg
+viewWidthRuler : ViewModel2 -> Svg msg
 viewWidthRuler vm =
     let
         ( halfUnit, quarterUnit ) =
@@ -98,7 +93,7 @@ viewWidthRuler vm =
         }
 
 
-viewHeightRuler : ViewModel -> Section -> Svg msg
+viewHeightRuler : ViewModel2 -> Section2 -> Svg msg
 viewHeightRuler vm mid =
     let
         ( halfUnit, quarterUnit ) =

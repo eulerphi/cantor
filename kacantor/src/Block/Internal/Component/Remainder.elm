@@ -4,7 +4,7 @@ import Block.Internal.Component exposing (Component(..))
 import Block.Internal.Config as Config
 import Block.Internal.Section as Section
 import Block.Internal.Types exposing (..)
-import Block.Internal.ViewModel exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel, ViewModel2)
 import Box exposing (Box)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
@@ -22,7 +22,7 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (RemainderDrag state) ->
@@ -32,7 +32,7 @@ view attrs vm =
 
         Selected ->
             vm
-                |> rootPosition
+                |> rootPosition2
                 |> Maybe.map (\pos -> { active = False, pos = pos })
                 |> Maybe.map (viewControl attrs vm)
 
@@ -42,7 +42,7 @@ view attrs vm =
 
 viewControl :
     List (Attribute msg)
-    -> ViewModel
+    -> ViewModel2
     -> { active : Bool, pos : Pos }
     -> Svg msg
 viewControl attrs vm { active, pos } =
@@ -62,7 +62,7 @@ viewControl attrs vm { active, pos } =
             hline.p2
     in
     Svg.g
-        [ SvgAttrs.class "remainder" ]
+        [ SvgAttrs.class "remainder-control" ]
         [ SvgEx.line [] vline
         , SvgEx.line [] hline
         , CircleControl.view2
@@ -82,6 +82,15 @@ rootPosition vm =
         |> Pos.addY -vm.grid.unit
         |> Pos.addX Config.outlinePadding
         |> Just
+
+
+rootPosition2 : ViewModel2 -> Maybe Pos
+rootPosition2 vm =
+    vm.sections.remainder
+        |> Maybe.Extra.orElse vm.sections.product
+        |> Maybe.map (OffsetAnchor.toPos (OffsetAnchor Right Bottom))
+        |> Maybe.map (Pos.addY -vm.grid.unit)
+        |> Maybe.map (Pos.addX Config.outlinePadding)
 
 
 

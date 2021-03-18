@@ -28,7 +28,7 @@ type alias Block =
     , quantity : Int
     , headerOffset : Int
     , width : Int
-    , size : IntSize
+    , product : IntSize
     , remainder : Int
     }
 

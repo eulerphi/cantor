@@ -31,7 +31,12 @@ view context gd bd =
             vm |> Body.view2 (attrsFn Component.Body)
 
         elements =
-            [ OutlineComponent.view [] ]
+            [ OutlineComponent.view []
+            , Multiplicand.view (attrsFn Component.Multiplicand)
+            , Multiplier.view (attrsFn Component.Multiplier)
+            , Remainder.view (attrsFn Component.Remainder)
+            , WidthComponent.view (attrsFn Component.Width)
+            ]
                 |> List.map (\fn -> fn vm)
                 |> Maybe.Extra.values
 

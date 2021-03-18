@@ -1,8 +1,8 @@
 module Block.Internal.Component.Multiplier exposing (..)
 
-import Block.Internal.Section as Section exposing (Section)
+import Block.Internal.Section as Section exposing (Section, Section2)
 import Block.Internal.Types exposing (..)
-import Block.Internal.ViewModel exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel, ViewModel2)
 import Box exposing (Box)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
@@ -19,7 +19,7 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (MultiplierDrag state) ->
@@ -34,7 +34,7 @@ view attrs vm =
             rootPosition vm
                 |> Pair.fork
                     identity
-                    (circlePosition vm)
+                    (circlePosition vm.sections.product)
                 |> (\( rpos, cpos ) -> { active = False, rpos = rpos, cpos = cpos })
                 |> viewControl attrs vm
                 |> Just
@@ -43,21 +43,9 @@ view attrs vm =
             Nothing
 
 
-emptyMidSection : ViewModel -> Section
-emptyMidSection vm =
-    { pos = vm.pos
-    , size = Size.none
-    , sizeInUnits = Size.noneInt
-    , isMid = True
-    , offset = 0
-    , class = ""
-    , quantity = 0
-    }
-
-
 viewControl :
     List (Attribute msg)
-    -> ViewModel
+    -> ViewModel2
     -> { active : Bool, rpos : Pos, cpos : Pos }
     -> Svg msg
 viewControl attrs vm { active, rpos, cpos } =
@@ -90,112 +78,22 @@ viewControl attrs vm { active, rpos, cpos } =
         ]
 
 
-viewHeightRuler : ViewModel -> Section -> Svg msg
-viewHeightRuler vm mid =
-    let
-        ( halfUnit, quarterUnit ) =
-            ( vm.grid.unit / 2, vm.grid.unit / 4 )
 
-        filled =
-            mid.pos
-                |> Pos.addX -(3 * vm.grid.unit / 4)
-                |> Line.addY mid.size.height
-
-        guide =
-            filled.p2
-                |> Line.toY (OffsetAnchor.toY OffsetAnchor.Bottom vm.grid)
-
-        line =
-            mid.pos
-                |> Pos.addX -(3 * vm.grid.unit / 4)
-                |> Line.addY (vm.grid.size.height - vm.pos.y)
-
-        hash1 =
-            Line
-                (line.p1 |> Pos.addX quarterUnit)
-                (line.p1 |> Pos.addX -quarterUnit)
-
-        hash2 =
-            Line
-                (line.p2 |> Pos.addX halfUnit)
-                (line.p2 |> Pos.addX -halfUnit)
-
-        txt =
-            (mid.size.height / vm.grid.unit)
-                |> round
-                |> String.fromInt
-
-        txtSize =
-            Size.forSquare (3 * vm.grid.unit / 4)
-
-        txtPos =
-            line.p2
-                |> Pos.addX -(txtSize.width / 2)
-                |> Pos.addY -(mid.size.height / 2)
-                |> Pos.addY -(txtSize.height / 2)
-    in
-    viewRuler
-        { class = "height-ruler"
-        , hash1 = hash1
-        , line = line
-        , filled = filled
-        , guide = guide
-        , cpos = line.p1 |> Pos.addY mid.size.height
-        , txt =
-            { val = txt
-            , pos = txtPos
-            , size = txtSize
-            }
-        }
+-- rootPosition : ViewModel -> Pos
 
 
-viewRuler :
-    { class : String
-    , line : Line
-    , hash1 : Line
-    , filled : Line
-    , guide : Line
-    , cpos : Pos
-    , txt :
-        { val : String
-        , pos : Pos
-        , size : Size
-        }
-    }
-    -> Svg msg
-viewRuler input =
-    let
-        es =
-            [ SvgEx.line [] input.filled
-            , SvgEx.line [ SvgAttrs.class "guideline" ] input.guide
-            , SvgEx.line [] input.hash1
-            , CircleControl.view2 [] { active = False, pos = input.cpos, unit = 33, txt = input.txt.val }
-            ]
-
-        -- txt =
-        --     if input.txt.val /= "0" then
-        --         [ SvgEx.textWithBackground [] input.txt input.txt.val ]
-        --     else
-        --         []
-    in
-    Svg.g
-        [ SvgAttrs.class input.class ]
-        es
-
-
-
--- (es ++ txt)
-
-
-rootPosition : ViewModel -> Pos
+rootPosition : { r | grid : Grid, pos : Pos, size : Size } -> Pos
 rootPosition vm =
     vm.pos |> Pos.addX -(vm.grid.unit / 2)
 
 
-circlePosition : ViewModel -> Pos -> Pos
-circlePosition vm rpos =
-    vm.sections
-        |> Section.midSection
+
+-- circlePosition : ViewModel -> Pos -> Pos
+
+
+circlePosition : Maybe { r | pos : Pos, size : Size } -> Pos -> Pos
+circlePosition productSection rpos =
+    productSection
         |> Maybe.map (\s -> s.size.height)
         |> Maybe.withDefault 0
         |> (\y -> Pos.addY y rpos)
@@ -205,7 +103,7 @@ dragStart : ViewModel -> Maybe DragState
 dragStart vm =
     vm
         |> rootPosition
-        |> circlePosition vm
+        |> circlePosition (vm.sections |> Section.midSection)
         |> DragState.forStart
         |> Just
 

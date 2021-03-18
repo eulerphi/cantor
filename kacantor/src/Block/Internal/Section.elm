@@ -11,7 +11,6 @@ module Block.Internal.Section exposing
     , remainderPos
     , titleText
     , toBox
-    , toBox2
     , toList
     , view
     )
@@ -27,6 +26,7 @@ import OffsetAnchor exposing (OffsetAnchor)
 import Pair
 import Pos exposing (Pos)
 import Size exposing (IntSize, Size)
+import String
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 import SvgEx
@@ -48,6 +48,8 @@ type alias Section2 =
     , size : Size
     , children : Children
     , class : Class
+    , modifier : Modifier
+    , quantity : Int
     , unit : Float
     }
 
@@ -59,11 +61,16 @@ type alias Sections =
 
 
 type Class
-    = Foo
+    = Inactive
     | Product
-    | ProductAdd
-    | ProductSub
     | Remainder
+
+
+type Modifier
+    = None
+    | Adding
+    | HideText
+    | Removing
 
 
 type Children
@@ -72,6 +79,11 @@ type Children
 
 
 -- PUBLIC API
+
+
+toGrid : Section2 -> Grid
+toGrid s =
+    s |> Grid.forBox s.unit
 
 
 toList : Sections -> List Section2
@@ -86,68 +98,126 @@ view attrs s =
             (s |> classString |> SvgAttrs.class) :: attrs
 
         elems =
-            [ Grid.view [] (Grid.forBox s.unit s)
-            , SvgEx.text_
-                []
-                (Box s.pos (Size.forSquare s.unit))
-                (s |> quantity2 |> String.fromInt)
+            [ s |> toGrid |> Grid.view []
+            , s |> viewText
             ]
-                ++ (s |> children |> List.map (view []))
+
+        kids =
+            s |> children |> List.map (view [])
     in
-    Svg.g attrs_ elems
+    Svg.g attrs_ (elems ++ kids)
 
 
-toBox2 : Grid -> Block -> Box
-toBox2 gd bd =
+viewText : Section2 -> Svg msg
+viewText s =
     let
-        w =
-            bd.size.width
+        box =
+            Size.forSquare s.unit |> Box s.pos
 
-        h =
-            if bd.remainder > 0 then
-                bd.size.height + 1
+        q =
+            s.quantity |> String.fromInt
 
-            else
-                bd.size.height
+        txt =
+            case s.modifier of
+                None ->
+                    Just q
 
-        size =
-            IntSize w h
-                |> Size.toFloat
-                |> Size.scale gd.unit
+                Adding ->
+                    Just q
+
+                HideText ->
+                    Nothing
+
+                Removing ->
+                    Just q
     in
-    Box bd.pos size
+    case txt of
+        Just str ->
+            SvgEx.text_ [] box str
+
+        Nothing ->
+            Svg.g [] []
 
 
-forBlock2 : Grid -> Block -> Sections
-forBlock2 gd bd =
+forSelectedBlock : Grid -> Block -> ( Section2, Section2 )
+forSelectedBlock gd bd =
     let
         product =
             { pos = bd.pos
-            , size = bd.size |> Size.toFloat |> Size.scale gd.unit
+            , size = bd.product |> Size.toFloat |> Size.scale gd.unit
             , children = Children []
-            , class = toClass bd Product
+            , class = Product
+            , modifier = None
+            , quantity = bd.product |> Size.area
             , unit = gd.unit
             }
 
         remainder =
             { pos = bd.pos |> Pos.addY product.size.height
-            , size =
-                IntSize bd.remainder 1
-                    |> Size.toFloat
-                    |> Size.scale gd.unit
+            , size = IntSize bd.remainder 1 |> Size.toFloat |> Size.scale gd.unit
             , children = Children []
-            , class = toClass bd Remainder
+            , class = Remainder
+            , modifier = None
+            , quantity = bd.remainder
             , unit = gd.unit
             }
     in
+    ( product, remainder )
+
+
+forIdleBlock : Grid -> Block -> ( Section2, Section2 )
+forIdleBlock gd bd =
+    let
+        toIdleSection =
+            \s ->
+                { s | class = Inactive, quantity = bd.quantity }
+
+        ( product, remainder ) =
+            forSelectedBlock gd bd
+                |> Pair.map toIdleSection
+
+        remainderModifier =
+            if hasProduct bd then
+                HideText
+
+            else
+                None
+    in
+    ( product, { remainder | modifier = remainderModifier } )
+
+
+hasProduct : Block -> Bool
+hasProduct bd =
+    bd.product.height > 0
+
+
+hasRemainder : Block -> Bool
+hasRemainder bd =
+    bd.remainder > 0
+
+
+forBlock2 : Grid -> Block -> Sections
+forBlock2 gd bd =
+    let
+        ( product, remainder ) =
+            case bd.state of
+                Idle ->
+                    forIdleBlock gd bd
+
+                Dragging _ _ ->
+                    forSelectedBlock gd bd
+
+                Selected ->
+                    forSelectedBlock gd bd
+    in
     { product =
-        if bd.size.height > 0 then
+        if hasProduct bd then
             Just product
 
         else
             Nothing
     , remainder =
-        if bd.remainder > 0 then
+        if hasRemainder bd then
             Just remainder
 
         else
@@ -356,30 +426,22 @@ children s =
 classString : Section2 -> String
 classString s =
     case s.class of
-        Foo ->
+        Inactive ->
             "idle"
 
         Product ->
-            "product"
+            case s.modifier of
+                Adding ->
+                    "product-add"
 
-        ProductAdd ->
-            "product-add"
+                Removing ->
+                    "product-sub"
 
-        ProductSub ->
-            "product-sub"
+                _ ->
+                    "product"
 
         Remainder ->
             "remainder"
-
-
-toClass : Block -> Class -> Class
-toClass bd class =
-    case bd.state of
-        Idle ->
-            Foo
-
-        _ ->
-            class
 
 
 hasSize : Section -> Bool
@@ -387,18 +449,9 @@ hasSize section =
     section |> Box.hasSize
 
 
-quantity2 : Section2 -> Int
-quantity2 s =
-    let
-        sign =
-            case s.class of
-                ProductSub ->
-                    -1
-
-                _ ->
-                    1
-    in
-    s.size |> Size.inUnits s.unit |> Size.area |> (*) sign
+productQuantity : Block -> Int
+productQuantity bd =
+    bd.product |> Size.area
 
 
 scale : Float -> Section -> Section

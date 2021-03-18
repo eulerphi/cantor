@@ -2,13 +2,15 @@ module Block.Internal.Component.Width exposing (..)
 
 import Block.Internal.Component.Offset exposing (circlePosition)
 import Block.Internal.Types exposing (..)
-import Block.Internal.ViewModel exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel, ViewModel2)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
 import DragState
+import Grid exposing (Grid)
 import Line exposing (Line)
 import Pair
 import Pos exposing (Pos)
+import Size exposing (Size)
 import Svg exposing (Attribute, Svg)
 import Svg.Attributes as SvgAttrs
 import SvgEx
@@ -18,7 +20,7 @@ import SvgEx
 -- VIEW
 
 
-view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (WidthDrag { root, control }) ->
@@ -47,7 +49,7 @@ view attrs vm =
 
 viewControl :
     List (Attribute msg)
-    -> ViewModel
+    -> ViewModel2
     -> { active : Bool, rootPos : Pos, controlPos : Pos }
     -> Svg msg
 viewControl attrs vm { active, rootPos, controlPos } =
@@ -90,14 +92,14 @@ vlineXOffset =
     4
 
 
-rootPosition : ViewModel -> Pos
+rootPosition : { r | pos : Pos, size : Size } -> Pos
 rootPosition vm =
     vm.pos
         |> Pos.addX vm.size.width
         |> Pos.addX vlineXOffset
 
 
-circlePosition : ViewModel -> Pos -> Pos
+circlePosition : { r | grid : Grid, size : Size } -> Pos -> Pos
 circlePosition vm barPos =
     barPos
         |> Pos.addX (2 * vm.grid.unit)

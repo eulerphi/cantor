@@ -2,9 +2,10 @@ module Block.Internal.ViewModel exposing (..)
 
 import Block.Internal.Section as Section exposing (Section, Section2, Sections)
 import Block.Internal.Types exposing (..)
+import Box exposing (Box)
 import Grid exposing (Grid)
 import Pos exposing (Pos)
-import Size exposing (Size)
+import Size exposing (IntSize, Size)
 
 
 type alias ViewModel =
@@ -50,7 +51,7 @@ forBlock2 : Grid -> Block -> ViewModel2
 forBlock2 gd bd =
     let
         box =
-            Section.toBox2 gd bd
+            toBox gd bd
 
         sections =
             Section.forBlock2 gd bd
@@ -61,3 +62,24 @@ forBlock2 gd bd =
     , block = bd
     , sections = sections
     }
+
+
+toBox : Grid -> Block -> Box
+toBox gd bd =
+    let
+        w =
+            bd.product.width
+
+        h =
+            if bd.remainder > 0 then
+                bd.product.height + 1
+
+            else
+                bd.product.height
+
+        size =
+            IntSize w h
+                |> Size.toFloat
+                |> Size.scale gd.unit
+    in
+    Box bd.pos size

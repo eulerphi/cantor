@@ -2,7 +2,7 @@ module Block.Internal.Component.Multiplicand exposing (..)
 
 import Block.Internal.Section as Section exposing (Section)
 import Block.Internal.Types exposing (..)
-import Block.Internal.ViewModel exposing (ViewModel)
+import Block.Internal.ViewModel exposing (ViewModel, ViewModel2)
 import Box exposing (Box)
 import CircleDragControl as CircleControl
 import Delta exposing (Delta)
@@ -19,7 +19,7 @@ import Svg.Attributes as SvgAttrs
 import SvgEx
 
 
-view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
+view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
         Dragging _ (MultiplicandDrag state) ->
@@ -45,7 +45,7 @@ view attrs vm =
 
 viewControl :
     List (Attribute msg)
-    -> ViewModel
+    -> ViewModel2
     -> { active : Bool, rpos : Pos, cpos : Pos }
     -> Svg msg
 viewControl attrs vm { active, rpos, cpos } =
@@ -79,12 +79,16 @@ viewControl attrs vm { active, rpos, cpos } =
         ]
 
 
-rootPosition : ViewModel -> Pos
+
+-- rootPosition : ViewModel -> Pos
+
+
+rootPosition : { r | grid : Grid, pos : Pos, size : Size } -> Pos
 rootPosition vm =
     vm.pos |> Pos.addY -(vm.grid.unit / 2)
 
 
-circlePosition : ViewModel -> Pos -> Pos
+circlePosition : { r | pos : Pos, size : Size } -> Pos -> Pos
 circlePosition vm rpos =
     rpos |> Pos.addX vm.size.width
 

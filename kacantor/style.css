@@ -173,8 +173,12 @@
 }
 
 .block-body .idle rect {
-    stroke: rgb(156, 151, 151);
+    stroke: rgb(148, 145, 145);
     fill: rgb(156, 151, 151);
+}
+
+.block-body .idle line {
+    stroke: rgb(148, 145, 145);
 }
 
 

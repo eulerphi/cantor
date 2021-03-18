@@ -63,7 +63,7 @@ init input =
         , quantity = input.quantity
         , headerOffset = 0
         , width = input.width
-        , size = IntSize input.width height
+        , product = IntSize input.width height
         , remainder = remainder
         }
 
