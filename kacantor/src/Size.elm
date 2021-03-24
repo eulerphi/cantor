@@ -56,8 +56,8 @@ init ( w, h ) =
     { width = w, height = h }
 
 
-forSquare : Float -> Size
-forSquare value =
+square : Float -> Size
+square value =
     Size value value
 
 

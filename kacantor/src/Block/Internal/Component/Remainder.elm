@@ -59,15 +59,15 @@ viewControl attrs vm { active, pos } =
                 |> Line.addX unit
 
         cpos =
-            hline.p2
+            vline.p2
     in
     Svg.g
         [ SvgAttrs.class "remainder-control" ]
         [ SvgEx.line [] vline
-        , SvgEx.line [] hline
-        , CircleControl.view2
+        , CircleControl.view3
             attrs
             { active = active
+            , offsetAnchor = OffsetAnchor HCenter Bottom
             , pos = cpos
             , unit = vm.grid.unit
             , txt = ""

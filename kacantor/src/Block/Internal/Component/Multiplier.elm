@@ -10,7 +10,7 @@ import DragState exposing (DragState)
 import Grid exposing (Grid)
 import Line exposing (Line)
 import Maybe.Extra
-import OffsetAnchor
+import OffsetAnchor exposing (HorizontalAnchor(..), OffsetAnchor(..), VerticalAnchor(..))
 import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
@@ -50,32 +50,46 @@ viewControl :
     -> Svg msg
 viewControl attrs vm { active, rpos, cpos } =
     let
-        quarterUnit =
-            vm.grid.unit / 4
+        ( halfUnit, quarterUnit ) =
+            ( vm.grid.unit / 2, vm.grid.unit / 4 )
 
-        txt =
-            (vm.block.quantity // vm.block.width)
-                |> String.fromInt
+        ( txt, txtBox ) =
+            ( vm.block.product.height |> String.fromInt
+            , Line rpos cpos
+                |> Line.midPos
+                |> Box.center (Size.square halfUnit)
+            )
+
+        elems =
+            [ SvgEx.line [ SvgAttrs.class "mainline" ] (Line rpos cpos)
+            , SvgEx.line [] (rpos |> Line.centeredX quarterUnit)
+            , SvgEx.textWithBackground [] txtBox txt
+            ]
+
+        opts =
+            if active then
+                [ SvgEx.line
+                    [ SvgAttrs.class "guideline" ]
+                    (rpos |> Line.toY (vm.grid |> OffsetAnchor.toY OffsetAnchor.Bottom))
+                , CircleControl.view3
+                    attrs
+                    { active = active
+                    , offsetAnchor = OffsetAnchor HCenter VCenter
+                    , pos = cpos
+                    , unit = vm.grid.unit
+                    , txt = ""
+                    }
+                ]
+
+            else
+                [ SvgEx.line
+                    []
+                    (cpos |> Line.centeredX quarterUnit)
+                ]
     in
     Svg.g
         [ SvgAttrs.class "multiplier" ]
-        [ SvgEx.line
-            []
-            (Line rpos cpos)
-        , SvgEx.line
-            [ SvgAttrs.class "guideline" ]
-            (rpos |> Line.toY (OffsetAnchor.toY OffsetAnchor.Bottom vm.grid))
-        , SvgEx.line
-            []
-            (rpos |> Line.centeredX quarterUnit)
-        , CircleControl.view2
-            attrs
-            { active = active
-            , pos = cpos
-            , unit = vm.grid.unit
-            , txt = txt
-            }
-        ]
+        (elems ++ opts)
 
 
 

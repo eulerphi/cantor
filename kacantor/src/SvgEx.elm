@@ -60,7 +60,7 @@ textWithBackground : List (Attribute msg) -> Boxlike r -> String -> Svg msg
 textWithBackground attrs box text =
     Svg.g
         attrs
-        [ rect [] box
+        [ rect [ SvgAttrs.rx "5px" ] box
         , Svg.g
             (translateToPos box.pos :: attrs)
             [ Svg.svg

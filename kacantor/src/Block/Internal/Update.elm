@@ -86,44 +86,61 @@ dragConfig envelop =
 
 dragStart : Grid -> Id -> Block -> Block
 dragStart gd id bd =
-    case bd.state of
-        Dragging _ _ ->
+    case bd.drag of
+        Just _ ->
             bd
 
-        _ ->
+        Nothing ->
             let
                 ctx =
                     DragContext gd bd
 
                 vm =
-                    ViewModel.forBlock gd bd
+                    ViewModel.forBlock2 gd bd
 
-                component_ =
+                drag_ =
                     case id.part of
                         Component.Body ->
                             vm |> Body.dragStart |> Maybe.map BodyDrag
 
-                        Component.Multiplicand ->
-                            vm |> MultiplicandControl.dragStart |> Maybe.map MultiplicandDrag
-
-                        Component.Multiplier ->
-                            vm |> MultiplierControl.dragStart |> Maybe.map MultiplierDrag
-
-                        Component.Offset ->
-                            vm |> OffsetControl.dragStart |> Maybe.map OffsetDrag
-
-                        Component.Quantity ->
-                            vm |> QuantityControl.dragStart |> Maybe.map QuantityDrag
-
-                        Component.Remainder ->
-                            vm |> Remainder.dragStart |> Maybe.map RemainderDrag
-
-                        Component.Width ->
-                            vm |> WidthControl.dragStart |> Maybe.map WidthDrag
+                        _ ->
+                            Nothing
             in
-            component_
-                |> Maybe.map (\c -> { bd | state = Dragging ctx c })
+            drag_
+                |> Maybe.map (\d -> { bd | drag = Just ( DragCtx ctx, d ) })
                 |> Maybe.withDefault bd
+
+
+
+-- case bd.state of
+--     Dragging _ _ ->
+--         bd
+--     _ ->
+--         let
+--             ctx =
+--                 DragContext gd bd
+--             vm =
+--                 ViewModel.forBlock gd bd
+--             component_ =
+--                 case id.part of
+--                     Component.Body ->
+--                         vm |> Body.dragStart |> Maybe.map BodyDrag
+--                     Component.Multiplicand ->
+--                         vm |> MultiplicandControl.dragStart |> Maybe.map MultiplicandDrag
+--                     Component.Multiplier ->
+--                         vm |> MultiplierControl.dragStart |> Maybe.map MultiplierDrag
+--                     Component.Offset ->
+--                         vm |> OffsetControl.dragStart |> Maybe.map OffsetDrag
+--                     Component.Quantity ->
+--                         vm |> QuantityControl.dragStart |> Maybe.map QuantityDrag
+--                     Component.Remainder ->
+--                         vm |> Remainder.dragStart |> Maybe.map RemainderDrag
+--                     Component.Width ->
+--                         vm |> WidthControl.dragStart |> Maybe.map WidthDrag
+--         in
+--         component_
+--             |> Maybe.map (\c -> { bd | state = Dragging ctx c })
+--             |> Maybe.withDefault bd
 
 
 dragMove : Delta -> Block -> Block

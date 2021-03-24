@@ -58,6 +58,7 @@ init input =
     in
     Block
         { key = input.key
+        , drag = Nothing
         , state = Types.Idle
         , pos = input.pos
         , quantity = input.quantity

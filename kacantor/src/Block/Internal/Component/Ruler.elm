@@ -72,7 +72,7 @@ viewWidthRuler vm =
                 |> String.fromInt
 
         txtSize =
-            Size.forSquare halfUnit
+            Size.square halfUnit
 
         txtPos =
             line.p1
@@ -120,7 +120,7 @@ viewHeightRuler vm mid =
                 |> String.fromInt
 
         txtSize =
-            Size.forSquare halfUnit
+            Size.square halfUnit
 
         txtPos =
             line.p1

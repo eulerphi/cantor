@@ -3,6 +3,7 @@ module Box exposing
     , Boxlike
     , addPos
     , asBox
+    , center
     , hasSize
     , none
     , pad
@@ -37,6 +38,14 @@ addPos pos box =
 asBox : Boxlike r -> Box
 asBox box =
     Box box.pos box.size
+
+
+center : Size -> Pos -> Box
+center size pos =
+    pos
+        |> Pos.addX -(size.width / 2)
+        |> Pos.addY -(size.height / 2)
+        |> (\p -> Box p size)
 
 
 hasSize : Boxlike r -> Bool

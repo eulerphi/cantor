@@ -112,7 +112,7 @@ viewText : Section2 -> Svg msg
 viewText s =
     let
         box =
-            Size.forSquare s.unit |> Box s.pos
+            Size.square s.unit |> Box s.pos
 
         q =
             s.quantity |> String.fromInt

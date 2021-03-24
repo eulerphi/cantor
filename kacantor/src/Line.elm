@@ -1,4 +1,4 @@
-module Line exposing (Line, Linelike, addX, addXY, addY, centeredX, centeredY, toX, toY)
+module Line exposing (Line, Linelike, addX, addXY, addY, centeredX, centeredY, midPos, toX, toY)
 
 import Box exposing (Boxlike)
 import OffsetAnchor exposing (OffsetAnchor)
@@ -41,6 +41,13 @@ centeredX x pos =
 centeredY : Float -> Pos -> Line
 centeredY y pos =
     Line (pos |> Pos.addY y) (pos |> Pos.addY -y)
+
+
+midPos : Line -> Pos
+midPos line =
+    Pos (line.p2.x - line.p1.x) (line.p2.y - line.p1.y)
+        |> Pos.scale 0.5
+        |> Pos.add line.p1
 
 
 toX : Float -> Pos -> Line

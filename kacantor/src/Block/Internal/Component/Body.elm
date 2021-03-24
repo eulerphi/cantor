@@ -64,7 +64,7 @@ viewTxt vm s =
 -- UPDATE
 
 
-dragStart : ViewModel -> Maybe DragBodyState
+dragStart : ViewModel2 -> Maybe DragBodyState
 dragStart vm =
     DragState.forStart vm.pos |> Just
 

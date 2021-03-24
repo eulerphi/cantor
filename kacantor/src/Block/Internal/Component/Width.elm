@@ -8,6 +8,7 @@ import Delta exposing (Delta)
 import DragState
 import Grid exposing (Grid)
 import Line exposing (Line)
+import OffsetAnchor exposing (HorizontalAnchor(..), OffsetAnchor(..), VerticalAnchor(..))
 import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
@@ -76,12 +77,13 @@ viewControl attrs vm { active, rootPos, controlPos } =
         (SvgAttrs.class "width-control" :: attrs)
         (guidelines
             ++ [ SvgEx.line [] vline
-               , SvgEx.line [] hline
-               , CircleControl.view
+               , CircleControl.view3
                     attrs
                     { active = active
-                    , pos = controlPos
+                    , offsetAnchor = OffsetAnchor HCenter Bottom
+                    , pos = vline.p2
                     , unit = vm.grid.unit
+                    , txt = ""
                     }
                ]
         )

@@ -4,6 +4,7 @@ module Block.Internal.Types exposing
     , Context
     , DragBodyState
     , DragContext
+    , DragCtx(..)
     , DragOffsetState
     , DragQuantityState
     , DragWidthState
@@ -23,6 +24,7 @@ import Size exposing (IntSize)
 
 type alias Block =
     { key : String
+    , drag : Maybe ( DragCtx, ComponentDragState )
     , state : State
     , pos : Pos
     , quantity : Int
@@ -87,6 +89,10 @@ type ComponentDragState
     | QuantityDrag DragQuantityState
     | RemainderDrag DragState
     | WidthDrag DragWidthState
+
+
+type DragCtx
+    = DragCtx DragContext
 
 
 type alias DragContext =

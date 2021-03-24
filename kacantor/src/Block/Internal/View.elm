@@ -34,7 +34,8 @@ view context gd bd =
             [ OutlineComponent.view []
             , Multiplicand.view (attrsFn Component.Multiplicand)
             , Multiplier.view (attrsFn Component.Multiplier)
-            , Remainder.view (attrsFn Component.Remainder)
+
+            -- , Remainder.view (attrsFn Component.Remainder)
             , WidthComponent.view (attrsFn Component.Width)
             ]
                 |> List.map (\fn -> fn vm)

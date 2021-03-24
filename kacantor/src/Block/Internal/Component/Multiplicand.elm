@@ -10,7 +10,7 @@ import DragState exposing (DragState)
 import Grid exposing (Grid)
 import Line exposing (Line)
 import Maybe.Extra
-import OffsetAnchor exposing (OffsetAnchor)
+import OffsetAnchor exposing (HorizontalAnchor(..), OffsetAnchor(..), VerticalAnchor(..))
 import Pair
 import Pos exposing (Pos)
 import Size exposing (Size)
@@ -50,33 +50,46 @@ viewControl :
     -> Svg msg
 viewControl attrs vm { active, rpos, cpos } =
     let
-        quarterUnit =
-            vm.grid.unit / 4
+        ( halfUnit, quarterUnit ) =
+            ( vm.grid.unit / 2, vm.grid.unit / 4 )
 
-        txt =
-            (vm.size.width / vm.grid.unit)
-                |> round
-                |> String.fromInt
+        ( txt, txtBox ) =
+            ( vm.block.product.width |> String.fromInt
+            , Line rpos cpos
+                |> Line.midPos
+                |> Box.center (Size.square halfUnit)
+            )
+
+        elems =
+            [ SvgEx.line [ SvgAttrs.class "mainline" ] (Line rpos cpos)
+            , SvgEx.line [] (rpos |> Line.centeredY quarterUnit)
+            , SvgEx.textWithBackground [] txtBox txt
+            ]
+
+        opts =
+            if active then
+                [ SvgEx.line
+                    [ SvgAttrs.class "guideline" ]
+                    (rpos |> Line.toX (vm.grid |> OffsetAnchor.toX OffsetAnchor.Right))
+                , CircleControl.view3
+                    attrs
+                    { active = active
+                    , offsetAnchor = OffsetAnchor HCenter VCenter
+                    , pos = cpos
+                    , unit = vm.grid.unit
+                    , txt = ""
+                    }
+                ]
+
+            else
+                [ SvgEx.line
+                    []
+                    (cpos |> Line.centeredY quarterUnit)
+                ]
     in
     Svg.g
         [ SvgAttrs.class "multiplicand-control" ]
-        [ SvgEx.line
-            []
-            (Line rpos cpos)
-        , SvgEx.line
-            [ SvgAttrs.class "guideline" ]
-            (rpos |> Line.toX (OffsetAnchor.toX OffsetAnchor.Right vm.grid))
-        , SvgEx.line
-            []
-            (rpos |> Line.centeredY quarterUnit)
-        , CircleControl.view2
-            attrs
-            { active = active
-            , pos = cpos
-            , unit = vm.grid.unit
-            , txt = txt
-            }
-        ]
+        (elems ++ opts)
 
 
 

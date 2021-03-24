@@ -12,7 +12,7 @@
 
 .guideline {
     stroke-dasharray: 4;
-    opacity: 50%;
+    opacity: 30%;
 }
 
 .no-select {
@@ -255,6 +255,18 @@
     stroke: rgb(85,209,229);
     stroke-width: 2;
 }
+
+.block .multiplicand-control .mainline {
+    stroke-dasharray: 4;
+    opacity: 50%;
+}
+
+.block .multiplicand-control .guideline {
+    stroke: rgb(197, 203, 204);
+    opacity: 50%;
+}
+
+
 .block .multiplicand-control text {
     fill: rgb(255, 255, 255);
     font-size: 12px;
