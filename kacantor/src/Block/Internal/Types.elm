@@ -103,5 +103,4 @@ type alias DragContext =
 
 type State
     = Idle
-    | Dragging DragContext ComponentDragState
     | Selected

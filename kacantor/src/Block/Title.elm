@@ -50,31 +50,29 @@ viewTitle vm =
 getTitleHtml : ViewModel -> List (Html msg)
 getTitleHtml vm =
     case vm.block.state of
-        Dragging { bd } (WidthDrag _) ->
-            let
-                ( newQuantity, oldQuantity ) =
-                    ( vm.block.quantity, bd.quantity )
-
-                delta =
-                    newQuantity - oldQuantity
-            in
-            [ Html.span
-                [ HtmlAttrs.class "sum" ]
-                [ Html.text <| String.fromInt newQuantity ]
-            , Html.span
-                [ HtmlAttrs.class "operator" ]
-                [ Html.text " = " ]
-            , Html.span
-                [ HtmlAttrs.class "sum" ]
-                [ Html.text <| String.fromInt oldQuantity ]
-            , Html.span
-                [ HtmlAttrs.class "operator" ]
-                [ Html.text " + " ]
-            , Html.span
-                [ HtmlAttrs.class "active" ]
-                [ Html.text <| String.fromInt delta ]
-            ]
-
+        -- Dragging { bd } (WidthDrag _) ->
+        --     let
+        --         ( newQuantity, oldQuantity ) =
+        --             ( vm.block.quantity, bd.quantity )
+        --         delta =
+        --             newQuantity - oldQuantity
+        --     in
+        --     [ Html.span
+        --         [ HtmlAttrs.class "sum" ]
+        --         [ Html.text <| String.fromInt newQuantity ]
+        --     , Html.span
+        --         [ HtmlAttrs.class "operator" ]
+        --         [ Html.text " = " ]
+        --     , Html.span
+        --         [ HtmlAttrs.class "sum" ]
+        --         [ Html.text <| String.fromInt oldQuantity ]
+        --     , Html.span
+        --         [ HtmlAttrs.class "operator" ]
+        --         [ Html.text " + " ]
+        --     , Html.span
+        --         [ HtmlAttrs.class "active" ]
+        --         [ Html.text <| String.fromInt delta ]
+        --     ]
         _ ->
             let
                 lhs =

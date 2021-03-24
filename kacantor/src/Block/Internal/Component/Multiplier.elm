@@ -22,14 +22,13 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel2 -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging _ (MultiplierDrag state) ->
-            { active = True
-            , rpos = rootPosition vm
-            , cpos = state.current
-            }
-                |> viewControl attrs vm
-                |> Just
-
+        -- Dragging _ (MultiplierDrag state) ->
+        --     { active = True
+        --     , rpos = rootPosition vm
+        --     , cpos = state.current
+        --     }
+        --         |> viewControl attrs vm
+        --         |> Just
         Selected ->
             rootPosition vm
                 |> Pair.fork

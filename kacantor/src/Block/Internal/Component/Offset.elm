@@ -19,14 +19,13 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging _ (OffsetDrag { root, control }) ->
-            { active = True
-            , rootPos = root.current
-            , controlPos = control.current
-            }
-                |> viewControl attrs vm
-                |> Just
-
+        -- Dragging _ (OffsetDrag { root, control }) ->
+        --     { active = True
+        --     , rootPos = root.current
+        --     , controlPos = control.current
+        --     }
+        --         |> viewControl attrs vm
+        --         |> Just
         -- Selected ->
         --     vm
         --         |> rootPosition

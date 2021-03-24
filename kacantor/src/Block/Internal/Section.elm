@@ -204,9 +204,8 @@ forBlock2 gd bd =
                 Idle ->
                     forIdleBlock gd bd
 
-                Dragging _ _ ->
-                    forSelectedBlock gd bd
-
+                -- Dragging _ _ ->
+                --     forSelectedBlock gd bd
                 Selected ->
                     forSelectedBlock gd bd
     in
@@ -233,52 +232,46 @@ forBlock gd bd =
 forBlockFoo : Grid -> Block -> ( List Section, List Section )
 forBlockFoo gd bd =
     case bd.state of
-        Dragging ctx (QuantityDrag _) ->
-            let
-                ( newQuantity, oldQuantity ) =
-                    ( bd.quantity, ctx.bd.quantity )
-
-                delta =
-                    newQuantity - oldQuantity
-
-                sections =
-                    { bd | quantity = min oldQuantity (oldQuantity + delta) }
-                        |> forBlockInternal gd
-
-                temps =
-                    { bd
-                        | quantity = abs delta
-                        , pos =
-                            sections
-                                |> last
-                                |> Maybe.map
-                                    (\s ->
-                                        if s.sizeInUnits.width == bd.width then
-                                            s.pos
-                                                |> Pos.addY s.size.height
-                                                |> Pos.updateX bd.pos.x
-
-                                        else
-                                            s.pos |> Pos.updateX bd.pos.x
-                                    )
-                                |> Maybe.withDefault bd.pos
-                        , headerOffset =
-                            sections
-                                |> last
-                                |> Maybe.map
-                                    (\s ->
-                                        if s.sizeInUnits.width == bd.width then
-                                            0
-
-                                        else
-                                            s.sizeInUnits.width + s.offset
-                                    )
-                                |> Maybe.withDefault bd.headerOffset
-                    }
-                        |> forBlockInternal gd
-            in
-            ( sections, temps )
-
+        -- Dragging ctx (QuantityDrag _) ->
+        --     let
+        --         ( newQuantity, oldQuantity ) =
+        --             ( bd.quantity, ctx.bd.quantity )
+        --         delta =
+        --             newQuantity - oldQuantity
+        --         sections =
+        --             { bd | quantity = min oldQuantity (oldQuantity + delta) }
+        --                 |> forBlockInternal gd
+        --         temps =
+        --             { bd
+        --                 | quantity = abs delta
+        --                 , pos =
+        --                     sections
+        --                         |> last
+        --                         |> Maybe.map
+        --                             (\s ->
+        --                                 if s.sizeInUnits.width == bd.width then
+        --                                     s.pos
+        --                                         |> Pos.addY s.size.height
+        --                                         |> Pos.updateX bd.pos.x
+        --                                 else
+        --                                     s.pos |> Pos.updateX bd.pos.x
+        --                             )
+        --                         |> Maybe.withDefault bd.pos
+        --                 , headerOffset =
+        --                     sections
+        --                         |> last
+        --                         |> Maybe.map
+        --                             (\s ->
+        --                                 if s.sizeInUnits.width == bd.width then
+        --                                     0
+        --                                 else
+        --                                     s.sizeInUnits.width + s.offset
+        --                             )
+        --                         |> Maybe.withDefault bd.headerOffset
+        --             }
+        --                 |> forBlockInternal gd
+        --     in
+        --     ( sections, temps )
         _ ->
             ( forBlockInternal gd bd, [] )
 

@@ -21,11 +21,10 @@ import SvgEx
 view : List (Attribute msg) -> ViewModel -> Maybe (Svg msg)
 view attrs vm =
     case vm.block.state of
-        Dragging _ (QuantityDrag state) ->
-            { active = True, pos = state.current }
-                |> viewControl attrs vm
-                |> Just
-
+        -- Dragging _ (QuantityDrag state) ->
+        --     { active = True, pos = state.current }
+        --         |> viewControl attrs vm
+        --         |> Just
         Selected ->
             vm
                 |> rootPosition
